@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
-import banner from "../assets/banner.jpg" // 배너 이미지 import
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -11,14 +10,6 @@ const activeTab = ref("login");
 // 로그인 폼 데이터
 const id = ref("");
 const password = ref("");
-const rememberMe = ref(false);
-
-// 회원가입 폼 데이터
-const name = ref("");
-const signupEmail = ref("");
-const signupPassword = ref("");
-const signupPasswordConfirm = ref("");
-const agree = ref(false);
 
 // 로그인 함수
 const login = async () => {

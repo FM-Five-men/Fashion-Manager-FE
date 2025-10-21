@@ -1,11 +1,43 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from "vue";
+import axios from "axios";
 
 const router = useRouter()
+
+const signupId = ref("");
+const signupPassword = ref("");
+const signupEmail = ref("");
+const signupName = ref("");
+const signupGender = ref("");
+const signupAge = ref("");
+
+const registerMember = async () => {
+    try{
+        var data = {
+            userId: signupId.value,
+            userPwd: signupPassword.value,
+            userEmail: signupEmail.value,
+            userName: signupName.value,
+            userAge: signupAge.value,
+            userGender: signupGender.value,
+            userMessageAllow: 1
+        }
+
+        const res = await axios.post("/api/member-service/member/regist",data);
+        console.log(res);
+    }catch (err){
+        console.log("회원가입 에러: ",err);
+    }
+    
+}
+
 
 const login = () => {
     router.push('/')
 }
+
+
 
 </script>
 
@@ -36,35 +68,28 @@ const login = () => {
         <div class="form-group">
           <label>아이디</label>
           <div class="input-box">
-            <input type="text" placeholder="example1234" />
+            <input type="text" placeholder="example1234" v-model="signupId" />
           </div>
         </div>
 
         <div class="form-group">
           <label>비밀번호</label>
           <div class="input-box">
-            <input type="password" placeholder="••••••••" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>비밀번호 확인</label>
-          <div class="input-box">
-            <input type="password" placeholder="••••••••" />
+            <input type="password" placeholder="••••••••" v-model="signupPassword" />
           </div>
         </div>
 
         <div class="form-group">
           <label>이메일</label>
           <div class="input-box">
-            <input type="email" placeholder="example@email.com" />
+            <input type="email" placeholder="example@email.com" v-model="signupEmail" />
           </div>
         </div>
 
         <div class="form-group">
           <label>이름</label>
           <div class="input-box">
-            <input type="text" placeholder="홍길동" />
+            <input type="text" placeholder="홍길동" v-model="signupName" />
           </div>
         </div>
 
@@ -72,33 +97,20 @@ const login = () => {
         <div class="form-group">
           <label>성별</label>
           <div class="gender-box">
-            <label><input type="radio" name="gender" value="male" /> 남성</label>
-            <label><input type="radio" name="gender" value="female" /> 여성</label>
+            <label><input type="radio" name="gender" value="남" v-model="signupGender" /> 남성</label>
+            <label><input type="radio" name="gender" value="여" v-model="signupGender" /> 여성</label>
           </div>
         </div>
 
         <div class="form-group">
           <label>나이</label>
           <div class="input-box">
-            <input type="number" placeholder="28" />
+            <input type="number" placeholder="28" v-model="signupAge" />
           </div>
         </div>
 
-        <div class="form-group">
-          <label>키</label>
-          <div class="input-box">
-            <input type="number" placeholder="175" />
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label>몸무게</label>
-          <div class="input-box">
-            <input type="number" placeholder="68" />
-          </div>
-        </div>
-
-        <button class="submit-btn">회원가입</button>
+        <button class="submit-btn" @click="registerMember">회원가입</button>
 
         <p class="login-link">
           이미 계정이 있으신가요?
