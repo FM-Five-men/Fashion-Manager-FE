@@ -1,3 +1,59 @@
+<script setup>
+import { ref } from "vue";
+import axios from "axios";
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const email = ref("");
+const id = ref("");
+const incorrect = ref(false);
+const verifyCode = ref("");
+
+const showModal = ref(false);
+
+let verifyNum;
+
+const verifyNumber = async () => {
+    try{
+        const data = new FormData();
+        data.append("mail", email.value);
+        data.append("id", id.value);
+
+        axios.post('/api/member-service/validation/sendmailpassword',data).then(
+            (res) => {
+                console.log(res);
+                verifyNum = res.data;
+                showModal.value = true;
+            }
+        )
+        
+        
+    }catch (err) {
+        console.log("인증번호 전송 에러: ",err);
+    }
+    
+}
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const findId = () => {
+    router.push('/findid')
+}
+
+const registerMember = () => {
+    router.push('/registermember')
+}
+
+const findPassword = () => {
+    if(verifyNum == verifyCode.value){
+        router.push(`/changepassword?id=${encodeURIComponent(id.value)}`);
+    }
+}
+</script>
+
 <template>
   <div class="screen">
 
@@ -19,17 +75,9 @@
 
         <div class="container-8">
           <div class="container-9">
-            <div class="icon-wrapper">
-              <div class="icon">
-                <div class="group-3">
-                  <img class="vector-2" alt="Vector" :src="vector" />
-                  <img class="vector-3" alt="Vector" :src="image" />
-                </div>
-              </div>
-            </div>
 
             <div class="div-wrapper-2">
-              <div class="text-wrapper-9">아이디를 입력하세요</div>
+              <input class="text-wrapper-9" type="text" v-model="id" />
             </div>
           </div>
 
@@ -44,17 +92,9 @@
 
         <div class="container-8">
           <div class="container-9">
-            <div class="icon-wrapper">
-              <div class="icon">
-                <div class="group-4">
-                  <img class="vector-4" alt="Vector" :src="vector2" />
-                  <img class="vector-5" alt="Vector" :src="vector3" />
-                </div>
-              </div>
-            </div>
 
             <div class="div-wrapper-2">
-              <div class="text-wrapper-9">example@email.com</div>
+              <input class="text-wrapper-9" type="text" v-model="email" />
             </div>
           </div>
 
@@ -62,7 +102,20 @@
         </div>
       </div>
 
-      <button class="paragraph-wrapper">
+      <!-- 인증번호 입력 + 버튼 -->
+      <div class="container-7">
+        <div class="verify-container">
+            <input
+                class="verify-input"
+                type="text"
+                v-model="verifyCode"
+                placeholder="인증번호"
+            />
+            <button class="verify-btn" @click="verifyNumber">인증번호 전송</button>
+        </div>
+      </div>
+
+      <button class="paragraph-wrapper" @click="findPassword">
         <div class="div-2">
           <div class="text-wrapper-10">비밀번호 찾기</div>
         </div>
@@ -73,7 +126,7 @@
       <div class="container-12">
         <div class="container-13">
           <div class="paragraph-4">
-            <div class="text-wrapper-11">아이디 찾기</div>
+            <div class="text-wrapper-11" @click="findId">아이디 찾기</div>
           </div>
         </div>
 
@@ -82,7 +135,7 @@
         </div>
 
         <div class="paragraph-6">
-          <div class="text-wrapper-13">회원가입</div>
+          <div class="text-wrapper-13" @click="registerMember">회원가입</div>
         </div>
 
         <div class="paragraph-7">
@@ -96,12 +149,18 @@
         </div>
       </div>
     </div>
+
+    <!-- ✅ 모달 창 -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <h3>메시지</h3>
+        <p v-if="verifyNum==0">존재하지 않는 회원의 이메일입니다.</p>
+        <p v-else>인증번호가 발송되었습니다.</p>
+        <button @click="closeModal" class="close-btn">확인</button>
+      </div>
+    </div>
   </div>
 </template>
-
-<script>
-
-</script>
 
 <style scoped>
 .screen {
@@ -399,7 +458,7 @@
   flex-direction: column;
   gap: 9.3px;
   height: 68px;
-  margin-left: 616px;
+  margin-left: 25%;
   margin-top: 186px;
   width: 653px;
 }
@@ -453,7 +512,7 @@
   flex-direction: column;
   gap: 24px;
   height: 245px;
-  margin-left: 616px;
+  margin-left: 25%;
   margin-top: 10px;
   padding: 0px 205px 0px 0px;
   position: relative;
@@ -462,7 +521,7 @@
 
 .screen .container-7 {
   align-self: stretch;
-  height: 64px;
+  height: 50px;
   position: relative;
   width: 100%;
 }
@@ -571,7 +630,11 @@
   line-height: normal;
   position: relative;
   white-space: nowrap;
-  width: fit-content;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  z-index: 2;
 }
 
 .screen .container-10 {
@@ -621,11 +684,12 @@
   height: 44px;
   padding: 12px 179.54px 0px 179.54px;
   position: relative;
-  width: 100%;
+  width: 69%;
+  cursor: pointer;
 }
 
 .screen .text-wrapper-10 {
-  color: #ffffff;
+  color: #ffffffff;
   font-family: "Arial-Regular", Helvetica;
   font-size: 14px;
   font-weight: 400;
@@ -643,9 +707,9 @@
   border-top-width: 0.67px;
   display: flex;
   height: 57px;
-  margin-left: 616px;
+  margin-left: 25%;
   margin-top: 10px;
-  width: 609px;
+  width: 27%;
 }
 
 .screen .container-12 {
@@ -678,6 +742,7 @@
   margin-top: -1.3px;
   white-space: nowrap;
   width: 69px;
+  cursor: pointer;
 }
 
 .screen .paragraph-5 {
@@ -718,6 +783,7 @@
   margin-top: -1.3px;
   white-space: nowrap;
   width: 52px;
+  cursor: pointer;
 }
 
 .screen .paragraph-7 {
@@ -738,5 +804,100 @@
   display: flex;
   margin-top: -1.3px;
   width: 56px;
+}
+
+.verify-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  width: 448px;
+}
+
+.verify-input {
+  flex: 1;
+  background-color: #f3f3f5;
+  border: 0.67px solid #d1d5dc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #717081;
+  outline: none;
+}
+
+.verify-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  height: 36px;
+  white-space: nowrap;
+}
+
+.verify-btn:hover {
+  background-color: #333;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 0.25s ease-in-out;
+  width: 320px;
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #000;
+}
+
+.modal p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  background-color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

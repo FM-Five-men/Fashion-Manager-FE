@@ -7,6 +7,8 @@ const router = useRouter()
 
 const activeTab = ref("login");
 
+const showModal = ref(false);
+
 // 로그인 폼 데이터
 const id = ref("");
 const password = ref("");
@@ -28,6 +30,8 @@ const login = async () => {
       if(token){
         router.push('/main')
       }
+    }else{
+      showModal.value = true;
     }
   } catch (err) {
     console.error("로그인 에러:", err);
@@ -42,13 +46,12 @@ const registerMember = () => {
   router.push('/registermember')
 }
 
-// 회원가입 함수
-const signup = async () => {
-  if (!agree.value) {
-    alert("이용약관에 동의해야 합니다.");
-    return;
-  }
-  console.log("회원가입 시도:", name.value, signupEmail.value);
+const findId = () => {
+  router.push('/findid')
+}
+
+const closeModal = () => {
+  showModal.value = false;
 };
 </script>
 
@@ -138,7 +141,7 @@ const signup = async () => {
 
         <div class="container-wrapper">
           <div class="container-10">
-            <button class="button-5">
+            <button class="button-5" @click="findId">
               <div class="text-wrapper-11">아이디 찾기</div>
             </button>
 
@@ -159,6 +162,15 @@ const signup = async () => {
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ✅ 모달 창 -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <h3>메시지</h3>
+        <p>로그인에 실패했습니다.</p>
+        <button @click="closeModal" class="close-btn">확인</button>
       </div>
     </div>
   </div>

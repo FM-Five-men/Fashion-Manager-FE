@@ -12,6 +12,10 @@ const signupName = ref("");
 const signupGender = ref("");
 const signupAge = ref("");
 
+const showModal = ref(false);
+
+const check = ref(false);
+
 const registerMember = async () => {
     try{
         var data = {
@@ -21,13 +25,24 @@ const registerMember = async () => {
             userName: signupName.value,
             userAge: signupAge.value,
             userGender: signupGender.value,
-            userMessageAllow: 1
+            userMessageAllow: 1,
+            ReportCount: 0,
+            DailyReportCount: 0
         }
 
         const res = await axios.post("/api/member-service/member/regist",data);
+        console.log(res.status)
+        if(res.status == 200){
+            check.value = true;
+            showModal.value = true;
+        }else{
+            showModal.value = true;
+        }
+        
         console.log(res);
     }catch (err){
         console.log("회원가입 에러: ",err);
+        showModal.value = true;
     }
     
 }
@@ -37,7 +52,9 @@ const login = () => {
     router.push('/')
 }
 
-
+const closeModal = () => {
+  showModal.value = false;
+};
 
 </script>
 
@@ -116,6 +133,16 @@ const login = () => {
           이미 계정이 있으신가요?
           <span class="link" @click="login">로그인</span>
         </p>
+      </div>
+    </div>
+
+    <!-- ✅ 모달 창 -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <h3>메시지</h3>
+        <p v-if="!check">회원가입에 실패했습니다.</p>
+        <p v-else>회원가입에 성공하였습니다.</p>
+        <button @click="closeModal" class="close-btn">확인</button>
       </div>
     </div>
   </div>
@@ -367,5 +394,65 @@ const login = () => {
 .gender-box input[type="radio"] {
   accent-color: #E17100; /* ✅ 주황색 라디오 버튼 */
   cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 0.25s ease-in-out;
+  width: 320px;
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #000;
+}
+
+.modal p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  background-color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
