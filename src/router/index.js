@@ -5,6 +5,7 @@ import RegisterMemberView from '../components/RegisterMemberView.vue';
 import FindIdView from '../components/FindIdView.vue';
 import FindPasswordView from '../components/FindPasswordView.vue';
 import AdminLoginView from '../components/AdminLoginView.vue';
+import ChangePasswordView from '../components/ChangePasswordView.vue';
 
 const routes = [
   {
@@ -31,7 +32,11 @@ const routes = [
      path: '/adminlogin',
      name: 'adminlogin',
      component: AdminLoginView
-   }
+  },{
+    path: '/changepassword',
+    name: 'changepassword',
+    component: ChangePasswordView
+  }
 ]
 
 const router = createRouter({

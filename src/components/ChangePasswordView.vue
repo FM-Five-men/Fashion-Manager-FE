@@ -1,136 +1,116 @@
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
-const router = useRouter()
+const router = useRouter();
+const route = useRoute();
 
 const email = ref("");
-const verifyCode = ref("");
+const id = ref("");
+
+const changePassword = ref("");
+const checkPassword = ref("");
+const check = ref("");
 
 const showModal = ref(false);
-const check = ref(false);
-const id = ref("");
 
 let verifyNum;
 
-const verifyNumber = async () => {
+const updatePwd = async () => {
     try{
-        const data = new FormData();
-        data.append("mail", email.value);
+        id.value = route.query.id;
 
-        axios.post('/api/member-service/validation/sendmail',data).then(
+        const data = new FormData();
+        data.append("changePassword", changePassword.value);
+        data.append("checkPassword", checkPassword.value)
+        data.append("id", id.value);
+
+        axios.post('/api/member-service/member/updatepassword',data).then(
             (res) => {
-                console.log(res);
-                verifyNum = res.data;
-                showModal.value = true;
+                if(res.data == 1){
+                    check.value = 1;
+                    showModal.value = true;
+                }else{
+                    check.value = 0;
+                    showModal.value = true;
+                }
             }
         )
+        
+        
     }catch (err) {
         console.log("인증번호 전송 에러: ",err);
     }
     
 }
 
-const findId = async () => {
-    try{
-        if(verifyNum != 0 && verifyNum == verifyCode.value && email.value != ""){
-            const data = new FormData();
-            data.append("mail", email.value);
-
-            axios.post('/api/member-service/member/selectmemberemail',data).then(
-                (res) => {
-                    id.value = res.data.memberId;
-                    check.value = true;
-                    showModal.value = true;
-                }
-            )
-        }else{
-            console.log("verifyNum: ",verifyNum, "verifyCode: ",verifyCode.value, "email: ",email.value)
-        }
-    }catch (err){
-        console.log("아이디 찾기 에러: ",err);
-    }
-}
-
 const closeModal = () => {
   showModal.value = false;
 };
 
-const findPassword = () => {
-    router.push('/findpassword');
+const findId = () => {
+    router.push('/findid')
 }
 
 const registerMember = () => {
-    router.push('/registermember');
+    router.push('/registermember')
 }
 </script>
 
 <template>
   <div class="screen">
+
     <div class="container-5">
       <div class="paragraph">
-        <div class="text-wrapper-6">아이디 찾기</div>
+        <div class="text-wrapper-6">비밀번호 변경</div>
       </div>
 
       <div class="paragraph-2">
-        <div class="text-wrapper-7">가입시 등록한 정보를 입력해주세요</div>
+        <div class="text-wrapper-7">변경할 비밀번호를 입력해주세요</div>
       </div>
     </div>
 
     <div class="container-6">
-      <!-- 이름 입력 -->
-      <!--<div class="container-7">
+      <div class="container-7">
         <div class="paragraph-3">
-          <div class="text-wrapper-8">이름</div>
+          <div class="text-wrapper-8">변경할 비밀번호</div>
         </div>
 
         <div class="container-8">
           <div class="container-9">
+
             <div class="div-wrapper-2">
-              <input class="text-wrapper-9" type="text" v-model="name" />
+              <input class="text-wrapper-9" type="password" v-model="changePassword" />
             </div>
           </div>
+
           <div class="container-10" />
         </div>
-      </div>-->
+      </div>
 
-      <!-- 이메일 입력 -->
       <div class="container-7">
-        <div class="paragraph-4">
-          <div class="text-wrapper-10">이메일</div>
+        <div class="paragraph-3">
+          <div class="text-wrapper-8">변경할 비밀번호 확인</div>
         </div>
 
         <div class="container-8">
           <div class="container-9">
+
             <div class="div-wrapper-2">
-              <input class="text-wrapper-9" type="text" v-model="email" />
+              <input class="text-wrapper-9" type="password" v-model="checkPassword" />
             </div>
           </div>
+
           <div class="container-10" />
         </div>
       </div>
 
-      <!-- 인증번호 입력 + 버튼 -->
-      <div class="container-7">
-        <div class="paragraph-4">
-            <div class="text-wrapper-10">인증번호</div>
-        </div>
+      
 
-        <div class="verify-container">
-            <input
-                class="verify-input"
-                type="text"
-                v-model="verifyCode"
-                placeholder="인증번호를 입력하세요"
-            />
-            <button class="verify-btn" @click="verifyNumber">인증번호 전송</button>
-        </div>
-      </div>
-
-      <button class="paragraph-wrapper" @click="findId">
+      <button class="paragraph-wrapper" @click="updatePwd">
         <div class="div-2">
-          <div class="text-wrapper-11">아이디 찾기</div>
+          <div class="text-wrapper-10">비밀번호 변경</div>
         </div>
       </button>
     </div>
@@ -138,26 +118,26 @@ const registerMember = () => {
     <div class="container-11">
       <div class="container-12">
         <div class="container-13">
-          <div class="paragraph-5">
-            <div class="text-wrapper-12" @click="findPassword">비밀번호 찾기</div>
+          <div class="paragraph-4">
+            <div class="text-wrapper-11" @click="findId">아이디 찾기</div>
           </div>
         </div>
 
+        <div class="paragraph-5">
+          <div class="text-wrapper-12">•</div>
+        </div>
+
         <div class="paragraph-6">
-          <div class="text-wrapper-13">•</div>
+          <div class="text-wrapper-13" @click="registerMember">회원가입</div>
         </div>
 
         <div class="paragraph-7">
-          <div class="text-wrapper-14" @click="registerMember">회원가입</div>
-        </div>
-
-        <div class="paragraph-8">
-          <div class="text-wrapper-13">•</div>
+          <div class="text-wrapper-12">•</div>
         </div>
 
         <div class="container-14">
-          <div class="paragraph-9">
-            <div class="text-wrapper-14">고객센터</div>
+          <div class="paragraph-8">
+            <div class="text-wrapper-13">고객센터</div>
           </div>
         </div>
       </div>
@@ -167,9 +147,8 @@ const registerMember = () => {
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal">
         <h3>메시지</h3>
-        <p v-if="verifyNum==0">존재하지 않는 회원의 이메일입니다.</p>
-        <p v-else-if="check">사용자님의 아이디는 {{ id }} 입니다.</p>
-        <p v-else>인증번호가 발송되었습니다.</p>
+        <p v-if="check.value==0">비밀번호 변경을 실패했습니다.</p>
+        <p v-else>비밀번호를 성공적으로 변경하였습니다.</p>
         <button @click="closeModal" class="close-btn">확인</button>
       </div>
     </div>
@@ -183,7 +162,6 @@ const registerMember = () => {
   flex-direction: column;
   min-height: 931px;
   min-width: 1666px;
-  overflow-x: hidden;
   width: 100%;
 }
 
@@ -192,7 +170,6 @@ const registerMember = () => {
   display: flex;
   flex-direction: column;
   height: 65px;
-  margin-left: -4px;
   position: relative;
   width: 1666px;
 }
@@ -475,15 +452,15 @@ const registerMember = () => {
   gap: 9.3px;
   height: 68px;
   margin-left: 25%;
-  margin-top: 165px;
+  margin-top: 186px;
   width: 653px;
 }
 
 .screen .paragraph {
   display: flex;
-  margin-left: 143.8px;
+  margin-left: 128.8px;
   margin-top: -3px;
-  width: 160.55px;
+  width: 190.55px;
 }
 
 .screen .text-wrapper-6 {
@@ -494,11 +471,11 @@ const registerMember = () => {
   height: 36px;
   letter-spacing: 0;
   line-height: 36px;
-  margin-left: 7px;
+  margin-left: 8px;
   margin-top: -3px;
   text-align: center;
   white-space: nowrap;
-  width: 147px;
+  width: 174px;
 }
 
 .screen .paragraph-2 {
@@ -527,9 +504,9 @@ const registerMember = () => {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  height: 245px;
+  height: 200px;
   margin-left: 25%;
-  margin-top: 10.0px;
+  margin-top: 10px;
   padding: 0px 205px 0px 0px;
   position: relative;
   width: 653px;
@@ -537,7 +514,7 @@ const registerMember = () => {
 
 .screen .container-7 {
   align-self: stretch;
-  height: 64px;
+  height: 50px;
   position: relative;
   width: 100%;
 }
@@ -548,8 +525,7 @@ const registerMember = () => {
   left: 0;
   position: absolute;
   top: 0;
-  width: 28px;
-  margin-bottom: 6px;
+  width: 42px;
 }
 
 .screen .text-wrapper-8 {
@@ -562,7 +538,7 @@ const registerMember = () => {
   line-height: 20px;
   margin-top: -1.3px;
   white-space: nowrap;
-  width: 26px;
+  width: 39px;
 }
 
 .screen .container-8 {
@@ -663,30 +639,6 @@ const registerMember = () => {
   position: absolute;
   top: 0;
   width: 448px;
-  margin-bottom: 20px;
-}
-
-.screen .paragraph-4 {
-  display: flex;
-  height: 20px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 42px;
-  margin-bottom: 6px;
-}
-
-.screen .text-wrapper-10 {
-  color: #0a0a0a;
-  font-family: "Arial-Regular", Helvetica;
-  font-size: 14px;
-  font-weight: 400;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-top: -1.3px;
-  white-space: nowrap;
-  width: 39px;
 }
 
 .screen .group-4 {
@@ -723,14 +675,14 @@ const registerMember = () => {
   display: flex;
   flex-direction: column;
   height: 44px;
-  padding: 12px 186.54px 0px 186.54px;
+  padding: 12px 179.54px 0px 179.54px;
   position: relative;
   width: 69%;
   cursor: pointer;
 }
 
-.screen .text-wrapper-11 {
-  color: #ffffff;
+.screen .text-wrapper-10 {
+  color: #ffffffff;
   font-family: "Arial-Regular", Helvetica;
   font-size: 14px;
   font-weight: 400;
@@ -750,7 +702,7 @@ const registerMember = () => {
   height: 57px;
   margin-left: 25%;
   margin-top: 10px;
-  width: 450px;
+  width: 27%;
 }
 
 .screen .container-12 {
@@ -766,10 +718,31 @@ const registerMember = () => {
   width: 96px;
 }
 
-.screen .paragraph-5 {
+.screen .paragraph-4 {
   display: flex;
   margin-top: -1.3px;
-  width: 88.93px;
+  width: 74.93px;
+}
+
+.screen .text-wrapper-11 {
+  color: #6a7282;
+  font-family: "Arial-Regular", Helvetica;
+  font-size: 14px;
+  font-weight: 400;
+  height: 20px;
+  letter-spacing: 0;
+  line-height: 20px;
+  margin-top: -1.3px;
+  white-space: nowrap;
+  width: 69px;
+  cursor: pointer;
+}
+
+.screen .paragraph-5 {
+  display: flex;
+  margin-left: 19px;
+  margin-top: -1.3px;
+  width: 5.85px;
 }
 
 .screen .text-wrapper-12 {
@@ -782,38 +755,17 @@ const registerMember = () => {
   line-height: 20px;
   margin-top: -1.3px;
   white-space: nowrap;
-  width: 82px;
-  cursor: pointer;
-}
-
-.screen .paragraph-6 {
-  display: flex;
-  margin-left: 19px;
-  margin-top: -1.3px;
-  width: 5.85px;
-}
-
-.screen .text-wrapper-13 {
-  color: #6a7282;
-  font-family: "Arial-Regular", Helvetica;
-  font-size: 14px;
-  font-weight: 400;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-top: -1.3px;
-  white-space: nowrap;
   width: 5px;
 }
 
-.screen .paragraph-7 {
+.screen .paragraph-6 {
   display: flex;
   margin-left: 14.1px;
   margin-top: -1.6px;
   width: 56px;
 }
 
-.screen .text-wrapper-14 {
+.screen .text-wrapper-13 {
   color: #6a7282;
   font-family: "Arial-Regular", Helvetica;
   font-size: 14px;
@@ -827,7 +779,7 @@ const registerMember = () => {
   cursor: pointer;
 }
 
-.screen .paragraph-8 {
+.screen .paragraph-7 {
   display: flex;
   margin-left: 16px;
   margin-top: -1.3px;
@@ -841,7 +793,7 @@ const registerMember = () => {
   width: 77px;
 }
 
-.screen .paragraph-9 {
+.screen .paragraph-8 {
   display: flex;
   margin-top: -1.3px;
   width: 56px;
