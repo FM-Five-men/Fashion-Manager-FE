@@ -6,6 +6,9 @@ import FindIdView from '../components/FindIdView.vue';
 import FindPasswordView from '../components/FindPasswordView.vue';
 import AdminLoginView from '../components/AdminLoginView.vue';
 import ChangePasswordView from '../components/ChangePasswordView.vue';
+import RegisterAdminView from '../components/RegisterAdminView.vue';
+import MessageView from '../components/MessageView.vue';
+
 
 const routes = [
   {
@@ -36,6 +39,14 @@ const routes = [
     path: '/changepassword',
     name: 'changepassword',
     component: ChangePasswordView
+  },{
+    path: '/registeradmin',
+    name: 'registeradmin',
+    component: RegisterAdminView
+  },{
+    path: '/message',
+    name: 'message',
+    component: MessageView
   }
 ]
 
