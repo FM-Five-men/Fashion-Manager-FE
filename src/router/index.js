@@ -15,6 +15,7 @@ import ReviewBoardView from '../components/post/review/ReviewBoardView.vue';
 import RegistReviewPostView from '../components/post/review/RegistReviewPostView.vue';
 import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
+import FashionPostView from '../components/FashionPostView.vue';
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -81,6 +82,11 @@ const routes = [
   }
   // '/fashionpost' and '/reviewpost' from features were likely superseded
   // by '/fashionboardview' and '/reviewpostview' from HEAD. Adjust if needed.
+  ,{
+    path: '/fashionpost',
+    name: 'fashionpost',
+    component: FashionPostView
+  }
 ]
 
 const router = createRouter({
