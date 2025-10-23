@@ -23,6 +23,7 @@ const login = async () => {
 
     console.log(data)
     const res = await axios.post("/api/member-service/member/memberlogin", data);
+    console.log(res)
     
     if(res.data != "존재하지 않는 회원" && res.data != "비밀번호 불일치"){
       const token = res.data;
