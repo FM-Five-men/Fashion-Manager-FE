@@ -29,12 +29,12 @@
         </router-link>
 
         <div v-if="isLoggedIn" style="display: flex; align-items: center; gap: 8px;">
-           <router-link to="/mypage">
+          <router-link to="/mypage">
             <div style="width: 32px; height: 32px; overflow: hidden; border-radius: 50%; justify-content: flex-start; align-items: flex-start; display: inline-flex">
               <img style="width: 100%; height: 100%; object-fit: cover;" :src="userProfilePic" alt="Profile" />
             </div>
           </router-link>
-           <button @click="logout" style="padding: 1px 14px; background: #B1B1B1; border-radius: 8px; border:none; cursor: pointer;">
+          <button @click="logout" style="padding: 1px 14px; background: #B1B1B1; border-radius: 8px; border:none; cursor: pointer;">
             <div style="color: white; font-size: 12px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">로그아웃</div>
           </button>
         </div>
