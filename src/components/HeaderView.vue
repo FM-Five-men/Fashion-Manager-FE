@@ -2,10 +2,9 @@
   <div style="width: 100%; height: 100%; padding-right: 22px; background: rgba(242.99, 242.99, 242.99, 0.80); border-bottom: 0.67px rgba(0, 0, 0, 0.10) solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
     <div style="align-self: stretch; height: 64px; padding-left: 16px; padding-right: 16px; justify-content: space-between; align-items: center; display: inline-flex">
 
-      <div style="/* width: 343px; */ height: 32px; justify-content: flex-start; align-items: center; gap: 32px; display: flex">
-        <div style="/* width: 189px; */ height: 32px; justify-content: flex-start; align-items: center; gap: 8px; display: flex">
-          <router-link to="/main">
-            <img style="width: 125px; height: 52px; display: block;" :src="logoUrl" alt="Logo" />
+      <div style="height: 32px; justify-content: flex-start; align-items: center; gap: 32px; display: flex">
+        <div style="height: 32px; justify-content: flex-start; align-items: center; gap: 8px; display: flex">
+          <router-link to="/"> <img style="width: 125px; height: 52px; display: block;" :src="logoUrl" alt="Logo" />
           </router-link>
         </div>
         <div style="flex: 1 1 0; height: 20px; justify-content: flex-start; align-items: center; gap: 24px; display: flex">
@@ -49,71 +48,51 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// 로고 이미지 URL
-const logoUrl = ref('/images/logo.png');
-const userProfilePic = ref('/images/default_avatar.png');
-const notificationIcon = ref('/images/notification.png');
+// 이미지 경로를 public/images 기준으로 수정
+const logoUrl = ref('/images/logo.jpg'); // 로고 이미지 경로 수정
+const userProfilePic = ref('/images/default_avatar.png'); // 기본 프로필 이미지 (필요시 수정)
+const notificationIcon = ref('/images/mail.jpg'); // 알림(메일) 아이콘 경로 수정
 
-// 네비게이션 메뉴 항목 배열 (이름과 경로 포함)
+// 네비게이션 경로 확인 및 수정 (라우터 설정과 일치해야 함)
 const navItems = ref([
-  { name: '패션', path: '/fashionpost' },     // 수정됨
-  { name: '후기', path: '/reviewpost' },     // 수정됨
-  { name: '멘토링', path: '/mentoringpost' }, // 수정됨
-  { name: '인플루언서', path: '/influencerpage' } // 수정됨
+  { name: '패션', path: '/fashionboardview' }, // 라우터 경로 확인
+  { name: '후기', path: '/reviewboardview' },     // 라우터 경로 확인
+  { name: '멘토링', path: '/mentoringboardview' }, // 라우터 경로 확인
+  { name: '인플루언서', path: '/influencerpage' } // 라우터 경로 확인
 ]);
 
 // --- 실제 구현 시 수정 필요 ---
-const isLoggedIn = ref(false);
-const newNotification = ref(true);
+const isLoggedIn = ref(false); // 기본값 false
+const newNotification = ref(true); // 새 알림 표시 여부
 // --------------------------
 
-// 검색 기능 (예시)
-const search = () => {
-  console.log("검색 기능 실행");
-  // 검색 로직 구현
-};
+const search = () => { console.log("검색 기능 실행"); };
 
-// 로그아웃 기능
 const logout = () => {
   console.log("로그아웃 실행");
-  // sessionStorage 또는 localStorage에서 토큰 제거
   sessionStorage.removeItem('token');
-  // localStorage.removeItem('token');
-
-  // 로그인 상태 업데이트 (필요시 상태 관리 라이브러리 사용)
-  isLoggedIn.value = false; // 간단 예시
-
-  // 로그인 페이지('/')로 이동
-  router.push('/');
+  isLoggedIn.value = false;
+  router.push('/'); // 로그인 페이지로 이동
 };
 
-// 컴포넌트 마운트 시 로그인 상태 확인 (예시)
-import { onMounted } from 'vue';
 onMounted(() => {
+  // 페이지 로드 시 로그인 상태 확인
   const token = sessionStorage.getItem('token');
-  // const token = localStorage.getItem('token');
   if (token) {
     isLoggedIn.value = true;
-    // 사용자 정보나 알림 상태 등 추가 API 호출 가능
+    // 사용자 정보 API 호출하여 userProfilePic 업데이트 등
   } else {
     isLoggedIn.value = false;
   }
 });
-
 </script>
 
 <style scoped>
-img {
-  user-select: none;
-  -webkit-user-drag: none;
-}
-a {
-  text-decoration: none;
-  color: inherit;
-}
+img { user-select: none; -webkit-user-drag: none; }
+a { text-decoration: none; color: inherit; }
 </style>
