@@ -16,6 +16,7 @@ import RegistReviewPostView from '../components/post/review/RegistReviewPostView
 import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
 import FashionPostView from '../components/post/fashion/FashionPostView.vue';
+import RegistFashionPostView from '../components/post/fashion/RegistFashionPostView.vue';
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -86,6 +87,10 @@ const routes = [
     path: '/fashionpost',
     name: 'fashionpost',
     component: FashionPostView
+  }, {
+    path: '/registfashionpost',
+    name: 'registfashionpost',
+    component: RegistFashionPostView
   }
 ]
 
