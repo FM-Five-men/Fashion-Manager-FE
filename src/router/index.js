@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../components/LoginView.vue';
+import LoginView from '../components/management/LoginView.vue';
 import MainView from '../components/MainView.vue';
-import RegisterMemberView from '../components/RegisterMemberView.vue';
-import FindIdView from '../components/FindIdView.vue';
-import FindPasswordView from '../components/FindPasswordView.vue';
-import AdminLoginView from '../components/AdminLoginView.vue';
-import ChangePasswordView from '../components/ChangePasswordView.vue';
+import RegisterMemberView from '../components/management/RegisterMemberView.vue';
+import FindIdView from '../components/management/FindIdView.vue';
+import FindPasswordView from '../components/management/FindPasswordView.vue';
+import AdminLoginView from '../components/management/AdminLoginView.vue';
+import ChangePasswordView from '../components/management/ChangePasswordView.vue';
 
 // Imports from HEAD branch
 import MentoringBoardView from '../components/post/mentoring/MentoringBoardView.vue';
@@ -22,8 +22,8 @@ import FashionPostView from '../components/post/fashion/FashionPostView.vue';
 // import InfluencerPageView from '../components/InfluencerPageView.vue'; // 예시
 // import MessageView from '../components/MessageView.vue'; // 예시
 // import MyPageView from '../components/MyPageView.vue'; // 예시
-import RegisterAdminView from '../components/RegisterAdminView.vue';
-import MessageView from '../components/MessageView.vue';
+import RegisterAdminView from '../components/management/RegisterAdminView.vue';
+import MessageView from '../components/message/MessageView.vue';
 
 
 const routes = [

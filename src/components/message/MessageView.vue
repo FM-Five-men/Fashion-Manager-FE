@@ -1,5 +1,6 @@
 <template>
   <div class="message-container">
+    <HeaderView/>
     <!-- 헤더 -->
     <div class="header">
       <div class="header-left">
@@ -7,7 +8,7 @@
         <span class="title">쪽지함</span>
       </div>
       <div class="header-right">
-        <div class="unread">2개의 읽지 않은 쪽지</div>
+        <div class="unread">{{ unreadCount }}개의 읽지 않은 쪽지</div>
         <button class="write-btn">쪽지 쓰기</button>
       </div>
     </div>
@@ -40,19 +41,19 @@
     <div class="message-list">
       <div
         v-for="msg in filteredMessages"
-        :key="msg.id"
+        :key="msg.num"
         class="message-item"
-        :class="{ unread: !msg.isRead }"
+        :class="{ unread: !msg.messageConfirmed }"
       >
-        <div class="profile-circle">{{ msg.senderInitial }}</div>
+        <div class="profile-circle"></div>
         <div class="message-content">
           <div class="message-header">
-            <div class="sender">{{ msg.sender }}</div>
+            <div class="sender">{{ msg.senderId }}</div>
             <div class="right-info">
                 <div class="date">{{ msg.date }}</div>
                 <div class="readunread">
                     <img
-                    v-if="msg.isRead"
+                    v-if="msg.messageConfirmed"
                     src="/images/icons/readmessage.svg"
                     alt="읽음"
                     />
@@ -64,23 +65,32 @@
                 </div>
             </div>
           </div>
-          <div class="subject">{{ msg.subject }}</div>
-          <div class="preview">{{ msg.preview }}</div>
+          <div class="subject">{{ msg.title }}</div>
         </div>
-        <button class="delete-btn"></button>
+        <button class="delete-btn" @click="messageDelete(msg.num)"></button>
       </div>
     </div>
+    <FooterView/>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import HeaderView from '../HeaderView.vue';
+import FooterView from '../FooterView.vue';
+
+import { ref, computed, onMounted, watch } from "vue";
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const token = sessionStorage.getItem('token');
+let memberId = ref("");
+let memberEmail = ref("");
+let memberState = ref("");
+
+// 더미 데이터
+const messages = ref([]);
 
 onMounted(async () => {
   axios.get('/api/member-service/member/auth',{
@@ -89,68 +99,90 @@ onMounted(async () => {
     }
   }).then((res) => {
     console.log(res)
-    if(res.data != "올바른 토큰"){
-        router.push('/')
+    if(res.data.memberId == null){
+      router.push('/')
+    }else{
+      memberId.value = res.data.memberId
+      memberEmail.value = res.data.memberEmail
+      memberState.value = res.data.memberState
     }
   })
+
+  watch(memberId, (current, old) => {
+    /* 보낸사람 기준 메시지 */
+    const data = new FormData();
+    data.append("senderId", memberId.value);
+    console.log("보낸사람: ",memberId.value);
+
+    axios.post("/api/manager-service/message/selectsendermessage", data, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(
+      (res) => {
+        res.data.forEach(item => {
+          console.log(item);
+          item.type = "sent";        
+          messages.value.push(item); 
+        });
+      }
+    )
+    
+    /* 받는사람 기준 메시지 */
+    const data2 = new FormData();
+    data2.append("receiverId", memberId.value);
+    console.log("받는사람: ",memberId.value);
+
+    axios.post("/api/manager-service/message/selectreceivermessage", data2, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(
+      (res) => {
+        res.data.forEach(item => {
+          console.log(item);    
+          item.type = "received";    
+          messages.value.push(item); 
+        });
+      }
+    )
+  })
+  
 })
 
 const activeTab = ref("received");
 const searchQuery = ref("");
 
 
-// 더미 데이터
-const messages = ref([
-  {
-    id: 1,
-    sender: "김철수",
-    senderInitial: "김",
-    date: "2025-10-19 09:30",
-    subject: "회의 일정 변경 안내",
-    preview: "안녕하세요. 다음 주 월요일 회의 일정이 변경되었습니다...",
-    isRead: false,
-    type: "received",
-  },
-  {
-    id: 2,
-    sender: "박영희",
-    senderInitial: "박",
-    date: "2025-10-19 08:15",
-    subject: "프로젝트 진행 상황 공유",
-    preview: "지난주 논의했던 프로젝트 관련 진행 상황을 공유드립니다...",
-    isRead: false,
-    type: "received",
-  },
-  {
-    id: 3,
-    sender: "이민준",
-    senderInitial: "이",
-    date: "2025-10-18 11:45",
-    subject: "점심 약속",
-    preview: "오늘 점심 같이 드실래요? 새로운 식당 가보려고 해요...",
-    isRead: true,
-    type: "received",
-  },
-  {
-    id: 4,
-    sender: "정수진",
-    senderInitial: "정",
-    date: "2025-10-18 16:20",
-    subject: "문서 검토 요청",
-    preview: "첨부한 문서 검토 부탁드립니다. 내일까지 피드백 주시면 감사하겠습니다.",
-    isRead: true,
-    type: "sent",
-  },
-]);
-
 // 필터링 (탭 + 검색어)
 const filteredMessages = computed(() =>
   messages.value.filter(
     (msg) =>
       msg.type === activeTab.value &&
-      msg.subject.toLowerCase().includes(searchQuery.value.toLowerCase())
+      msg.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
+
+const unreadCount = computed(() => {
+  return messages.value.filter(msg => !msg.messageConfirmed).length;
+});
+
+const messageDelete = async (num) => {
+  console.log("삭제할 메시지 key:", num);
+  
+  const data = new FormData();
+  data.append("messageNum", num);
+  
+  axios.post('/api/manager-service/message/deletemessage',data,{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(
+    (res) => {
+      console.log(res)
+    }
+  )
+};
 </script>
 
 <style scoped>
