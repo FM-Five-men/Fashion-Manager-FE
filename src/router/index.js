@@ -36,8 +36,8 @@ const routes = [
 
   // Routes primarily from HEAD branch (more specific)
   {
-    path: '/mentoringboard',
-    name: 'mentoringboard',
+    path: '/mentoringboardview',
+    name: 'mentoringboardview',
     component: MentoringBoardView
   }, {
     path: '/registmentoringpost',
@@ -49,8 +49,8 @@ const routes = [
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
-    path: '/reviewboard',
-    name: 'reviewboard',
+    path: '/reviewboardview',
+    name: 'reviewboardview',
     component: ReviewBoardView
   }, {
     path: '/registreviewpost',
