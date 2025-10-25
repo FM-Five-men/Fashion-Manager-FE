@@ -17,7 +17,9 @@ import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
 import FashionPostView from '../components/post/fashion/FashionPostView.vue';
 
-import InfluencerPageView from '../components/influencer/InfluencerPageView.vue';
+// influencerPage
+import InfluencerPageView from '../components/influencer/01_Page/InfluencerPageView.vue';  // 인플루언서 리스트 페이지
+import InfluencerProfileView from '../components/influencer/01_Page/InfluencerProfileView.vue';  // 인플루언서 상세 페이지
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -67,12 +69,20 @@ const routes = [
     component: FashionBoardView
   },
 
-  // Routes primarily from features branch
+  // influencerPage 
   {
     path: '/influencerpage',
     name: 'influencerpage',
     component: InfluencerPageView
   },{
+    path: '/influencerpage/:num',
+    name: 'influencerpage-profile',
+    component: InfluencerProfileView,
+    props: true, 
+  },
+  
+  
+  {
     path: '/message',
     name: 'message',
     // component: MessageView // 실제 컴포넌트로 연결 필요
