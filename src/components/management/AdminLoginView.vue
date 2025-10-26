@@ -1,3 +1,64 @@
+<script setup>
+import { ref } from "vue";
+import axios from "axios";
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const activeTab = ref("login");
+
+const showModal = ref(false);
+
+// 로그인 폼 데이터
+const id = ref("");
+const password = ref("");
+
+// 로그인 함수
+const login = async () => {
+  try {
+    
+    const data = new FormData();
+    data.append("adminId", id.value);
+    data.append("adminPwd", password.value);
+
+    console.log(data)
+    await axios.post("/api/member-service/member/adminlogin", data).then(
+      (response) => {
+        console.log(response);
+
+        if(response.data != "존재하지 않는 관리자 회원" && response.data != "비밀번호 불일치"){
+          const token = response.data;
+          sessionStorage.setItem("token", token);
+          if(token){
+            router.push('/main')
+          }
+        }else{
+          showModal.value = true;
+        }
+      }
+    )
+  } catch (err) {
+    console.error("로그인 에러:", err);
+  }
+};
+
+const registerAdmin = () => {
+  router.push('/registeradmin')
+}
+
+const findId = () => {
+  router.push('/findid')
+}
+
+const findPassword = () => {
+    router.push('/findpassword')
+}
+
+const closeModal = () => {
+  showModal.value = false;
+};
+</script>
+
 <template>
   <div class="screen">
     <div class="login-form">
@@ -35,10 +96,6 @@
 
           <div class="container-7">
             <div class="div-2">
-              <div class="vector-wrapper">
-                <img class="img" alt="Vector" :src="image" />
-              </div>
-
               <div class="text">
                 <div class="text-wrapper-5">
                   256-bit SSL Encrypted Connection
@@ -80,9 +137,8 @@
               <input
                 class="input"
                 type="text"
+                v-model="id"
               />
-
-              
             </div>
           </div>
 
@@ -92,7 +148,11 @@
             </div>
 
             <div class="container-13">
-              <input class="input-2"  type="text" />
+              <input 
+              class="input-2"  
+              type="password"
+              v-model="password" 
+              />
             </div>
           </div>
 
@@ -100,7 +160,7 @@
 
           </div>
 
-          <button class="button-3">
+          <button class="button-3" @click="login">
 
             <div class="text-wrapper-13">관리자 로그인</div>
           </button>
@@ -108,7 +168,7 @@
 
         <div class="container-16">
           <div class="div-3">
-            <button class="button-4">
+            <button class="button-4" @click="findId">
               <div class="text-wrapper-14">아이디 찾기</div>
             </button>
 
@@ -116,7 +176,7 @@
               <div class="text-wrapper-15">•</div>
             </div>
 
-            <button class="button-5">
+            <button class="button-5" @click="registerAdmin">
               <div class="text-wrapper-16">회원 가입</div>
             </button>
 
@@ -124,7 +184,7 @@
               <div class="text-wrapper-15">•</div>
             </div>
 
-            <button class="button-6">
+            <button class="button-6" @click="findPassword">
               <div class="text-wrapper-17">비밀번호 찾기</div>
             </button>
           </div>
@@ -137,12 +197,17 @@
         </div>
       </div>
     </div>
+
+    <!-- ✅ 모달 창 -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <h3>메시지</h3>
+        <p>로그인에 실패했습니다.</p>
+        <button @click="closeModal" class="close-btn">확인</button>
+      </div>
+    </div>
   </div>
 </template>
-
-<script>
-
-</script>
 
 <style scoped>
 .screen {
@@ -814,6 +879,7 @@
   height: 48px;
   position: relative;
   width: 100%;
+  cursor: pointer;
 }
 
 .screen .icon-4 {
@@ -861,6 +927,7 @@
   position: absolute;
   top: 0;
   width: 75px;
+  cursor: pointer;
 }
 
 .screen .text-wrapper-14 {
@@ -907,6 +974,7 @@
   position: absolute;
   top: 0;
   width: 61px;
+  cursor: pointer;
 }
 
 .screen .text-wrapper-16 {
@@ -940,6 +1008,7 @@
   position: absolute;
   top: 0;
   width: 89px;
+  cursor: pointer;
 }
 
 .screen .text-wrapper-17 {
@@ -976,5 +1045,65 @@
   margin-top: -1.00px;
   position: relative;
   text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 0.25s ease-in-out;
+  width: 320px;
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #000;
+}
+
+.modal p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  background-color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
