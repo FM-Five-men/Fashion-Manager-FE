@@ -24,6 +24,9 @@ import FashionPostView from '../components/post/fashion/FashionPostView.vue';
 // import MyPageView from '../components/MyPageView.vue'; // 예시
 import RegisterAdminView from '../components/management/RegisterAdminView.vue';
 import MessageView from '../components/message/MessageView.vue';
+import AdminView from '../components/management/AdminView.vue';
+import ReportListView from '../components/report/ReportListView.vue';
+import MemberListView from '../components/management/MemberListView.vue';
 
 
 const routes = [
@@ -125,6 +128,18 @@ const routes = [
     path: '/message',
     name: 'message',
     component: MessageView
+  },{
+    path: '/admin',
+    name: 'admin',
+    component: AdminView
+  },{
+    path: '/reportlist',
+    name: 'reportlist',
+    component: ReportListView
+  },{
+    path: '/memberlist',
+    name: 'memberlist',
+    component: MemberListView
   }
 ]
 

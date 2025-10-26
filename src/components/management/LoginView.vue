@@ -335,7 +335,7 @@ const closeModal = () => {
   gap: 32px;
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  height: 931px;
+  height: 717px;
   justify-self: end;
   padding: 215.33px 122px 0px;
   position: relative;

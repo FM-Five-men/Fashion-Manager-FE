@@ -1,6 +1,6 @@
 <template>
+  <HeaderView/>
   <div class="message-container">
-    <HeaderView/>
     <!-- 헤더 -->
     <div class="header">
       <div class="header-left">
@@ -8,8 +8,8 @@
         <span class="title">쪽지함</span>
       </div>
       <div class="header-right">
-        <div class="unread">{{ unreadCount }}개의 읽지 않은 쪽지</div>
-        <button class="write-btn">쪽지 쓰기</button>
+        <div v-if="unreadCount != 0" class="unread">{{ unreadCount }}개의 읽지 않은 쪽지</div>
+        <button class="write-btn" @click="writeMessage">쪽지 쓰기</button>
       </div>
     </div>
 
@@ -44,6 +44,7 @@
         :key="msg.num"
         class="message-item"
         :class="{ unread: !msg.messageConfirmed }"
+        @click="openReadModal(msg)"
       >
         <div class="profile-circle"></div>
         <div class="message-content">
@@ -67,11 +68,104 @@
           </div>
           <div class="subject">{{ msg.title }}</div>
         </div>
-        <button class="delete-btn" @click="messageDelete(msg.num)"></button>
+        <button class="delete-btn" @click.stop="messageDelete(msg.num)"></button>
       </div>
     </div>
-    <FooterView/>
+
+    <!-- ✅ 읽기용 모달 -->
+    <div v-if="showReadModal" class="modal-overlay" @click.self="closeReadModal">
+      <div class="message-modal">
+        <div class="modal">
+          <div class="message-header">
+            <div class="message-header-left">
+              <div class="icon"></div>
+              <div class="message-title">쪽지 내용</div>
+            </div>
+          </div>
+
+          <div class="message-form">
+            <div class="form-group">
+              <label class="modal-label">보낸 사람</label>
+              <div>{{ selectedMessage.senderId }}</div>
+            </div>
+
+            <div class="form-group">
+              <label class="modal-label">제목</label>
+              <div>{{ selectedMessage.title }}</div>
+            </div>
+
+            <div class="form-group">
+              <label class="modal-label">내용</label>
+              <textarea readonly>{{ selectedMessage.content }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="modal-label">날짜</label>
+              <div>{{ selectedMessage.date }}</div>
+            </div>
+          </div>
+
+          <div class="message-footer">
+            <button class="cancel-btn" @click="closeReadModal">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ✅ 모달 창 -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="message-modal">
+        <div class="modal">
+          <!-- 상단 헤더 -->
+          <div class="message-header">
+            <div class="message-header-left">
+              <div class="icon"></div>
+              <div class="message-title">쪽지 쓰기</div>
+            </div>
+          </div>
+
+          <!-- 입력 폼 -->
+          <div class="message-form">
+            <div class="form-group">
+              <label class="modal-label">받는 사람</label>
+              <input type="text" placeholder="받는 사람 이름을 입력하세요" v-model="messageReceiver"/>
+            </div>
+
+            <div class="form-group">
+              <label class="modal-label">제목</label>
+              <input type="text" placeholder="제목을 입력하세요" v-model="messageTitle"/>
+            </div>
+
+            <!-- ✅ 쪽지 카테고리 드롭다운 추가 -->
+            <div class="form-group">
+              <label class="modal-label">쪽지 카테고리</label>
+              <select v-model="messageCategory" class="category-select">
+                <option value="1">요청사항</option>
+                <option value="2">조언</option>
+                <option value="3">일반</option>
+                <option value="4">답변</option>
+                <option value="5">문의</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="modal-label">내용</label>
+              <textarea placeholder="내용을 입력하세요" v-model="messageContent"></textarea>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div class="message-footer">
+            <button class="cancel-btn" @click="closeModal">취소</button>
+            <button class="send-btn" @click="sendMessage">보내기</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  <FooterView/>
 </template>
 
 <script setup>
@@ -89,7 +183,15 @@ let memberId = ref("");
 let memberEmail = ref("");
 let memberState = ref("");
 
-// 더미 데이터
+const messageReceiver = ref("")
+const messageTitle = ref("")
+const messageCategory = ref(3)
+const messageContent = ref("")
+
+const showModal = ref(false);
+const showReadModal = ref(false);   
+const selectedMessage = ref({});
+
 const messages = ref([]);
 
 onMounted(async () => {
@@ -158,14 +260,37 @@ const searchQuery = ref("");
 const filteredMessages = computed(() =>
   messages.value.filter(
     (msg) =>
-      msg.type === activeTab.value &&
-      msg.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+      (msg.type === activeTab.value &&
+      msg.title.toLowerCase().includes(searchQuery.value.toLowerCase())) || 
+      (msg.type === activeTab.value &&
+      msg.senderId.toLowerCase().includes(searchQuery.value.toLowerCase()))
   )
 );
 
 const unreadCount = computed(() => {
   return messages.value.filter(msg => !msg.messageConfirmed).length;
 });
+
+const openReadModal = (msg) => {
+  selectedMessage.value = msg;
+  showReadModal.value = true;
+
+  // 읽음 처리 API 호출 예시
+  if (!msg.messageConfirmed) {
+    const data = new FormData();
+    data.append("messageNum", msg.num);
+    axios.post("/api/manager-service/message/updatemessageconfirm", data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    msg.messageConfirmed = true;
+  }
+};
+
+// ✅ 읽기 모달 닫기
+const closeReadModal = () => {
+  showReadModal.value = false;
+  selectedMessage.value = {};
+};
 
 const messageDelete = async (num) => {
   console.log("삭제할 메시지 key:", num);
@@ -180,9 +305,39 @@ const messageDelete = async (num) => {
     }).then(
     (res) => {
       console.log(res)
+      messages.value = messages.value.filter(msg => msg.num !== num);
     }
   )
 };
+
+const writeMessage = () => {
+  showModal.value = true;
+}
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const sendMessage = async () => {
+  const data = new FormData();
+  data.append("messageReceiver",messageReceiver.value);
+  data.append("messageSender", memberId.value);
+  data.append("messageTitle", messageTitle.value);
+  data.append("messageCategory", messageCategory.value);
+  data.append("messageContent", messageContent.value);
+
+  await axios.post('/api/manager-service/message/insertmessage',data,{
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }).then(
+    (res) => {
+      console.log(res);
+      showModal.value = false
+    }
+  )
+  
+}
 </script>
 
 <style scoped>
@@ -369,5 +524,206 @@ const messageDelete = async (num) => {
 }
 .delete-btn:hover {
   color: #d4183d;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 0.25s ease-in-out;
+  width: 440px;
+  height: 450px;
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #000;
+}
+
+.modal p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  background-color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+
+
+
+.message-modal {
+  width: 512px;
+  height: 500px;
+  background: white;
+  box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  position: relative;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Header */
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.close-btn {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  border-radius: 2px;
+  border: 1.5px solid #0a0a0a;
+  cursor: pointer;
+}
+
+/* Form */
+.message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-size: 14px;
+  color: #0a0a0a;
+}
+
+input,
+textarea {
+  background: #f3f3f5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #717182;
+  outline: none;
+  resize: none;
+}
+
+textarea {
+  height: 64px;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-btn {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.count {
+  font-size: 14px;
+  color: #6a7282;
+}
+
+/* Footer */
+.message-footer {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  padding: 20px;
+}
+
+.cancel-btn {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.send-btn {
+  background: #030213;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  cursor: pointer;
+}
+
+.modal-label {
+  text-align: left;
+}
+
+.category-select {
+  background: #f3f3f5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #717182;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
 }
 </style>
