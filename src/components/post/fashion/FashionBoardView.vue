@@ -203,6 +203,7 @@ const totalPages = ref(1)
 const pageMaker  = ref(null) // 서버 제공 값 전체 보관(선택)
 
 
+
 const goWrite = () => {
   router.push({name: 'registfashionpost'})
 }
@@ -252,7 +253,10 @@ const fetchPosts = async () => {
     }
 
     const { data } = await axios.get('/api/manager-service/posts/fashion', { params })
+      
     posts.value = Array.isArray(data?.list) ? data.list : []
+    
+    
 
     // 페이지 메타
     pageMaker.value = data?.pageMaker ?? null
