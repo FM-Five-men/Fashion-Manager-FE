@@ -19,18 +19,18 @@ const check = ref(false);
 const registerMember = async () => {
     try{
         var data = {
-            userId: signupId.value,
-            userPwd: signupPassword.value,
-            userEmail: signupEmail.value,
-            userName: signupName.value,
-            userAge: signupAge.value,
-            userGender: signupGender.value,
-            userMessageAllow: 1,
+            memberId: signupId.value,
+            memberPwd: signupPassword.value,
+            memberEmail: signupEmail.value,
+            memberName: signupName.value,
+            memberAge: signupAge.value,
+            memberGender: signupGender.value,
+            memberMessageAllow: 1,
             ReportCount: 0,
             DailyReportCount: 0
         }
 
-        const res = await axios.post("/api/member-service/member/regist",data);
+        const res = await axios.post("/api/member-service/member/insertadmin",data);
         console.log(res.status)
         if(res.status == 200){
             check.value = true;
@@ -49,7 +49,7 @@ const registerMember = async () => {
 
 
 const login = () => {
-    router.push('/')
+    router.push('/adminlogin')
 }
 
 const closeModal = () => {
@@ -62,7 +62,7 @@ const closeModal = () => {
   <div class="container">
     <!-- 왼쪽 패널 -->
     <div class="left-panel">
-      <img class="background-img" src="/images/login-background.jpg" alt="배경 이미지" />
+      <img class="background-img" src="/images/banner.jpg" alt="배경 이미지" />
       <div class="overlay"></div>
 
       <div class="text-box">
@@ -77,8 +77,8 @@ const closeModal = () => {
     <!-- 오른쪽 회원가입 폼 -->
     <div class="signup-wrapper">
       <div class="title-wrapper">
-        <div class="main-title">회원가입</div>
-        <div class="subtitle">새로운 계정을 만들어보세요</div>
+        <div class="main-title">관리자 회원가입</div>
+        <div class="subtitle">새로운 관리자가 되어 보세요.</div>
       </div>
 
       <div class="form-wrapper">

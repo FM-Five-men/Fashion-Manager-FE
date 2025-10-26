@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../components/LoginView.vue';
+import LoginView from '../components/management/LoginView.vue';
 import MainView from '../components/MainView.vue';
-import RegisterMemberView from '../components/RegisterMemberView.vue';
-import FindIdView from '../components/FindIdView.vue';
-import FindPasswordView from '../components/FindPasswordView.vue';
-import AdminLoginView from '../components/AdminLoginView.vue';
-import ChangePasswordView from '../components/ChangePasswordView.vue';
+import RegisterMemberView from '../components/management/RegisterMemberView.vue';
+import FindIdView from '../components/management/FindIdView.vue';
+import FindPasswordView from '../components/management/FindPasswordView.vue';
+import AdminLoginView from '../components/management/AdminLoginView.vue';
+import ChangePasswordView from '../components/management/ChangePasswordView.vue';
 
 // Imports from HEAD branch
 import MentoringBoardView from '../components/post/mentoring/MentoringBoardView.vue';
@@ -23,6 +23,12 @@ import InfluencerPageView from '../components/influencer/InfluencerPageView.vue'
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
 // import MessageView from '../components/MessageView.vue'; // 예시
 // import MyPageView from '../components/MyPageView.vue'; // 예시
+import RegisterAdminView from '../components/management/RegisterAdminView.vue';
+import MessageView from '../components/message/MessageView.vue';
+import AdminView from '../components/management/AdminView.vue';
+import ReportListView from '../components/report/ReportListView.vue';
+import MemberListView from '../components/management/MemberListView.vue';
+
 
 const routes = [
   { path: '/', name: 'login', component: LoginView },
@@ -87,6 +93,54 @@ const routes = [
     path: '/fashionpost',
     name: 'fashionpost',
     component: FashionPostView
+  },{
+    path: '/',
+    name: 'login',
+    component: LoginView
+  },{
+    path: '/main',
+    name: 'main',
+    component: MainView
+  },{
+    path: '/registermember',
+    name: 'registermember',
+    component: RegisterMemberView
+  },{
+    path: '/findid',
+    name: 'findid',
+    component: FindIdView
+  },{
+    path: '/findpassword',
+    name: 'findpassword',
+    component: FindPasswordView
+  },{
+     path: '/adminlogin',
+     name: 'adminlogin',
+     component: AdminLoginView
+  },{
+    path: '/changepassword',
+    name: 'changepassword',
+    component: ChangePasswordView
+  },{
+    path: '/registeradmin',
+    name: 'registeradmin',
+    component: RegisterAdminView
+  },{
+    path: '/message',
+    name: 'message',
+    component: MessageView
+  },{
+    path: '/admin',
+    name: 'admin',
+    component: AdminView
+  },{
+    path: '/reportlist',
+    name: 'reportlist',
+    component: ReportListView
+  },{
+    path: '/memberlist',
+    name: 'memberlist',
+    component: MemberListView
   }
 ]
 
