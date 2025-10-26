@@ -32,12 +32,32 @@
           <label class="label">해시태그</label>
 
           <!-- chips -->
-          <div class="chips" v-if="form.hashtags.length">
-            <span v-for="(tag, i) in form.hashtags" :key="tag + i" class="chip">
-              #{{ tag }}
-              <button type="button" class="chip-x" @click="removeHashtag(i)">×</button>
-            </span>
-          </div>
+          <div class="chips" v-if="selectedHashtagIds.length">
+          <span
+            v-for="hid in selectedHashtagIds"
+            :key="hid"
+            class="chip"
+          >
+            {{ hashtagName(hid) }}
+            <button type="button" class="chip-x" @click="removeHashtag(hid)">×</button>
+          </span>
+        </div>
+
+        <!-- 해시태그 모달 내부 -->
+        <div v-else-if="!hashtagLoading" class="tag-list">
+          <label
+            v-for="opt in hashtagOptions"
+            :key="opt.id"
+            class="tag-option"
+          >
+            <input
+              type="checkbox"
+              :value="opt.id"
+              v-model="modalChecked"
+            />
+            <span>{{ opt.name }}</span>
+          </label>
+        </div>
 
           <!-- 선택 버튼 -->
           <div class="hashtag-box">
@@ -47,29 +67,54 @@
           </div>
         </div>
 
-        <!-- 이미지 업로드 (드롭존 안에 썸네일이 들어감) -->
+        <!-- ✅ 게시글 이미지 등록 -->
         <div class="form-row">
-          <label class="label">이미지</label>
+          <label class="label">게시글 이미지 등록</label>
 
           <div
             class="dropzone"
             @dragover.prevent
-            @drop.prevent="onDrop"
-            @click="() => fileEl?.click()"
+            @drop.prevent="onDropPost"
+            @click="() => postFileEl?.click()"
           >
-            <input ref="fileEl" type="file" accept="image/*" multiple hidden @change="onFileChange" />
+            <input ref="postFileEl" type="file" accept="image/*" multiple hidden @change="onFileChangePost" />
 
-            <!-- 안내문구 (이미지가 없을 때만 표시) -->
-            <div v-if="!previews.length" class="dz-empty">
+            <div v-if="!postPreviews.length" class="dz-empty">
               <svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 16V8m0 0l-3 3m3-3l3 3M6 20h12a2 2 0 0 0 2-2V9l-4-4H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2Z"/></svg>
               <p>클릭하거나 이미지를 끌어다 놓으세요</p>
             </div>
 
-            <!-- 썸네일 그리드 -->
             <div v-else class="dz-grid">
-              <div v-for="(src, i) in previews" :key="i" class="thumb">
-                <img :src="src" alt="preview" />
-                <button type="button" class="thumb-x" @click.stop="removeImage(i)">×</button>
+              <div v-for="(src, i) in postPreviews" :key="i" class="thumb">
+                <img :src="src" alt="post preview" />
+                <button type="button" class="thumb-x" @click.stop="removePostImage(i)">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ 아이템 이미지 등록 -->
+        <div class="form-row">
+          <label class="label">아이템 이미지 등록</label>
+
+          <div
+            class="dropzone"
+            @dragover.prevent
+            @drop.prevent="onDropItem"
+            @click="() => itemFileEl?.click()"
+          >
+            <input ref="itemFileEl" type="file" accept="image/*" multiple hidden @change="onFileChangeItem" />
+
+            <div v-if="!itemPreviews.length" class="dz-empty">
+              <svg width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 16V8m0 0l-3 3m3-3l3 3M6 20h12a2 2 0 0 0 2-2V9l-4-4H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2Z"/></svg>
+              <p>클릭하거나 이미지를 끌어다 놓으세요</p>
+            </div>
+
+
+            <div v-else class="dz-grid">
+              <div v-for="(src, i) in itemPreviews" :key="i" class="thumb">
+                <img :src="src" alt="item preview" />
+                <button type="button" class="thumb-x" @click.stop="removeItemImage(i)">×</button>
               </div>
             </div>
           </div>
@@ -125,7 +170,7 @@
 
     <FooterView />
 
-    <!-- 🔶 해시태그 모달 -->
+    <!-- 모달 -->
     <div v-if="showHashtagModal" class="modal-backdrop" @click.self="closeHashtagModal">
       <div class="modal-card">
         <div class="modal-head">
@@ -137,16 +182,12 @@
 
           <div v-else class="tag-list">
             <label
-              v-for="(tag, idx) in hashtagOptions"
-              :key="idx"
+              v-for="opt in hashtagOptions"
+              :key="opt.id"
               class="tag-option"
             >
-              <input
-                type="checkbox"
-                :value="tag"
-                v-model="selectedHashtags"
-              />
-              <span>#{{ tag }}</span>
+              <input type="checkbox" :value="opt.id" v-model="modalChecked" />
+              <span>{{ opt.name }}</span>
             </label>
           </div>
         </div>
@@ -160,8 +201,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive } from 'vue'
+<script setup>
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import HeaderView from '../../HeaderView.vue';
@@ -174,32 +215,47 @@ const goBoard = () => router.push({ name: 'fashionBoard' })
 /* --------------------------- 폼 상태 --------------------------- */
 const form = reactive({
   title: '',
-  content: '',
-  hashtags: [] as string[],
+  content: '', // nullable
   items: { clothes: '', top: '', bottom: '', shoes: '', accessory: '' },
-  images: [] as File[],
+  images: [],
 })
 
-/* --------------------------- 해시태그(모달) --------------------------- */
+/* --------------------------- 해시태그(번호/이름) --------------------------- */
+// 모달에서 고를 수 있는 옵션 [{ id:number, name:string }]
+const hashtagOptions = ref([])
+const hashtagMap = computed(() => {
+  const m = new Map()
+  hashtagOptions.value.forEach(o => m.set(o.id, o.name))
+  return m
+})
+
+// 실제 선택 결과(번호 배열) — 서버에 그대로 보냄
+const selectedHashtagIds = ref([])
+
+// 모달 상태
 const showHashtagModal = ref(false)
 const hashtagLoading = ref(false)
-const hashtagOptions = ref<string[]>([])
-const selectedHashtags = ref<string[]>([])
+const modalChecked = ref([]) // 모달 내 체크박스 바인딩
 
-// 모달 열기 → 서버에서 목록 조회
+// 이름 헬퍼
+const hashtagName = (id) => hashtagMap.value.get(id) ?? `#${id}`
+
+// 모달 열기 → API 호출하여 옵션 구성
 const openHashtagModal = async () => {
   showHashtagModal.value = true
   hashtagLoading.value = true
+  modalChecked.value = [...selectedHashtagIds.value] // 이미 선택한 것 미리 체크
   try {
-    // 서버 응답: 문자열 배열이거나, 객체 배열일 수 있음(name/hashtag 필드 가정)
-    const { data } = await axios.get('/api/manager-service/hashtag/selecthashtag', { withCredentials: true })
-
-    const arr = Array.isArray(data) ? data : []
-    // 문자열이면 그대로, 객체면 name/hashtag/label/keyword 중 첫 존재값 사용
-    hashtagOptions.value = arr.map((v: any) => {
-      if (typeof v === 'string') return v
-      return v?.name ?? v?.hashtag ?? v?.label ?? v?.keyword ?? ''
-    }).filter(Boolean)
+    const { data } = await axios.get('/api/manager-service/hashtag/selecthashtag')
+    // data: [{hashTagNum, hashTagName}]
+    hashtagOptions.value = Array.isArray(data)
+      ? data
+          .map(x => ({
+            id: Number(x.hashTagNum),
+            name: String(x.hashTagName),
+          }))
+          .filter(o => !Number.isNaN(o.id) && !!o.name)
+      : []
   } catch (e) {
     console.error('해시태그 목록 조회 실패:', e)
     hashtagOptions.value = []
@@ -210,48 +266,122 @@ const openHashtagModal = async () => {
 
 const closeHashtagModal = () => {
   showHashtagModal.value = false
-  selectedHashtags.value = []
+
 }
 
 const confirmHashtags = () => {
-  // 기존 + 신규 중복 제거
-  const set = new Set([...form.hashtags, ...selectedHashtags.value])
-  form.hashtags = Array.from(set)
+  // 중복 제거 병합
+  const set = new Set([...selectedHashtagIds.value, ...modalChecked.value])
+  selectedHashtagIds.value = Array.from(set)
   closeHashtagModal()
 }
 
-const removeHashtag = (i: number) => form.hashtags.splice(i, 1)
+const removeHashtag = (id) => {
+  selectedHashtagIds.value = selectedHashtagIds.value.filter(x => x !== id)
+}
 
-/* --------------------------- 이미지 업로드(드롭존 내부에 표시) --------------------------- */
-const fileEl = ref<HTMLInputElement | null>(null)
-const previews = ref<string[]>([])
+/* ---------------- 이미지 업로드: 게시글/아이템 분리 ---------------- */
+const postFileEl = ref(null)
+const itemFileEl = ref(null)
 
-const appendFiles = (files: File[]) => {
-  files.forEach((f) => {
-    form.images.push(f)
-    previews.value.push(URL.createObjectURL(f))
+const postImages = ref([])   // File[]
+const itemImages = ref([])   // File[]
+
+const postPreviews = ref([]) // string[]
+const itemPreviews = ref([]) // string[]
+
+const appendFiles = (files, which) => {
+  const targetImages = which === 'post' ? postImages : itemImages
+  const targetPrevs  = which === 'post' ? postPreviews : itemPreviews
+  files.forEach(f => {
+    targetImages.value.push(f)
+    targetPrevs.value.push(URL.createObjectURL(f))
   })
 }
-const onFileChange = (e: Event) => {
-  const files = Array.from((e.target as HTMLInputElement).files || [])
-  appendFiles(files)
+
+// 게시글 이미지
+const onFileChangePost = (e) => {
+  const files = Array.from((e.target).files || [])
+  appendFiles(files, 'post')
 }
-const onDrop = (e: DragEvent) => {
+const onDropPost = (e) => {
   const files = Array.from(e.dataTransfer?.files || [])
-  appendFiles(files)
+  appendFiles(files, 'post')
 }
-const removeImage = (i: number) => {
-  form.images.splice(i, 1)
-  URL.revokeObjectURL(previews.value[i])
-  previews.value.splice(i, 1)
+const removePostImage = (i) => {
+  URL.revokeObjectURL(postPreviews.value[i])
+  postImages.value.splice(i, 1)
+  postPreviews.value.splice(i, 1)
 }
 
-/* --------------------------- 제출(임시) --------------------------- */
+// 아이템 이미지
+const onFileChangeItem = (e) => {
+  const files = Array.from((e.target).files || [])
+  appendFiles(files, 'item')
+}
+const onDropItem = (e) => {
+  const files = Array.from(e.dataTransfer?.files || [])
+  appendFiles(files, 'item')
+}
+const removeItemImage = (i) => {
+  URL.revokeObjectURL(itemPreviews.value[i])
+  itemImages.value.splice(i, 1)
+  itemPreviews.value.splice(i, 1)
+}
+
+/* ---------------- 제출: POST /api/manager-service/posts/fashion ---------------- */
 const onSubmit = async () => {
-  if (!form.title || !form.content) return alert('제목과 내용을 입력하세요.')
-  // TODO: FormData 만들어 API에 전송
-  alert('작성 폼 준비 완료! 백엔드 API만 연결하면 저장됩니다.')
-  router.push({ name: 'fashionBoard' })
+  // ✅ 제목만 필수 (내용은 비어도 됨)
+  if (!form.title.trim()) {
+    alert('제목을 입력하세요.')
+    return
+  }
+
+  // ✅ 아이템 최소 1개 입력
+  const itemTexts = [
+    form.items.clothes,
+    form.items.top,
+    form.items.bottom,
+    form.items.shoes,
+    form.items.accessory,
+  ]
+    .map(v => (v || '').trim())
+    .filter(Boolean)
+  if (itemTexts.length === 0) {
+    alert('패션 아이템(의류/상의/하의/신발/악세서리) 중 최소 1개를 입력하세요.')
+    return
+  }
+
+  // TODO: 로그인 사용자에서 memberNum 가져오기
+  const memberNum = 4
+
+  try {
+    const fd = new FormData()
+
+    const payload = {
+      title: form.title.trim(),
+      content: (form.content || '').trim() || null, // nullable
+      memberNum,
+      hashtag: selectedHashtagIds.value,            // 번호 배열
+      items: itemTexts,                              // (숫자 ID가 필요하면 여기서 매핑)
+    }
+    fd.append('payload', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+
+    // ✅ 이미지 전송 분리
+    postImages.value.forEach(f => fd.append('postImages', f))
+    itemImages.value.forEach(f => fd.append('itemImages', f))
+
+    await axios.post('/api/manager-service/posts/fashion', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
+    })
+
+    alert('작성되었습니다.')
+    router.push({ name: 'fashionBoard' })
+  } catch (e) {
+    console.error('게시글 작성 실패:', e)
+    alert('작성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+  }
 }
 </script>
 
