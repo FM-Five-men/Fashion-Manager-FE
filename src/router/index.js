@@ -16,6 +16,7 @@ import RegistReviewPostView from '../components/post/review/RegistReviewPostView
 import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
 import FashionPostView from '../components/post/fashion/FashionPostView.vue';
+import RegistFashionPostView from '../components/post/fashion/RegistFashionPostView.vue';
 
 // influencerPage
 import InfluencerPageView from '../components/influencer/01_Page/InfluencerPageView.vue';  // 인플루언서 리스트 페이지
@@ -43,8 +44,8 @@ const routes = [
 
   // Routes primarily from HEAD branch (more specific)
   {
-    path: '/mentoringboard',
-    name: 'mentoringboard',
+    path: '/mentoringboardview',
+    name: 'mentoringboardview',
     component: MentoringBoardView
   }, {
     path: '/registmentoringpost',
@@ -56,8 +57,8 @@ const routes = [
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
-    path: '/reviewboard',
-    name: 'reviewboard',
+    path: '/reviewboardview',
+    name: 'reviewboardview',
     component: ReviewBoardView
   }, {
     path: '/registreviewpost',
@@ -103,6 +104,10 @@ const routes = [
     path: '/fashionpost',
     name: 'fashionpost',
     component: FashionPostView
+  }, {
+    path: '/registfashionpost',
+    name: 'registfashionpost',
+    component: RegistFashionPostView
   },{
     path: '/',
     name: 'login',
