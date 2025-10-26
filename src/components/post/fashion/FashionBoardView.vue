@@ -25,9 +25,10 @@
               <div v-if="temperature(post.good, post.cheer) >= 60" class="badge-hot">인기</div>
 
               <img
-                :src="fallbackImage"
+                :src="post._thumb || fallbackImage"
                 alt="게시글 이미지"
                 class="card-image"
+                @error="($event) => ($event.target.src = fallbackImage)"
               />
 
               <div class="card-content">
@@ -125,7 +126,7 @@
 
       <!-- 검색 + 페이지네이션 -->
       <div class="pagination-container">
-        <!-- 🔍 검색 -->
+        <!-- 검색 -->
         <div class="search-row">
           <div class="search-bar">
             <!-- 드롭다운 -->
@@ -149,7 +150,7 @@
           </button>
         </div>
 
-        <!-- 📄 페이지네이션 -->
+        <!-- 페이지네이션 -->
         <div class="page-row" v-if="totalPages > 1">
           <button
             class="arrow-btn"
@@ -181,20 +182,19 @@
 </template>
 
 <script setup>
-import HeaderView from '../../HeaderView.vue';
-import FooterView from '../../FooterView.vue';
-import { ref, onMounted } from 'vue'; // ref import 추가
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import HeaderView from '../../HeaderView.vue'
+import FooterView from '../../FooterView.vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
-/** ✅ axios 인스턴스: 모든 요청에 세션 토큰 자동 첨부 */
+/** axios 인스턴스: 모든 요청에 세션 토큰 자동 첨부 */
 const api = axios.create({
-  baseURL: '/api',          // dev 서버 프록시 기준
-  withCredentials: true,    // 서버가 쿠키/세션을 쓴다면 유지
+  baseURL: '/api',
+  withCredentials: true,
 })
-
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token')
   if (token) {
@@ -203,19 +203,18 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
-
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    const status = err?.response?.status
-    if (status === 401) {
+    if (err?.response?.status === 401) {
       alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
-      router.push('/')  // 로그인/홈 등으로 이동
+      router.push('/')
     }
     return Promise.reject(err)
   }
 )
 
+/* ===== 상태 ===== */
 const loading = ref(false)
 const posts = ref([])
 const sidebarPosts = ref([])
@@ -224,13 +223,55 @@ const amount   = ref(8)
 const totalPages = ref(1)
 const pageMaker  = ref(null)
 
-const keyword = ref("")
-const searchType = ref("TW")   // 기본값 '전체'
+const keyword = ref('')
+const searchType = ref('TW')   // '전체'
 
-// 이미지 폴백
+/* ===== 공통 유틸 ===== */
+const GATEWAY_PREFIX = '/api/manager-service';
+
+const buildImageSrc = (imageUrl) => {
+  if (!imageUrl) return null;
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl;     // 절대 URL이면 그대로
+  if (imageUrl.startsWith('/files/')) return `${GATEWAY_PREFIX}${imageUrl}`; // /files → /api/manager-service/files
+  return imageUrl; 
+};
+
+// photos에서 대표 썸네일 고르기: 게시글(카테고리 1) 우선, num 오름차순
+const pickThumbFromPhotos = (photos = []) => {
+  const byPost = photos
+    .filter((p) => Number(p?.photoCategoryNum) === 1)
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const byItem = photos
+    .filter((p) => Number(p?.photoCategoryNum) !== 1)
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const chosen = byPost[0] || byItem[0]
+  return chosen ? buildImageSrc(chosen.imageUrl, chosen.path, chosen.name) : null
+}
+
+// 썸네일 캐시
+const thumbCache = new Map()
+
+// 단일 글의 썸네일 로드 (✅ 상세 API 경로 수정: /posts/fashion/{num})
+const loadThumbForPost = async (post) => {
+  const key = Number(post?.num);
+  if (!key) return null;
+  if (thumbCache.has(key)) return thumbCache.get(key);
+
+  try {
+    // ✅ 상세 호출로 변경 (params 제거)
+    const { data } = await api.get(`/manager-service/posts/fashion/${key}`);
+    const thumb = pickThumbFromPhotos(data?.photos);
+    thumbCache.set(key, thumb);
+    return thumb;
+  } catch (e) {
+    console.warn('썸네일 로딩 실패:', key, e);
+    thumbCache.set(key, null);
+    return null;
+  }
+};
+
+/* ===== 표시값 계산 ===== */
 const fallbackImage = 'https://placehold.co/236x242'
-
-// 온도 계산
 const temperature = (good = 0, cheer = 0) => {
   const g = Number(good) || 0
   const c = Number(cheer) || 0
@@ -241,18 +282,31 @@ const temperature = (good = 0, cheer = 0) => {
 const isPopular = (post) => temperature(post.good, post.cheer) >= 60
 const colorByTemp = (t) => (t <= 25 ? '#6A5BFF' : t <= 50 ? '#2E9BFF' : t <= 75 ? '#FF7A1A' : '#FF5F5F')
 
+/* ===== 라우팅 ===== */
 const goWrite = () => router.push({ name: 'registfashionpost' })
+const goDetail = (num) => { console.log('go detail:', num) }
 
-/** ✅ 목록 조회 */
+/* ===== 데이터 로딩 ===== */
 const fetchPosts = async () => {
   loading.value = true
   try {
     const params = { pageNum: pageNum.value, amount: amount.value }
-    if (keyword.value) { params.type = searchType.value; params.keyword = keyword.value }
+    if (keyword.value) {
+      params.type = searchType.value
+      params.keyword = keyword.value
+    }
 
     const { data } = await api.get('/manager-service/posts/fashion', { params })
-    posts.value = Array.isArray(data?.list) ? data.list : []
+    const list = Array.isArray(data?.list) ? data.list : []
 
+    // 우선 목록 세팅
+    posts.value = list.map((p) => ({ ...p, _thumb: null }))
+
+    // 썸네일 병렬 로딩
+    const thumbs = await Promise.all(posts.value.map((p) => loadThumbForPost(p)))
+    posts.value.forEach((p, i) => { p._thumb = thumbs[i] || null })
+
+    // 페이지 정보
     pageMaker.value = data?.pageMaker ?? null
     const total = Number(pageMaker.value?.total ?? 0)
     totalPages.value = Math.max(1, Math.ceil(total / amount.value))
@@ -265,7 +319,6 @@ const fetchPosts = async () => {
   }
 }
 
-/** ✅ 사이드바 인기글(클라 필터) */
 const fetchSidebarPopular = async () => {
   try {
     const { data } = await api.get('/manager-service/posts/fashion', {
@@ -279,22 +332,25 @@ const fetchSidebarPopular = async () => {
   }
 }
 
+/* ===== 검색/페이지네이션 ===== */
 const applySearch = () => { pageNum.value = 1; fetchPosts() }
-const goPage = (p) => { if (p >= 1 && p <= totalPages.value && p !== pageNum.value) { pageNum.value = p; fetchPosts() } }
-const goDetail = (num) => { console.log('go detail:', num) }
+const goPage = (p) => {
+  if (p >= 1 && p <= totalPages.value && p !== pageNum.value) {
+    pageNum.value = p
+    fetchPosts()
+  }
+}
 
+/* ===== mounted ===== */
 onMounted(async () => {
-  // 토큰이 없으면 바로 로그인/홈으로
   const token = sessionStorage.getItem('token')
   if (!token) {
     alert('로그인 후 이용해 주세요.')
     router.push('/')
     return
   }
-
   await Promise.all([fetchPosts(), fetchSidebarPopular()])
 })
-
 </script>
 
 <style scoped>

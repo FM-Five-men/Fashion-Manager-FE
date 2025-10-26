@@ -212,7 +212,7 @@ const router = useRouter()
 /* 1) axios 인스턴스: 모든 요청에 토큰 자동 첨부 */
 const api = axios.create({
   baseURL: '/api',
-  withCredentials: true, // 쿠키도 함께 쓰는 환경이면 유지
+  withCredentials: true,
 })
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token') || ''
@@ -224,20 +224,17 @@ api.interceptors.request.use((config) => {
 })
 
 /* ---------------- 로그인 회원정보 ---------------- */
-const memberId = ref('')
 const memberNum = ref(null)
-
 const toNumber = (v) => {
   const n = Number(v)
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
 onMounted(() => {
-  api.get('/member-service/member/auth')   // axios 인스턴스 사용 중이라고 가정
+  api.get('/member-service/member/auth')
     .then((res) => {
-      console.log('[auth data]', res.data) //
       const d = res?.data ?? {}
-      // 응답 키가 상황에 따라 다를 수 있어 다 fallback 처리
+      // 응답키가 num/number/memberNum 등으로 다를 수 있어 대비
       memberNum.value = toNumber(d.memberNum ?? d.num ?? d.number)
       if (!memberNum.value) {
         alert('회원 번호를 확인할 수 없습니다. 다시 로그인해주세요.')
@@ -252,11 +249,11 @@ onMounted(() => {
 /* ---------------- 폼 ---------------- */
 const form = reactive({
   title: '',
-  content: '', // nullable (서버에 안보내도 OK)
+  content: '', // nullable
   items: { clothes: '', top: '', bottom: '', shoes: '', accessory: '' },
 })
 
-/* ---------------- 해시태그(번호/이름) ---------------- */
+/* ---------------- 해시태그 ---------------- */
 const hashtagOptions = ref([]) // [{id, name}]
 const hashtagMap = computed(() => {
   const m = new Map()
@@ -276,7 +273,7 @@ const openHashtagModal = () => {
   hashtagLoading.value = true
   modalChecked.value = [...selectedHashtagIds.value]
 
-  // ✅ 올바른 엔드포인트로 수정
+  // ✅ 백엔드 해시태그 조회
   api.get('/manager-service/hashtag/selecthashtag')
     .then(({ data }) => {
       hashtagOptions.value = Array.isArray(data)
@@ -355,34 +352,39 @@ const removeItemImage = (i) => {
 
 /* ---------------- 제출: POST /api/manager-service/posts/fashion ---------------- */
 const onSubmit = () => {
-  // 제목만 필수 (내용은 비워도 됨)
   if (!form.title.trim()) {
     alert('제목을 입력하세요.')
     return
   }
 
-  // 아이템 최소 1개 입력
   const itemTexts = [
     form.items.clothes,
     form.items.top,
     form.items.bottom,
     form.items.shoes,
     form.items.accessory
-  ]
-    .map(v => (v || '').trim())
-    .filter(Boolean)
+  ].map(v => (v || '').trim()).filter(Boolean)
 
   if (itemTexts.length === 0) {
     alert('패션 아이템(의류/상의/하의/신발/악세서리) 중 최소 1개를 입력하세요.')
     return
   }
 
-  // newPost payload (내용 제외)
+  if (!memberNum.value) {
+    alert('회원 번호를 확인할 수 없습니다. 다시 로그인해 주세요.')
+    return
+  }
+
   const newPost = {
     title: form.title.trim(),
     memberNum: memberNum.value,
     hashtag: selectedHashtagIds.value,
     items: itemTexts,
+    // content는 nullable이라 필요 시에만 포함하고 싶다면 아래처럼:
+    // ...(form.content?.trim() ? { content: form.content.trim() } : {})
+  }
+  if (form.content?.trim()) {
+    newPost.content = form.content.trim()
   }
 
   const fd = new FormData()
@@ -390,21 +392,19 @@ const onSubmit = () => {
   postImages.value.forEach(f => fd.append('postImages', f))
   itemImages.value.forEach(f => fd.append('itemImages', f))
 
+  // ✅ Content-Type은 자동 설정(수동 지정 X: boundary 깨짐 방지)
   api.post('/manager-service/posts/fashion', fd, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-  // ✅ 응답 바디가 비어있어도 파싱 에러가 안 나도록 그대로 반환
-  transformResponse: (r) => r,
-  // ✅ 201 Created, 204 No Content 도 성공으로 간주
-  validateStatus: (s) => (s >= 200 && s < 300) || s === 201 || s === 204,
-})
-.then(() => {
-  alert('작성되었습니다.')
-  router.push({ path: '/fashionboardview' })
-})
-.catch((e) => {
-  console.error('게시글 작성 실패:', e?.response?.status, e?.response?.data)
-  alert('작성에 실패했습니다. 잠시 후 다시 시도해주세요.')
-})
+    validateStatus: (s) => (s >= 200 && s < 300) || s === 201 || s === 204
+  })
+  .then((res) => {
+    console.log('[작성 성공 status]', res.status)
+    alert('작성되었습니다.')
+    router.push({ path: '/fashionboardview' })
+  })
+  .catch((e) => {
+    console.error('게시글 작성 실패:', e?.response?.status, e?.response?.data)
+    alert('작성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+  })
 }
 </script>
 
