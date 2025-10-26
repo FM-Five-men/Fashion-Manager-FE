@@ -6,12 +6,6 @@
       <!-- 배너 -->
       <div class="banner">
         <div class="banner-overlay"></div>
-        <div class="banner-title-wrapper">
-          <div class="banner-title">FASHION COMMUNITY</div>
-        </div>
-        <div class="banner-subtitle-wrapper">
-          <div class="banner-subtitle">당신의 스타일을 공유하세요</div>
-        </div>
       </div>
 
       <div class="content-wrapper">
@@ -194,32 +188,49 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+/** ✅ axios 인스턴스: 모든 요청에 세션 토큰 자동 첨부 */
+const api = axios.create({
+  baseURL: '/api',          // dev 서버 프록시 기준
+  withCredentials: true,    // 서버가 쿠키/세션을 쓴다면 유지
+})
+
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const status = err?.response?.status
+    if (status === 401) {
+      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
+      router.push('/')  // 로그인/홈 등으로 이동
+    }
+    return Promise.reject(err)
+  }
+)
+
 const loading = ref(false)
 const posts = ref([])
 const sidebarPosts = ref([])
-const pageNum  = ref(1) // 1-base
-const amount   = ref(8) // 페이지당 8개 (그리드 4x2)
+const pageNum  = ref(1)
+const amount   = ref(8)
 const totalPages = ref(1)
-const pageMaker  = ref(null) // 서버 제공 값 전체 보관(선택)
+const pageMaker  = ref(null)
 
+const keyword = ref("")
+const searchType = ref("TW")   // 기본값 '전체'
 
-
-const goWrite = () => {
-  router.push({name: 'registfashionpost'})
-}
-
-const props = defineProps({
-  currentPage: { type: Number, default: 1 },
-  totalPages: { type: Number, default: 10 },
-});
-
-const keyword = ref("");
-const searchType = ref("TW");
-
-// 이미지 폴백(현재 백엔드에 이미지 필드가 없으므로 플레이스홀더 사용)
+// 이미지 폴백
 const fallbackImage = 'https://placehold.co/236x242'
 
-// 온도 계산: good/(good+cheer) * 100 (소수 첫째 자리 반올림)
+// 온도 계산
 const temperature = (good = 0, cheer = 0) => {
   const g = Number(good) || 0
   const c = Number(cheer) || 0
@@ -227,38 +238,21 @@ const temperature = (good = 0, cheer = 0) => {
   if (!sum) return 0
   return Math.round((g / sum) * 100)
 }
+const isPopular = (post) => temperature(post.good, post.cheer) >= 60
+const colorByTemp = (t) => (t <= 25 ? '#6A5BFF' : t <= 50 ? '#2E9BFF' : t <= 75 ? '#FF7A1A' : '#FF5F5F')
 
-const isPopular = (post) => temperature(post.good, post.cheer) >= 60;
+const goWrite = () => router.push({ name: 'registfashionpost' })
 
-const colorByTemp = (t) => {
-  if (t <= 25) return '#6A5BFF' // 보라
-  if (t <= 50) return '#2E9BFF' // 블루
-  if (t <= 75) return '#FF7A1A' // 오렌지
-  return '#FF5F5F'              // 빨강
-}
-
-// 데이터 가져오기 (목록 8개, 사이드바 5개)
+/** ✅ 목록 조회 */
 const fetchPosts = async () => {
   loading.value = true
   try {
-    const params = {
-      pageNum: pageNum.value,
-      amount : amount.value,
-    }
+    const params = { pageNum: pageNum.value, amount: amount.value }
+    if (keyword.value) { params.type = searchType.value; params.keyword = keyword.value }
 
-    // keyword가 있으면 type/keyword 전달 (백엔드 동적쿼리 매칭)
-    if (keyword.value) {
-      params.type = searchType.value   // 'TW' | 'T' | 'W'
-      params.keyword = keyword.value
-    }
-
-    const { data } = await axios.get('/api/manager-service/posts/fashion', { params })
-      
+    const { data } = await api.get('/manager-service/posts/fashion', { params })
     posts.value = Array.isArray(data?.list) ? data.list : []
-    
-    
 
-    // 페이지 메타
     pageMaker.value = data?.pageMaker ?? null
     const total = Number(pageMaker.value?.total ?? 0)
     totalPages.value = Math.max(1, Math.ceil(total / amount.value))
@@ -271,44 +265,33 @@ const fetchPosts = async () => {
   }
 }
 
-// ✅ 드롭다운 변경/엔터/버튼 → 1페이지부터 검색
-const applySearch = () => {
-  pageNum.value = 1
-  fetchPosts()
-}
-
-// ✅ 페이지 이동
-const goPage = (p) => {
-  if (p < 1 || p > totalPages.value || p === pageNum.value) return
-  pageNum.value = p
-  fetchPosts()
-}
-
+/** ✅ 사이드바 인기글(클라 필터) */
 const fetchSidebarPopular = async () => {
   try {
-    // 최신 글을 넉넉히 가져와서 클라이언트 필터 (필요시 amount 조정)
-    const { data } = await axios.get('/api/manager-service/posts/fashion', {
+    const { data } = await api.get('/manager-service/posts/fashion', {
       params: { pageNum: 1, amount: 30 },
-    });
-    const list = Array.isArray(data?.list) ? data.list : [];
-    sidebarPosts.value = list.filter(isPopular).slice(0, 5);
+    })
+    const list = Array.isArray(data?.list) ? data.list : []
+    sidebarPosts.value = list.filter(isPopular).slice(0, 5)
   } catch (e) {
-    console.error('사이드바 인기글 조회 실패:', e);
-    sidebarPosts.value = [];
+    console.error('사이드바 인기글 조회 실패:', e)
+    sidebarPosts.value = []
   }
-};
+}
 
-const goDetail = (num) => {
-  // 라우팅 이름/경로는 프로젝트에 맞게 교체
-  // 예: router.push({ name: 'fashionPostDetail', params: { id: num } })
-  console.log('go detail:', num)
-}
-const goBoard = () => {
-  // 전체 목록 페이지 이동
-  console.log('go board')
-}
+const applySearch = () => { pageNum.value = 1; fetchPosts() }
+const goPage = (p) => { if (p >= 1 && p <= totalPages.value && p !== pageNum.value) { pageNum.value = p; fetchPosts() } }
+const goDetail = (num) => { console.log('go detail:', num) }
 
 onMounted(async () => {
+  // 토큰이 없으면 바로 로그인/홈으로
+  const token = sessionStorage.getItem('token')
+  if (!token) {
+    alert('로그인 후 이용해 주세요.')
+    router.push('/')
+    return
+  }
+
   await Promise.all([fetchPosts(), fetchSidebarPopular()])
 })
 
@@ -337,7 +320,7 @@ onMounted(async () => {
   width: calc(100% + 114px);
   height: 200px;
   margin: 0 -57px 24px -57px;
-  background-image: url('https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1440&auto=format&fit=crop');
+  background-image: url('/public/images/FashionBoardBanner.png');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -349,10 +332,6 @@ onMounted(async () => {
   inset: 0;
   background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,0) 100%);
 }
-.banner-title-wrapper { position: absolute; left: 64px; bottom: 64px; }
-.banner-title { color:#fff; font-size:28px; font-weight:800; letter-spacing:.5px; }
-.banner-subtitle-wrapper { position:absolute; left:64px; bottom:36px; }
-.banner-subtitle { color:#e5e7eb; font-size:14px; }
 
 /* ===== 본문 ===== */
 .content-wrapper {
