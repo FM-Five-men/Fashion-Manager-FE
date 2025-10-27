@@ -41,8 +41,7 @@
             </div>
 
             <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else src="/images/fashionpost1.jpg" alt="Knit Outfit" class="post-image" />
-
+            <img v-else :src="`/images/fashionpost${postId}.jpg`" alt="Knit Outfit" class="post-image" />
             <div class="post-content-text" v-html="postData.content || '내용 없음'">
               </div>
           </div>
@@ -218,12 +217,6 @@ onMounted(async () => {
       isReacting: false 
     }));
 
-
-    // --- TODO: 현재 사용자의 게시글/댓글 반응 상태 로드 ---
-    // (페이지 로드 시 사용자가 이미 좋아요/힘내요를 눌렀는지 확인하는 API 호출 필요)
-    // (이 API 응답을 바탕으로 postReaction.isLiked, postReaction.isCheered 및
-    // commentData.value의 각 comment.userReaction 값을 설정해야 함)
-
   } catch (err) {
     console.error("데이터 로딩 에러:", err);
     error.value = "게시글 정보를 불러오는 데 실패했습니다.";
@@ -243,12 +236,10 @@ const togglePostReaction = async (reactionType) => {
   const payload = {
     memberNum: currentMemberNum.value,
     postCategoryNum: FASHION_POST_CATEGORY,
-    // [수정] "GOOD" -> "good" (소문자로 변경)
     reactionType: reactionType 
   };
 
   try {
-    // 백엔드 API 호출 (PUT /posts/fashion/react/{postNum})
     await axios.post(`/api/manager-service/posts/fashion/react/${postId.value}`, payload);
 
     if (isLikeAction) {
@@ -291,7 +282,6 @@ const toggleCommentReaction = async (comment, reactionType) => {
   };
 
   try {
-    // 백엔드 API 호출 (POST /comments/{commentNum}/react)
     await axios.post(`/api/manager-service/comments/${comment.num}/react`, payload);
 
     const currentReaction = comment.userReaction;
@@ -502,13 +492,6 @@ const popularMentors = ref([
   padding: 2px 8px;
   border-radius: 8px;
 }
-/* [삭제] post-time 스타일 삭제
-.post-time {
-  font-size: 12px;
-  color: var(--text-light);
-  margin-top: 2px;
-}
-*/
 .more-options {
   cursor: pointer;
   font-weight: bold;
@@ -607,7 +590,6 @@ const popularMentors = ref([
   font-size: 1.2em;
 }
 
-/* --- [신규] 게시글 버튼 활성화 스타일 --- */
 .action-button.active-like {
   background-color: var(--like-bg);
   color: var(--like-color);
@@ -620,8 +602,6 @@ const popularMentors = ref([
   border-color: var(--cheer-border);
   font-weight: bold;
 }
-/* ---------------------------------- */
-
 
 .comment-section {
   padding: 1.5rem;
@@ -638,15 +618,6 @@ const popularMentors = ref([
   margin: 0;
   font-weight: bold;
 }
-/* [삭제] comment-header button 스타일 삭제
-.comment-header button {
-  background: none;
-  border: none;
-  color: var(--text-light);
-  font-size: 14px;
-  cursor: pointer;
-}
-*/
 .comment-list {
   list-style: none;
   padding: 0;
@@ -688,20 +659,11 @@ const popularMentors = ref([
   padding: 2px 6px;
   border-radius: 4px;
 }
-/* [삭제] comment-time 스타일 삭제
-.comment-time {
-  font-size: 12px;
-  color: #99A1AF;
-  margin-left: auto;
-}
-*/
 .comment-text {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0.5rem 0;
 }
-
-/* --- [신규] 댓글 반응 --- */
 .comment-actions {
   display: flex;
   gap: 1rem;
@@ -725,7 +687,6 @@ const popularMentors = ref([
   background-color: var(--bg-light);
 }
 
-/* [신규] 댓글 버튼 활성화 스타일 */
 .comment-likes.active-like {
   color: var(--like-color);
   background-color: var(--like-bg);
@@ -736,7 +697,6 @@ const popularMentors = ref([
   background-color: var(--cheer-bg);
   font-weight: bold;
 }
-/* ------------------------ */
 
 
 .comment-form {
@@ -869,13 +829,12 @@ const popularMentors = ref([
   cursor: pointer;
 }
 
-/* 로딩 및 에러 상태 스타일 추가 */
 .state {
   text-align: center;
   color: var(--text-light);
   padding: 2rem;
 }
 .state.error {
-  color: #e53935; /* 빨간색 에러 메시지 */
+  color: #e53935;
 }
 </style>

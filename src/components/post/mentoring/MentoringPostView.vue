@@ -1,385 +1,841 @@
 <template>
-  <div style="width: 1624px; height: 2553px; position: relative; background: #F9FAFB">
-    <div style="width: 1260px; height: 2303px; left: 364px; top: 377px; position: absolute">
-      <div style="width: 802px; height: 2182px; left: 24.49px; top: 38.40px; position: absolute">
-        <div style="width: 802.67px; height: 2052.63px; left: 0px; top: 0px; position: absolute; background: white; overflow: hidden; border-radius: 10px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px">
-          <div style="width: 801.46px; height: 145.78px; left: 0.61px; top: 0.61px; position: absolute; border-bottom: 0.61px #F3F4F6 solid">
-            <div style="width: 753.47px; height: 40px; left: 24px; top: 15.99px; position: absolute; justify-content: space-between; align-items: flex-start; display: inline-flex">
-              <div style="width: 229.19px; height: 40px; position: relative">
-                <div style="width: 177.19px; height: 37.20px; left: 52px; top: 1.40px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 0px; display: inline-flex">
-                  <div style="align-self: stretch; height: 21.20px; justify-content: flex-start; align-items: center; gap: 7.99px; display: inline-flex">
-                    <div style="width: 126px; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: flex">
-                      <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">스타일리스트김숙희<br/></div>
-                    </div>
-                    <div style="width: 43.19px; height: 21.20px; padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background: #ECEEF2; overflow: hidden; border-radius: 8px; outline: 0.61px rgba(0, 0, 0, 0) solid; outline-offset: -0.61px; justify-content: center; align-items: center; gap: 4px; display: flex">
-                      <div style="color: #030213; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">Lv.25</div>
-                    </div>
-                  </div>
-                  <div style="align-self: stretch; height: 15.99px; position: relative">
-                    <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">1시간 전</div>
-                  </div>
-                </div>
-                <div style="width: 40px; height: 40px; left: 0px; top: 0px; position: absolute; overflow: hidden; border-radius: 20336000px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                  <div style="flex: 1 1 0; height: 40px; background: #101828; border-radius: 20336000px; justify-content: center; align-items: center; display: flex">
-                    <div style="color: white; font-size: 16px; font-family: Arial; font-weight: 400; line-height: 24px; word-wrap: break-word">스</div>
-                  </div>
-                </div>
-              </div>
-              <div style="width: 20px; height: 20px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="align-self: stretch; height: 20px; position: relative; overflow: hidden">
-                  <div style="width: 1.67px; height: 1.67px; left: 9.17px; top: 9.17px; position: absolute; outline: 1.67px #99A1AF solid; outline-offset: -0.83px"></div>
-                  <div style="width: 1.67px; height: 1.67px; left: 9.17px; top: 3.33px; position: absolute; outline: 1.67px #99A1AF solid; outline-offset: -0.83px"></div>
-                  <div style="width: 1.67px; height: 1.67px; left: 9.17px; top: 15px; position: absolute; outline: 1.67px #99A1AF solid; outline-offset: -0.83px"></div>
-                </div>
+  <div id="mentoring-post-page">
+    <HeaderView />
+    <section class="community-banner">
+      <h1>FASHION MENTORING</h1>
+      <p>전문가와 함께 성장하세요</p>
+    </section>
+
+    <main class="main-container">
+      <div class="post-column">
+        <div v-if="isLoading" class="state">
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+
+        <div v-else-if="error" class="state error">
+          <p>오류 발생: {{ error }}</p>
+        </div>
+
+        <article v-else-if="postData" class="post-card">
+          <div class="post-header">
+            <div class="avatar poster-avatar">{{ postData.memberName?.charAt(0) || '?' }}</div>
+            <div class="user-info">
+              <div class="user-name">
+                <span>{{ postData.memberName || 'Unknown User' }}</span>
               </div>
             </div>
-            <div style="width: 753.47px; height: 27.98px; left: 24px; top: 67.99px; position: absolute; justify-content: flex-start; align-items: flex-start; gap: 12px; display: inline-flex">
-              <div style="width: 66px; height: 27.98px; position: relative; background: #DCFCE7; border-radius: 4px">
-                <div style="left: 12px; top: 2px; position: absolute; color: #008236; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">모집중</div>
-              </div>
-              <div style="flex: 1 1 0; height: 24.01px; position: relative">
-                <div style="left: 0px; top: -1.79px; position: absolute; color: #101828; font-size: 16px; font-family: Arial; font-weight: 400; line-height: 24px; word-wrap: break-word">🎨 패션 스타일리스트의 1:1 맞춤 코디 멘토링 멘티 모집</div>
-              </div>
+            <div class="more-options">...</div>
+          </div>
+
+          <div class="post-body">
+            <div class="tags">
+              <span class="recruiting-badge">{{ postData.status === 'RECRUITING' ? '모집중' : '모집완료' }}</span>
             </div>
-            <div style="width: 69.42px; height: 21.20px; padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; left: 24px; top: 107.97px; position: absolute; overflow: hidden; border-radius: 8px; outline: 0.61px rgba(0, 0, 0, 0.10) solid; outline-offset: -0.61px; justify-content: center; align-items: center; gap: 4px; display: inline-flex">
-              <div style="color: #0A0A0A; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">코디 조언</div>
+            <h2>{{ postData.title || '제목 없음' }}</h2>
+            
+            <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
+            <img v-else :src="`/images/mentoringpost${postId}.jpg`" alt="Mentoring default image" class="post-image" />
+            <div class="post-content-text" v-html="postData.content || '내용 없음'">
             </div>
           </div>
-          <div style="width: 801.46px; height: 1444.58px; padding-top: 24px; padding-left: 24px; padding-right: 24px; left: 0.61px; top: 146.38px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 15.99px; display: inline-flex">
-            <img style="align-self: stretch; height: 626.49px; position: relative; border-radius: 10px" src="https://placehold.co/753x626" />
-            <div style="align-self: stretch; height: 754.11px; position: relative">
-              <div style="width: 391px; left: 0px; top: -2.18px; position: absolute; color: #364153; font-size: 16px; font-family: Arial; font-weight: 400; line-height: 26px; word-wrap: break-word">안녕하세요! 현직 패션 스타일리스트 김숙희입니다 ✨<br/><br/>📌 경력<br/>- 스타일리스트 경력 8년<br/>- 유명 연예인 스타일링 다수<br/>- 패션 매거진 에디터 출신<br/>- 인스타그램 팔로워 15만명<br/><br/>👔 멘토링 프로그램<br/>저와 함께 당신만의 스타일을 찾아보세요!<br/><br/>✓ 1:1 스타일 컨설팅 (월 4회)<br/>✓ 개인별 체형/피부톤 분석<br/>✓ 옷장 정리 & 코디 제안<br/>✓ 쇼핑 동행 서비스<br/>✓ 24시간 카톡 상담<br/><br/>💰 멘토링 비용<br/>- 기본반 (월 4회): 30만원<br/>- 프리미엄반 (월 8회 + 쇼핑동행 1회): 60만원<br/><br/>🎯 이런 분들께 추천합니다<br/>- 패션에 자신감이 없으신 분<br/>- 나만의 스타일을 찾고 싶으신 분<br/>- 직장인 데일리룩을 업그레이드하고 싶으신 분<br/>- 데이트, 면접 등 중요한 상황 대비<br/><br/>선착순 5명만 모집합니다!<br/>관심 있으신 분들은 댓글이나 DM 주세요 💕</div>
-            </div>
+
+          <div class="post-meta">
+            <span>조회 {{ postData.views || 0 }}</span> <span>·</span>
+            <span>댓글 {{ commentData?.length || 0 }}</span>
           </div>
-          <div style="width: 801.46px; height: 109.79px; left: 0.61px; top: 1590.97px; position: absolute; border-top: 0.61px #F3F4F6 solid">
-            <div style="width: 142.54px; height: 19.99px; left: 24px; top: 16.60px; position: absolute; justify-content: flex-start; align-items: center; gap: 15.99px; display: inline-flex">
-              <div style="width: 66.84px; height: 19.99px; position: relative">
-                <div style="width: 67px; left: 0px; top: -2px; position: absolute; color: #6A7282; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">조회 3,421</div>
-              </div>
-              <div style="width: 3.07px; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: flex">
-                <div style="color: #6A7282; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">·</div>
-              </div>
-              <div style="width: 40.64px; height: 19.99px; position: relative">
-                <div style="width: 41px; left: 0px; top: -2px; position: absolute; color: #6A7282; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">댓글 2</div>
-              </div>
-            </div>
-            <div style="width: 753.47px; height: 41.21px; left: 24px; top: 52.59px; position: absolute">
-              <div style="width: 311.54px; height: 41.21px; padding-right: 0.01px; left: 0px; top: 0px; position: absolute; border-radius: 4px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; justify-content: center; align-items: center; gap: 7.99px; display: inline-flex">
-                <div style="width: 20px; height: 20px; position: relative; overflow: hidden">
-                  <div style="width: 16.67px; height: 14.18px; left: 1.67px; top: 3.32px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                </div>
-                <div style="width: 70.06px; height: 19.99px; position: relative">
-                  <div style="width: 71px; left: 0px; top: -2px; position: absolute; color: #364153; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">좋아요 234</div>
-                </div>
-              </div>
-              <div style="width: 311.54px; height: 41.21px; padding-right: 0.01px; left: 319.54px; top: 0px; position: absolute; border-radius: 4px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; justify-content: center; align-items: center; gap: 7.99px; display: inline-flex">
-                <div style="width: 20px; height: 20px; position: relative; overflow: hidden">
-                  <div style="width: 16.67px; height: 16.67px; left: 1.67px; top: 1.67px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                </div>
-                <div style="width: 40.64px; height: 19.99px; position: relative">
-                  <div style="width: 41px; left: 0px; top: -2px; position: absolute; color: #364153; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">댓글 2</div>
-                </div>
-              </div>
-              <div style="width: 53.20px; height: 41.21px; padding-top: 10.61px; padding-bottom: 0.61px; padding-left: 16.60px; padding-right: 16.60px; left: 639.07px; top: 0px; position: absolute; border-radius: 4px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="align-self: stretch; height: 20px; position: relative; overflow: hidden">
-                  <div style="width: 5px; height: 5px; left: 12.50px; top: 1.67px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                  <div style="width: 5px; height: 5px; left: 2.50px; top: 7.50px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                  <div style="width: 5px; height: 5px; left: 12.50px; top: 13.33px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                  <div style="width: 5.69px; height: 3.32px; left: 7.16px; top: 11.26px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                  <div style="width: 5.68px; height: 3.32px; left: 7.16px; top: 5.43px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                </div>
-              </div>
-              <div style="width: 53.20px; height: 41.21px; padding-top: 10.61px; padding-bottom: 0.61px; padding-left: 16.60px; padding-right: 16.60px; left: 700.27px; top: 0px; position: absolute; border-radius: 4px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="align-self: stretch; height: 20px; position: relative; overflow: hidden">
-                  <div style="width: 13.33px; height: 16.67px; left: 3.33px; top: 1.67px; position: absolute; outline: 1.67px #364153 solid; outline-offset: -0.83px"></div>
-                </div>
-              </div>
-            </div>
-            <div style="width: 60px; height: 36px; padding-left: 16px; padding-right: 16px; padding-top: 8px; padding-bottom: 8px; left: 701.91px; top: -5.36px; position: absolute; background: black; border-radius: 8px; justify-content: center; align-items: center; gap: 8px; display: inline-flex">
-              <div style="color: white; font-size: 14px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">신고</div>
-            </div>
+
+          <div class="post-actions">
+             <button
+              class="action-button"
+              :class="{ 'active-like': postReaction.isLiked }"
+              @click="togglePostReaction('good')">
+              <span class="icon">❤️</span> 좋아요 {{ postData.good || 0 }}
+            </button>
+            <button
+              class="action-button"
+              :class="{ 'active-cheer': postReaction.isCheered }"
+              @click="togglePostReaction('cheer')">
+              <span class="icon">💪</span> 힘내요 {{ postData.cheer || 0 }}
+            </button>
+            <button class="action-button">
+              <span class="icon">🔗</span> 공유
+            </button>
           </div>
-          <div style="width: 801.46px; height: 0.99px; left: 0.61px; top: 1700.76px; position: absolute; background: rgba(0, 0, 0, 0.10)"></div>
-          <div style="width: 801.46px; height: 350.27px; padding-top: 15.99px; padding-left: 24px; padding-right: 24px; left: 0.61px; top: 1701.75px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 15.99px; display: inline-flex">
-            <div style="align-self: stretch; height: 24.01px; justify-content: space-between; align-items: center; display: inline-flex">
-              <div style="width: 46.45px; height: 24.01px; position: relative">
-                <div style="width: 47px; left: 0px; top: -1.79px; position: absolute; color: #101828; font-size: 16px; font-family: Arial; font-weight: 400; line-height: 24px; word-wrap: break-word">댓글 2</div>
-              </div>
-              <div style="width: 42.01px; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: flex">
-                <div style="flex: 1 1 0; color: #6A7282; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">숨기기</div>
-              </div>
+
+          <section class="comment-section">
+            <div class="comment-header">
+              <h3>댓글 {{ commentData?.length || 0 }}</h3>
             </div>
-            <div style="align-self: stretch; height: 204.51px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 19.99px; display: flex">
-              <div style="align-self: stretch; height: 100.56px; padding-top: 15.99px; padding-bottom: 0.61px; border-bottom: 0.61px #F3F4F6 solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
-                <div style="align-self: stretch; height: 67.96px; position: relative">
-                  <div style="width: 681.48px; height: 67.96px; left: 44px; top: 0px; position: absolute">
-                    <div style="width: 681.48px; height: 19.99px; left: 0px; top: 0px; position: absolute; justify-content: flex-start; align-items: center; gap: 7.99px; display: inline-flex">
-                      <div style="width: 98px; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: flex">
-                        <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">패션초보직장인</div>
-                      </div>
-                      <div style="width: 41.44px; height: 15.99px; position: relative">
-                        <div style="left: 0px; top: -1.61px; position: absolute; color: #99A1AF; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">30분 전</div>
-                      </div>
-                    </div>
-                    <div style="width: 681.48px; height: 19.99px; left: 0px; top: 23.99px; position: absolute; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                      <div style="flex: 1 1 0; color: #364153; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">진짜 필요했는데 너무 좋은 기회네요! DM 보내도 될까요?</div>
-                    </div>
-                    <div style="width: 31.21px; height: 15.99px; left: 0px; top: 51.97px; position: absolute; justify-content: flex-start; align-items: center; gap: 4px; display: inline-flex">
-                      <div style="width: 14px; height: 14px; position: relative; overflow: hidden">
-                        <div style="width: 11.56px; height: 11.66px; left: 1.17px; top: 1.17px; position: absolute; outline: 1.17px #6A7282 solid; outline-offset: -0.58px"></div>
-                      </div>
-                      <div style="width: 13.22px; height: 15.99px; position: relative">
-                        <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">12</div>
-                      </div>
-                    </div>
+
+            <ul class="comment-list" v-if="commentData && commentData.length > 0">
+              <li v-for="comment in commentData" :key="comment.num" class="comment-item">
+                <div class="avatar comment-avatar">{{ comment.memberName?.charAt(0) || '?' }}</div>
+                <div class="comment-content">
+                  <div class="comment-author-info">
+                    <strong>{{ comment.memberName || 'Unknown User' }}</strong>
                   </div>
-                  <div style="width: 15.99px; height: 67.96px; padding-top: 25.98px; left: 737.47px; top: 0px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                    <div style="align-self: stretch; height: 15.99px; position: relative; overflow: hidden">
-                      <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 7.33px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
-                      <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 2.67px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
-                      <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 12px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
+                  <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
+
+                   <div class="comment-actions">
+                    <div
+                      class="comment-likes"
+                      :class="{ 'active-like': comment.userReaction === 'good' }"
+                      @click="toggleCommentReaction(comment, 'good')">
+                      <span class="icon">👍</span> 좋아요 {{ comment.good || 0 }}
                     </div>
-                  </div>
-                  <div style="width: 32px; height: 32px; left: 0px; top: 0px; position: absolute; overflow: hidden; border-radius: 20336000px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                    <div style="flex: 1 1 0; height: 32px; background: #E5E7EB; border-radius: 20336000px; justify-content: center; align-items: center; display: flex">
-                      <div style="color: #4A5565; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">패</div>
+                    <div
+                      class="comment-cheers"
+                      :class="{ 'active-cheer': comment.userReaction === 'cheer' }"
+                      @click="toggleCommentReaction(comment, 'cheer')">
+                      <span class="icon">💪</span> 힘내요 {{ comment.cheer || 0 }}
                     </div>
                   </div>
                 </div>
-              </div>
-              <div style="align-self: stretch; height: 67.96px; position: relative">
-                <div style="width: 681.48px; height: 67.96px; left: 44px; top: 0px; position: absolute">
-                  <div style="width: 681.48px; height: 19.99px; left: 0px; top: 0px; position: absolute; justify-content: flex-start; align-items: center; gap: 7.99px; display: inline-flex">
-                    <div style="width: 126px; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: flex">
-                      <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">스타일업그레이드중</div>
-                    </div>
-                    <div style="width: 41.44px; height: 15.99px; position: relative">
-                      <div style="left: 0px; top: -1.61px; position: absolute; color: #99A1AF; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">15분 전</div>
-                    </div>
-                  </div>
-                  <div style="width: 681.48px; height: 19.99px; left: 0px; top: 23.99px; position: absolute; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                    <div style="flex: 1 1 0; color: #364153; font-size: 14px; font-family: Arial; font-weight: 400; line-height: 20px; word-wrap: break-word">인스타 보고 왔어요! 꼭 신청하고 싶습니다 ㅎㅎ</div>
-                  </div>
-                  <div style="width: 24.60px; height: 15.99px; left: 0px; top: 51.97px; position: absolute; justify-content: flex-start; align-items: center; gap: 4px; display: inline-flex">
-                    <div style="width: 14px; height: 14px; position: relative; overflow: hidden">
-                      <div style="width: 11.56px; height: 11.66px; left: 1.17px; top: 1.17px; position: absolute; outline: 1.17px #6A7282 solid; outline-offset: -0.58px"></div>
-                    </div>
-                    <div style="width: 6.61px; height: 15.99px; position: relative">
-                      <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">8</div>
-                    </div>
-                  </div>
-                </div>
-                <div style="width: 15.99px; height: 67.96px; padding-top: 25.98px; left: 737.47px; top: 0px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                  <div style="align-self: stretch; height: 15.99px; position: relative; overflow: hidden">
-                    <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 7.33px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
-                    <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 2.67px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
-                    <div style="width: 1.33px; height: 1.33px; left: 7.33px; top: 12px; position: absolute; outline: 1.33px #99A1AF solid; outline-offset: -0.67px"></div>
-                  </div>
-                </div>
-                <div style="width: 32px; height: 32px; left: 0px; top: 0px; position: absolute; overflow: hidden; border-radius: 20336000px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                  <div style="flex: 1 1 0; height: 32px; background: #E5E7EB; border-radius: 20336000px; justify-content: center; align-items: center; display: flex">
-                    <div style="color: #4A5565; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">스</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="align-self: stretch; height: 57.78px; padding-top: 16.60px; border-top: 0.61px #F3F4F6 solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
-              <div style="align-self: stretch; height: 41.18px; position: relative">
-                <div style="width: 709.47px; height: 41.18px; left: 44px; top: 0px; position: absolute; justify-content: flex-start; align-items: flex-start; gap: 7.99px; display: inline-flex">
-                  <div style="flex: 1 1 0; height: 41.18px; padding-left: 16px; padding-right: 16px; padding-top: 8px; padding-bottom: 8px; overflow: hidden; border-radius: 4px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; justify-content: flex-start; align-items: center; display: flex">
-                    <div style="color: rgba(10.04, 10.04, 10.04, 0.50); font-size: 16px; font-family: Arial; font-weight: 400; word-wrap: break-word">댓글을 입력해주세요</div>
-                  </div>
-                  <div style="width: 47.98px; height: 41.18px; padding-top: 12.59px; padding-left: 15.99px; padding-right: 15.99px; background: #D1D5DC; border-radius: 4px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                    <div style="align-self: stretch; height: 15.99px; position: relative; overflow: hidden">
-                      <div style="width: 13.33px; height: 13.33px; left: 1.33px; top: 1.33px; position: absolute; outline: 1.33px white solid; outline-offset: -0.67px"></div>
-                      <div style="width: 7.29px; height: 7.29px; left: 7.27px; top: 1.43px; position: absolute; outline: 1.33px white solid; outline-offset: -0.67px"></div>
-                    </div>
-                  </div>
-                </div>
-                <div style="width: 32px; height: 32px; left: 0px; top: 0px; position: absolute; overflow: hidden; border-radius: 20336000px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                  <div style="flex: 1 1 0; height: 32px; background: #E5E7EB; border-radius: 20336000px; justify-content: center; align-items: center; display: flex">
-                    <div style="color: #4A5565; font-size: 12px; font-family: Arial; font-weight: 400; line-height: 16px; word-wrap: break-word">나</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                <div class="more-options">...</div>
+              </li>
+            </ul>
+             <p v-else>아직 댓글이 없습니다.</p>
+
+            <form class="comment-form" @submit.prevent="handleCommentSubmit">
+              <div class="avatar comment-avatar">나</div>
+              <input
+                type="text"
+                placeholder="댓글을 입력해주세요"
+                class="comment-input"
+                v-model="newCommentText"
+              />
+              <button type="submit" class="comment-submit-button">등록</button>
+            </form>
+          </section>
+        </article>
+
+        <div v-else class="state">
+            <p>게시글 데이터를 찾을 수 없습니다.</p>
         </div>
       </div>
-    </div>
-    <div style="width: 1622px; height: 280px; left: 0px; top: 65px; position: absolute; background: #101828; overflow: hidden">
-      <img style="width: 1622px; height: 280px; left: 0px; top: 0px; position: absolute; opacity: 0.70" src="https://placehold.co/1622x280" />
-      <div style="width: 1622px; height: 280px; padding-bottom: 0.01px; left: 0px; top: 0px; position: absolute; flex-direction: column; justify-content: center; align-items: center; gap: 7.99px; display: inline-flex">
-        <div style="width: 326.96px; height: 40px; position: relative">
-          <div style="left: -25px; top: -3.24px; position: absolute; text-align: center; color: white; font-size: 36px; font-family: ABeeZee; font-weight: 400; line-height: 40px; word-wrap: break-word">FASHION MENTORING</div>
-          <div style="left: 67.12px; top: 46.20px; position: absolute; text-align: center; color: #D1D5DC; font-size: 16px; font-family: ABeeZee; font-weight: 400; line-height: 24px; word-wrap: break-word">전문가와 함께 성장하세요</div>
-        </div>
-        <div style="width: 203.26px; height: 24.01px; position: relative"></div>
-      </div>
-    </div>
-    <div style="width: 389.34px; height: 153.16px; padding-top: 20.61px; padding-bottom: 0.61px; padding-left: 20.61px; padding-right: 20.61px; left: 1216px; top: 368px; position: absolute; background: white; border-radius: 10px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 15.99px; display: inline-flex">
-      <div style="align-self: stretch; height: 24.01px; position: relative">
-        <div style="left: 0px; top: -1.79px; position: absolute; color: #101828; font-size: 16px; font-family: ABeeZee; font-weight: 400; line-height: 24px; word-wrap: break-word">카테고리</div>
-      </div>
-      <div style="align-self: stretch; height: 71.95px; position: relative">
-        <div style="width: 52px; height: 31.98px; left: 0px; top: 0px; position: absolute; background: #101828; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: white; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">전체</div>
-        </div>
-        <div style="width: 84.92px; height: 31.98px; left: 59.99px; top: 0px; position: absolute; background: #F9FAFB; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: #364153; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">코디 조언</div>
-        </div>
-        <div style="width: 80px; height: 31.98px; left: 152.91px; top: 0px; position: absolute; background: #F9FAFB; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: #364153; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">스타일링</div>
-        </div>
-        <div style="width: 84.92px; height: 31.98px; left: 240.90px; top: 0px; position: absolute; background: #F9FAFB; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: #364153; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">쇼핑 동행</div>
-        </div>
-        <div style="width: 98.92px; height: 31.98px; left: 0px; top: 39.97px; position: absolute; background: #F9FAFB; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: #364153; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">브랜드 추천</div>
-        </div>
-        <div style="width: 98.92px; height: 31.98px; left: 106.91px; top: 39.97px; position: absolute; background: #F9FAFB; border-radius: 4px">
-          <div style="left: 12px; top: 3.99px; position: absolute; color: #364153; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">트렌드 분석</div>
-        </div>
-      </div>
-    </div>
-    <div style="width: 389.34px; height: 213.16px; padding-top: 20.61px; padding-bottom: 0.61px; padding-left: 20.61px; padding-right: 20.61px; left: 1216px; top: 537.16px; position: absolute; background: white; border-radius: 10px; outline: 0.61px #E5E7EB solid; outline-offset: -0.61px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 15.99px; display: inline-flex">
-      <div style="align-self: stretch; height: 24.01px; justify-content: flex-start; align-items: center; gap: 7.99px; display: inline-flex">
-        <div style="width: 20px; height: 20px; position: relative; overflow: hidden">
-          <div style="width: 5px; height: 5px; left: 13.33px; top: 5.83px; position: absolute; outline: 1.67px #2B7FFF solid; outline-offset: -0.83px"></div>
-          <div style="width: 16.67px; height: 8.33px; left: 1.67px; top: 5.83px; position: absolute; outline: 1.67px #2B7FFF solid; outline-offset: -0.83px"></div>
-        </div>
-        <div style="width: 69.63px; height: 24.01px; position: relative">
-          <div style="left: 0px; top: -1.79px; position: absolute; color: #101828; font-size: 16px; font-family: ABeeZee; font-weight: 400; line-height: 24px; word-wrap: break-word">인기 멘토</div>
-        </div>
-      </div>
-      <div style="align-self: stretch; height: 131.95px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 12px; display: flex">
-        <div style="align-self: stretch; height: 35.98px; position: relative">
-          <div style="width: 348.12px; height: 35.98px; left: 0px; top: 0px; position: absolute; justify-content: space-between; align-items: flex-start; display: inline-flex">
-            <div style="flex: 1 1 0; height: 35.98px; position: relative">
-              <div style="width: 312.30px; height: 19.99px; left: 0px; top: 0px; position: absolute; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">김패션</div>
-              </div>
-              <div style="width: 312.30px; height: 15.99px; left: 0px; top: 19.99px; position: absolute">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">코디 멘토링</div>
-              </div>
-            </div>
-            <div style="width: 35.82px; height: 15.99px; justify-content: flex-start; align-items: center; gap: 4px; display: flex">
-              <div style="width: 12px; height: 12px; position: relative; overflow: hidden">
-                <div style="width: 7px; height: 3px; left: 1px; top: 7.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 3.87px; left: 8px; top: 1.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 2.93px; left: 9.50px; top: 7.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 4px; height: 4px; left: 2.50px; top: 1.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-              </div>
-              <div style="width: 19.83px; height: 15.99px; position: relative">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #99A1AF; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">234</div>
-              </div>
-            </div>
+
+      <aside class="sidebar-column">
+        <div class="widget category-widget">
+          <h3>카테고리</h3>
+          <div class="category-list">
+            <button v-for="category in categories" :key="category" :class="{ active: category === '전체' }">
+              {{ category }}
+            </button>
           </div>
         </div>
-        <div style="align-self: stretch; height: 35.98px; position: relative">
-          <div style="width: 348.12px; height: 35.98px; left: 0px; top: 0px; position: absolute; justify-content: space-between; align-items: flex-start; display: inline-flex">
-            <div style="flex: 1 1 0; height: 35.98px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 0px; display: inline-flex">
-              <div style="align-self: stretch; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">배민</div>
+
+        <div class="widget mentors-widget">
+          <h3><span class="icon">🏆</span> 인기 멘토</h3>
+          <ul class="mentor-list">
+            <li v-for="mentor in popularMentors" :key="mentor.name">
+              <div class="mentor-info">
+                <strong>{{ mentor.name }}</strong>
+                <span>{{ mentor.field }}</span>
               </div>
-              <div style="align-self: stretch; height: 15.99px; position: relative">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">브랜딩</div>
+              <div class="mentor-likes">
+                <span class="icon">⭐</span> {{ mentor.likes }}
               </div>
-            </div>
-            <div style="width: 35.82px; height: 15.99px; justify-content: flex-start; align-items: center; gap: 4px; display: flex">
-              <div style="width: 12px; height: 12px; position: relative; overflow: hidden">
-                <div style="width: 7px; height: 3px; left: 1px; top: 7.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 3.87px; left: 8px; top: 1.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 2.93px; left: 9.50px; top: 7.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 4px; height: 4px; left: 2.50px; top: 1.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-              </div>
-              <div style="width: 19.83px; height: 15.99px; position: relative">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #99A1AF; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">189</div>
-              </div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
-        <div style="align-self: stretch; height: 35.98px; position: relative">
-          <div style="width: 348.12px; height: 35.98px; left: 0px; top: 0px; position: absolute; justify-content: space-between; align-items: flex-start; display: inline-flex">
-            <div style="flex: 1 1 0; height: 35.98px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 0px; display: inline-flex">
-              <div style="align-self: stretch; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="flex: 1 1 0; color: #101828; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">트렌드분석이</div>
-              </div>
-              <div style="align-self: stretch; height: 15.99px; position: relative">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #6A7282; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">트렌드 분석</div>
-              </div>
-            </div>
-            <div style="width: 35.82px; height: 15.99px; justify-content: flex-start; align-items: center; gap: 4px; display: flex">
-              <div style="width: 12px; height: 12px; position: relative; overflow: hidden">
-                <div style="width: 7px; height: 3px; left: 1px; top: 7.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 3.87px; left: 8px; top: 1.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 1.50px; height: 2.93px; left: 9.50px; top: 7.56px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-                <div style="width: 4px; height: 4px; left: 2.50px; top: 1.50px; position: absolute; outline: 1px #99A1AF solid; outline-offset: -0.50px"></div>
-              </div>
-              <div style="width: 19.83px; height: 15.99px; position: relative">
-                <div style="left: 0px; top: -1.61px; position: absolute; color: #99A1AF; font-size: 12px; font-family: ABeeZee; font-weight: 400; line-height: 16px; word-wrap: break-word">156</div>
-              </div>
-            </div>
-          </div>
+
+        <div class="widget cta-widget">
+          <h3>멘토로 활동하기</h3>
+          <p>패션 전문가와 함께하세요</p>
+          <button class="cta-button">신청하기</button>
         </div>
-      </div>
-    </div>
-    <div style="width: 389.34px; height: 147.95px; padding-top: 24px; padding-left: 24px; padding-right: 24px; left: 1216px; top: 774.08px; position: absolute; background: linear-gradient(135deg, #155DFC 0%, #51A2FF 100%); border-radius: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 7.99px; display: inline-flex">
-      <div style="align-self: stretch; height: 24.01px; position: relative">
-        <div style="left: 116.86px; top: -1.79px; position: absolute; text-align: center; color: white; font-size: 16px; font-family: ABeeZee; font-weight: 400; line-height: 24px; word-wrap: break-word">멘토로 활동하기</div>
-      </div>
-      <div style="align-self: stretch; height: 19.99px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-        <div style="flex: 1 1 0; text-align: center; color: #DBEAFE; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">패션 전문가와 함께하세요</div>
-      </div>
-      <div style="align-self: stretch; height: 35.98px; position: relative; background: white; border-radius: 4px">
-        <div style="left: 0px; top: 5.99px; position: absolute; color: #155DFC; font-size: 14px; font-family: ABeeZee; font-weight: 400; line-height: 20px; word-wrap: break-word">신청하기</div>
-      </div>
-    </div>
-    <div style="width: 1624px; height: 65px; padding-right: 22px; left: 0px; top: 0px; position: absolute; background: rgba(242.99, 242.99, 242.99, 0.80); border-bottom: 0.67px rgba(0, 0, 0, 0.10) solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-      <div style="align-self: stretch; height: 64px; padding-left: 16px; padding-right: 16px; justify-content: space-between; align-items: center; display: inline-flex">
-        <div style="width: 343px; height: 32px; justify-content: flex-start; align-items: center; gap: 32px; display: flex">
-          <div style="width: 189px; height: 32px; justify-content: flex-start; align-items: center; gap: 8px; display: flex">
-            <img style="width: 125px; height: 52px" src="https://placehold.co/125x52" />
-          </div>
-          <div style="flex: 1 1 0; height: 20px; justify-content: flex-start; align-items: center; gap: 24px; display: flex">
-            <div style="color: #0A0A0A; font-size: 14px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">패션</div>
-            <div style="color: #0A0A0A; font-size: 14px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">후기</div>
-            <div style="color: #0A0A0A; font-size: 14px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">멘토링</div>
-            <div style="color: #0A0A0A; font-size: 14px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">인플루언서</div>
-          </div>
-        </div>
-        <div style="width: 448px; height: 36px; position: relative">
-          <div style="width: 124px; height: 32px; left: 329px; top: 2px; position: absolute">
-            <div style="width: 80px; height: 32px; padding-left: 12px; padding-right: 12px; left: 48px; top: 0px; position: absolute; border-radius: 8px; justify-content: center; align-items: center; gap: 6px; display: inline-flex">
-              <div style="padding-left: 14px; padding-right: 14px; padding-top: 1px; padding-bottom: 1px; background: #B1B1B1; border-radius: 8px; flex-direction: column; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
-                <div style="text-align: center; justify-content: center; display: flex; flex-direction: column; color: white; font-size: 12px; font-family: Arimo; font-weight: 400; line-height: 20px; word-wrap: break-word">로그아웃</div>
-              </div>
-            </div>
-            <div style="width: 32px; height: 32px; left: 4px; top: 0px; position: absolute; overflow: hidden; border-radius: 22369600px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-              <img style="flex: 1 1 0; height: 32px; position: relative" src="https://placehold.co/32x32" />
-            </div>
-          </div>
-          <div style="width: 256px; height: 36px; left: 5px; top: 0px; position: absolute">
-            <div style="width: 16px; height: 16px; left: 12px; top: 10px; position: absolute"></div>
-          </div>
-          <div style="width: 20px; height: 20px; left: 245px; top: 8px; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-            <div style="align-self: stretch; height: 20px; position: relative; overflow: hidden">
-              <div style="width: 3.62px; height: 3.62px; left: 13.88px; top: 13.88px; position: absolute; outline: 1.67px black solid; outline-offset: -0.83px"></div>
-              <div style="width: 13.33px; height: 13.33px; left: 2.50px; top: 2.50px; position: absolute; outline: 1.67px black solid; outline-offset: -0.83px"></div>
-            </div>
-          </div>
-          <img style="width: 28px; height: 28px; left: 282px; top: 4px; position: absolute" src="https://placehold.co/28x28" />
-          <div style="width: 4px; height: 4px; left: 308px; top: 5px; position: absolute; background: #E17100; border-radius: 22369600px"></div>
-        </div>
-      </div>
-    </div>
+      </aside>
+    </main>
+
+    <FooterView/>
   </div>
 </template>
 
 <script setup>
-// No script logic is needed based on the provided HTML
+import { ref, onMounted, reactive } from 'vue';
+import { useRoute } from 'vue-router';
+import axios from 'axios';
+import HeaderView from '../../HeaderView.vue'; // 경로 수정
+import FooterView from '../../FooterView.vue'; // 경로 수정
+
+const route = useRoute();
+
+const postData = ref(null);
+const commentData = ref([]);
+const isLoading = ref(true);
+const error = ref(null);
+
+const newCommentText = ref('');
+const postId = ref(null);
+
+const currentMemberNum = ref(4); 
+const MENTORING_POST_CATEGORY = 3; 
+
+const postReaction = reactive({
+  isLiked: false,
+  isCheered: false,
+  isLiking: false,
+  isCheering: false
+});
+
+
+onMounted(async () => {
+  postId.value = route.params.id; 
+
+  if (!postId.value) {
+    error.value = "게시글 ID가 주소에 포함되지 않았습니다. (예: /mentoringpost/1)";
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    error.value = null;
+
+    // --- 멘토링 게시글 데이터 가져오기 ---
+    const postResponse = await axios.get(`/api/manager-service/posts/mentoring/${postId.value}`);
+    postData.value = postResponse.data;
+
+    // --- 댓글 데이터 가져오기 ---
+    const commentsResponse = await axios.get(`/api/manager-service/comments/getcomments`, {
+      params: {
+        postType: 'mentoring', // postType 수정
+        postNum: postId.value
+      }
+    });
+
+    commentData.value = commentsResponse.data.map(comment => ({
+      ...comment,
+      userReaction: null,
+      isReacting: false
+    }));
+
+  } catch (err) {
+    console.error("데이터 로딩 에러:", err);
+    error.value = "게시글 정보를 불러오는 데 실패했습니다.";
+    if (err.response && err.response.status === 404) {
+      error.value = "해당 게시글을 찾을 수 없습니다.";
+    }
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+// --- 게시글 반응 토글 함수 ---
+const togglePostReaction = async (reactionType) => {
+  if (postReaction.isLiking || postReaction.isCheering) return; 
+
+  const isLikeAction = reactionType === 'good';
+  if (isLikeAction) postReaction.isLiking = true;
+  else postReaction.isCheering = true;
+
+  const payload = {
+    memberNum: currentMemberNum.value,
+    postCategoryNum: MENTORING_POST_CATEGORY, 
+    reactionType: reactionType
+  };
+
+  try {
+    await axios.post(`/api/manager-service/posts/mentoring/react/${postId.value}`, payload);
+
+    if (isLikeAction) {
+      const wasLiked = postReaction.isLiked;
+      postReaction.isLiked = !wasLiked;
+      postData.value.good += wasLiked ? -1 : 1;
+      if (postReaction.isLiked && postReaction.isCheered) {
+        postReaction.isCheered = false;
+        postData.value.cheer -= 1;
+      }
+    } else {
+      const wasCheered = postReaction.isCheered;
+      postReaction.isCheered = !wasCheered;
+      postData.value.cheer += wasCheered ? -1 : 1;
+      if (postReaction.isCheered && postReaction.isLiked) {
+        postReaction.isLiked = false;
+        postData.value.good -= 1;
+      }
+    }
+  } catch (err) {
+    console.error(`Error toggling post ${reactionType}:`, err);
+    alert("반응을 등록하는 데 실패했습니다. (멘토링 반응 API 확인 필요)");
+  } finally {
+    if (isLikeAction) postReaction.isLiking = false;
+    else postReaction.isCheering = false;
+  }
+};
+// ------------------------------------
+
+
+// --- 댓글 반응 토글 함수 (FashionPostView와 동일) ---
+const toggleCommentReaction = async (comment, reactionType) => {
+  if (comment.isReacting) return;
+  comment.isReacting = true;
+
+  const payload = {
+    memberNum: currentMemberNum.value,
+    reactionType: reactionType
+  };
+
+  try {
+    await axios.post(`/api/manager-service/comments/${comment.num}/react`, payload);
+
+    const currentReaction = comment.userReaction;
+
+    if (reactionType === 'good') {
+      if (currentReaction === 'good') {
+        comment.userReaction = null;
+        comment.good -= 1;
+      } else {
+        comment.userReaction = 'good';
+        comment.good += 1;
+        if (currentReaction === 'cheer') {
+          comment.cheer -= 1;
+        }
+      }
+    } else { // reactionType === 'cheer'
+      if (currentReaction === 'cheer') {
+        comment.userReaction = null;
+        comment.cheer -= 1;
+      } else {
+        comment.userReaction = 'cheer';
+        comment.cheer += 1;
+        if (currentReaction === 'good') {
+          comment.good -= 1;
+        }
+      }
+    }
+
+  } catch (err) {
+    console.error(`Error toggling comment ${reactionType}:`, err);
+    alert("댓글 반응을 등록하는 데 실패했습니다.");
+  } finally {
+    comment.isReacting = false;
+  }
+};
+// ------------------------------------
+
+
+// --- 댓글 등록 함수 (FashionPostView와 동일) ---
+const handleCommentSubmit = async () => {
+  if (!newCommentText.value.trim()) {
+    alert("댓글 내용을 입력해주세요.");
+    return;
+  }
+
+  const currentMemberName = '현재사용자'; 
+
+  try {
+    const newCommentPayload = {
+      content: newCommentText.value,
+      memberNum: currentMemberNum.value,
+      postType: 'mentoring', 
+      postNum: postId.value
+    };
+
+    const response = await axios.post(`/api/manager-service/comments/createcomment`, newCommentPayload);
+    const newCommentFromServer = response.data;
+    
+    if (!newCommentFromServer.memberName) {
+      newCommentFromServer.memberName = currentMemberName;
+    }
+
+    commentData.value.push({
+      ...newCommentFromServer,
+      userReaction: null,
+      isReacting: false
+    });
+
+    newCommentText.value = ''; 
+
+  } catch (err) {
+    console.error("댓글 등록 에러:", err);
+    alert("댓글 등록에 실패했습니다.");
+  }
+};
+
+// --- 사이드바 데이터 (FashionPostView와 동일) ---
+const categories = ref([
+  '전체', '코디 조언', '스타일링', '쇼핑 동행', '브랜드 추천', '트렌드 분석'
+]);
+const popularMentors = ref([
+  { name: '김패션', field: '코디 멘토링', likes: 234 },
+  { name: '배민', field: '브랜딩', likes: 189 },
+  { name: '트렌드분석이', field: '트렌드 분석', likes: 156 },
+]);
 </script>
 
 <style scoped>
-/* Scoped styles can be added here if needed, but the request specified inline styles */
+:root {
+  --primary-color: #155DFC;
+  --text-primary: #101828;
+  --text-secondary: #364153;
+  --text-light: #6A7282;
+  --border-color: #E5E7EB;
+  --bg-light: #F9FAFB;
+  --bg-white: #FFFFFF;
+  --separator-color: #E5E7EB;
+  --like-color: #D32F2F;
+  --like-bg: #ffebee;
+  --like-border: #ffcdd2;
+  --cheer-color: #1976D2;
+  --cheer-bg: #e3f2fd;
+  --cheer-border: #bbdefb;
+  --recruiting-color: #008236; /* 모집중 색상 */
+  --recruiting-bg: #DCFCE7;    /* 모집중 배경 */
+}
+
+#mentoring-post-page { /* ID 변경 */
+  font-family: 'ABeeZee', 'Arimo', sans-serif;
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.community-banner {
+  background: url('/images/FMbanner.jpg') center/cover no-repeat; /* 배너 이미지 확인 */
+  color: white;
+  text-align: center;
+  padding: 3rem 1rem;
+  position: relative;
+}
+.community-banner::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+.community-banner h1, .community-banner p {
+    position: relative;
+    z-index: 2;
+}
+.community-banner h1 {
+  font-size: 36px;
+  margin: 0 0 0.5rem 0;
+}
+.community-banner p {
+  font-size: 16px;
+  color: #D1D5DC;
+  margin: 0;
+}
+
+.main-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.post-column {
+  flex: 2;
+  max-width: 800px;
+}
+.post-card {
+  background: var(--bg-white);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  gap: 0.75rem;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  background: var(--border-color);
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+.poster-avatar {
+  background: var(--text-primary);
+  color: white;
+}
+.user-info {
+  flex: 1;
+  text-align: left;
+}
+.user-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: bold;
+}
+.level-badge {
+  background: #ECEEF2;
+  color: #030213;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.post-time {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.more-options {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 20px;
+  color: var(--text-light);
+  margin-left: auto;
+  padding: 0.5rem;
+}
+
+.post-body {
+  padding: 0 1.5rem 1.5rem;
+  text-align: left;
+  border-bottom: 5px solid var(--separator-color);
+  padding-bottom: 1.5rem;
+}
+.post-body h2 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+  font-weight: bold;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tags span {
+  font-size: 14px;
+  color: var(--primary-color);
+  cursor: pointer;
+  background: #EFF6FF;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.tags span.recruiting-badge {
+  background-color: var(--recruiting-bg);
+  color: var(--recruiting-color);
+  font-weight: bold;
+  padding: 4px 12px; 
+}
+.post-image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  object-fit: cover; 
+  max-height: 500px; 
+}
+.post-content-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.post-content-text p {
+  margin: 0.5rem 0;
+}
+.post-content-text pre {
+  background-color: var(--bg-light);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: monospace;
+}
+
+.post-meta {
+  padding: 1rem 1.5rem;
+  font-size: 14px;
+  color: var(--text-light);
+  text-align: left;
+}
+.post-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 1.5rem;
+  border-top: 5px solid var(--separator-color);
+}
+.action-button {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.action-button:hover {
+  background-color: var(--bg-light);
+}
+.action-button .icon {
+  font-size: 1.2em;
+}
+
+.action-button.active-like {
+  background-color: var(--like-bg);
+  color: var(--like-color);
+  border-color: var(--like-border);
+  font-weight: bold;
+}
+.action-button.active-cheer {
+  background-color: var(--cheer-bg);
+  color: var(--cheer-color);
+  border-color: var(--cheer-border);
+  font-weight: bold;
+}
+
+
+.comment-section {
+  padding: 1.5rem;
+  border-top: 5px solid var(--separator-color);
+}
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.comment-header h3 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: bold;
+}
+
+.comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.comment-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #F3F4F6;
+  align-items: flex-start;
+}
+.comment-item:last-child {
+  border-bottom: none;
+}
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+  margin-top: 4px; 
+}
+.comment-content {
+  flex: 1;
+  text-align: left;
+}
+.comment-author-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.comment-author-info strong {
+  font-size: 14px;
+}
+.comment-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+  word-break: break-word; 
+}
+
+.comment-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.comment-likes, .comment-cheers {
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.comment-likes .icon, .comment-cheers .icon {
+  margin-right: 4px;
+  font-size: 1.1em;
+}
+.comment-likes:hover, .comment-cheers:hover {
+  background-color: var(--bg-light);
+}
+
+.comment-likes.active-like {
+  color: var(--like-color);
+  background-color: var(--like-bg);
+  font-weight: bold;
+}
+.comment-cheers.active-cheer {
+  color: var(--cheer-color);
+  background-color: var(--cheer-bg);
+  font-weight: bold;
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #F3F4F6;
+}
+.comment-input {
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 16px;
+}
+.comment-submit-button {
+  padding: 0.75rem 1rem;
+  background: var(--text-primary);
+  color: var(--bg-white);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.comment-submit-button:hover {
+    background-color: var(--text-secondary);
+}
+
+.sidebar-column {
+  flex: 1;
+  max-width: 390px;
+  min-width: 300px;
+}
+.widget {
+  background: var(--bg-white);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.widget h3 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+}
+.widget h3 .icon {
+  font-size: 1.2em;
+}
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.category-list button {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--bg-light);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+.category-list button.active {
+  background: var(--text-primary);
+  color: var(--bg-white);
+}
+
+.mentor-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.mentor-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+.mentor-list li:last-child {
+  border-bottom: none;
+}
+.mentor-info {
+  display: flex;
+  flex-direction: column;
+}
+.mentor-info strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.mentor-info span {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.mentor-likes {
+  font-size: 12px;
+  color: #99A1AF;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cta-widget {
+  background: linear-gradient(135deg, #155DFC 0%, #51A2FF 100%);
+  color: white;
+  text-align: center;
+}
+.cta-widget h3 {
+  color: white;
+  justify-content: center;
+}
+.cta-widget p {
+  color: #DBEAFE;
+  font-size: 14px;
+  margin: 0.5rem 0 1rem 0;
+}
+.cta-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-white);
+  color: var(--primary-color);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.state {
+  text-align: center;
+  color: var(--text-light);
+  padding: 2rem;
+}
+.state.error {
+  color: #e53935;
+}
 </style>
