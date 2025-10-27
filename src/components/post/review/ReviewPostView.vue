@@ -275,7 +275,7 @@ const editComment = (comment) => {
 const deleteComment = async (commentNum) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
-      await axios.delete(`/api/manager-service/comments/${commentNum}`);
+      await axios.delete(`/api/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
       alert('댓글이 삭제되었습니다.');
       commentData.value = commentData.value.filter(c => c.num !== commentNum);
     } catch (err) { console.error("댓글 삭제 에러:", err); alert('댓글 삭제 실패'); }
