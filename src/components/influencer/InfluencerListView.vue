@@ -1,4 +1,4 @@
-<template>
+filter-icon<template>
   <div class="filter-container">
     <!-- 헤더 -->
     <div class="filter-header">
@@ -6,7 +6,7 @@
       <span class="filter-title">필터 및 검색</span>
     </div>
 
-    <!-- 검색 + 카테고리 -->
+    <!-- 검색 -->
     <div class="filter-body">
       <!-- 검색창 -->
       <div class="search-box">
@@ -31,133 +31,39 @@
           class="search-input"
         />
       </div>
-
-      <!-- 카테고리 필터 -->
-      <div class="category-select">
-        <select v-model="selectedCategory" class="category-dropdown">
-          <option value="">전체</option>
-          <option value="1">패션</option>
-          <option value="2">후기</option>
-          <option value="3">멘토링</option>
-          <option value="4">댓글</option>
-        </select>
-      </div>
     </div>
   </div>
 
-  <!-- 게시물 리스트 -->
-  <div
-    class="post-card"
-    v-for="report in filteredReports"
-    :key="report.reportNum"
-  >
+
+    <!-- 게시물 리스트 -->
+    <div class="post-card" v-for="apply in applies" :key="apply.num">
     <!-- 썸네일 이미지 -->
     <div class="post-image">
-      <img src="https://placehold.co/120x120" alt="게시물 이미지" />
+        <img src="https://placehold.co/120x120" alt="게시물 이미지" />
     </div>
 
     <!-- 내용 -->
     <div class="post-content">
-      <!-- 상단: 카테고리 + 제목 + 버튼 -->
-      <div class="post-header">
-        <div
-          class="post-category"
-          v-if="report.reportCategoryNum == 1"
-          style="background-color: #f3e8ff; color: #6e11b0"
-        >
-          패션
+        <!-- 이름 + 제목 -->
+        <div class="post-meta">
+            <div class="writer">{{ apply.memberName }}</div>
+            <!-- 상세보기 / 삭제 버튼 -->
+            <div class="post-actions">
+                <button class="post-detail-btn" @click="moveFashion(apply.num)">상세보기</button>
+                <button class="delete-btn" @click.stop="fashionDelete(apply.num)"></button>
+            </div>
         </div>
-        <div
-          class="post-category"
-          v-else-if="report.reportCategoryNum == 2"
-          style="background-color: rgba(86, 176, 17, 1); color: white"
-        >
-          후기
-        </div>
-        <div
-          class="post-category"
-          v-else-if="report.reportCategoryNum == 3"
-          style="background-color: rgba(189, 22, 108, 1); color: white"
-        >
-          멘토링
-        </div>
-        <div
-          class="post-category"
-          v-else
-          style="background-color: rgba(232, 150, 36, 1); color: white"
-        >
-          댓글
-        </div>
-        <div class="post-title">{{ report.reportContent }}</div>
-        <button class="post-detail-btn" @click="openModal(report)">상세보기</button>
-      </div>
 
-      <!-- 중단: 작성자, 작성일 -->
-      <div class="post-meta">
-        <div class="date">{{ report.reportDate }}</div>
-      </div>
+        <div>
+            <div class="post-title">{{ apply.title }}</div>
+            <div>{{ apply.content }}</div>
+        </div>
+
     </div>
-  </div>
-
-
-  <div>
-    <!-- 🪟 모달 -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-box">
-        <!-- 신고 상세 내용 -->
-        <div class="report-detail-container">
-          <!-- 상단 -->
-          <div class="report-header">
-            <button class="back-btn" @click="closeModal">← 닫기</button>
-
-            <div class="report-title">
-              <div class="title">부적절한 컨텐츠</div>
-              <div class="report-id">신고번호: {{ selectedReport.reportNum }}</div>
-            </div>
-          </div>
-
-          <!-- 본문 -->
-          <div class="report-body">
-            <div class="status-box">
-              <span class="status-label">현재 상태</span>
-              <span class="status-badge">{{ selectedReport.reportState }}</span>
-            </div>
-
-            <div class="info-section">
-              <div class="info-item">
-                <div class="label">카테고리</div>
-                <div class="value-box" v-if="selectedReport.reportCategoryNum == 1">패션</div>
-                <div class="value-box" v-if="selectedReport.reportCategoryNum == 2">후기</div>
-                <div class="value-box" v-if="selectedReport.reportCategoryNum == 3">멘토링</div>
-                <div class="value-box" v-if="selectedReport.reportCategoryNum == 4">댓글</div>
-              </div>
-
-              <div class="info-item">
-                <div class="label">접수일시</div>
-                <div class="value">{{ selectedReport.reportDate }}</div>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="section">
-              <div class="label">신고 내용</div>
-              <div class="content-box">{{ selectedReport.reportContent }}</div>
-            </div>
-          </div>
-
-          <!-- 하단 버튼 -->
-          <div class="footer">
-            <button class="back-small" @click="closeModal">닫기</button>
-            <div class="btn-group">
-              <button class="approve" @click="reportCheck">처리 완료</button>
-              <button class="reject" @click="reportDelete">삭제</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+
+
+  
 </template>
 
 <script setup>
@@ -172,8 +78,8 @@ const memberId = ref("");
 const memberEmail = ref("");
 const memberState = ref("");
 
-const reports = ref([]);
-const selectedReport = ref({});
+const applies = ref([]);
+const selectedApply = ref({});
 
 // 필터링용 상태값
 const selectedCategory = ref(""); // "" = 전체, 1~4 = 카테고리 번호
@@ -193,77 +99,53 @@ onMounted(async () => {
       memberState.value = authRes.data.memberState;
     }
 
-    const reportRes = await axios.get(
-      "/api/manager-service/report/selectreport",
-      {
+    axios.get('/api/manager-service/influencerApply/selectInfluencerApply',{
         headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    reports.value = reportRes.data;
+    }).then(
+        (res) => {
+            console.log(res)
+            res.data.forEach(item => {    
+                applies.value.push(item); 
+            });
+        }
+    )
   } catch (err) {
     console.error("Error loading reports:", err);
   }
 });
 
-// 카테고리 및 검색 필터링
-const filteredReports = computed(() => {
-  return reports.value.filter((r) => {
-    const matchCategory =
-      selectedCategory.value === "" ||
-      r.reportCategoryNum == selectedCategory.value;
-    const matchSearch =
-      r.reportContent?.includes(searchQuery.value) ||
-      String(r.reportCategoryNum).includes(searchQuery.value);
-    return matchCategory && matchSearch;
-  });
-});
-
-
-
-const showModal = ref(false);
-
-function openModal(report) {
-    selectedReport.value = report;
-    showModal.value = true;
-  
-}
-
-function closeModal() {
-  showModal.value = false;
-}
-
-const reportDelete = () => {
-    const data =new FormData();
-    data.append("reportNum",selectedReport.value.reportNum);
-
-    axios.post('/api/manager-service/report/deletereport',data,{
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+const fashionDelete = (num) => {
+    axios.delete(`/api/manager-service/posts/fashion/${num}`,{
+        headers: { Authorization: `Bearer ${token}` }
     }).then(
         (res) => {
             console.log(res)
-            reports.value = reports.value.filter(report => report.reportNum !== selectedReport.value.reportNum);
-            showModal.value = false;
         }
     )
 }
 
-const reportCheck = () => {
-    const data =new FormData();
-    data.append("reportNum",selectedReport.value.reportNum);
-    data.append("reportState","처리완료");
-
-    axios.post('/api/manager-service/report/updatereportstate',data,{
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+const reviewDelete = (num) => {
+    axios.delete(`/api/manager-service/posts/review/${num}`,{
+        headers: { Authorization: `Bearer ${token}` }
     }).then(
         (res) => {
-            console.log(res);
-            showModal.value = false;
+            console.log(res)
         }
     )
+}
+
+const mentoringDelete = (num) => {
+    axios.delete(`/api/manager-service/posts/mentoring/${num}`,{
+        headers: { Authorization: `Bearer ${token}` }
+    }).then(
+        (res) => {
+            console.log(res)
+        }
+    )
+}
+
+const moveFashion = (num) => {
+    router.push(`/fashionpost/${num}`);
 }
 </script>
 
@@ -302,7 +184,7 @@ const reportCheck = () => {
 .search-box {
   display: flex;
   align-items: center;
-  width: 50%;
+  width: 780px;
   background-color: #f3f3f5;
   border-radius: 8px;
   padding: 0 12px;
@@ -351,26 +233,11 @@ const reportCheck = () => {
 .post-card {
   position: relative;
   width: 800px;
-  height: 150px;
+  height: auto;
   display: flex;
   padding: 15px;
   gap: 20px;
   border-bottom: 1px solid #e5e7eb;
-}
-
-/* 이미지 */
-.post-image {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.post-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 /* 내용 영역 */
@@ -381,29 +248,31 @@ const reportCheck = () => {
   justify-content: space-between;
 }
 
-/* 상단 */
-.post-header {
+/* 이름 + 제목 */
+.post-meta {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 52px;
+  flex-direction: row; /* 👉 세로 → 가로로 변경 */
+  justify-content: space-between; /* 좌우 끝에 배치 */
+  align-items: center; /* 세로 가운데 정렬 */
 }
 
-.post-category {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  flex-shrink: 0;
+.writer {
+  font-size: 16px;
+  font-weight: 500;
+  color: #0a0a0a;
 }
 
 .post-title {
-  font-size: 16px;
-  color: #0a0a0a;
-  margin-left: 12px;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
+  color: #4a5565;
+}
+
+/* 버튼 영역 */
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
 .post-detail-btn {
@@ -422,7 +291,6 @@ const reportCheck = () => {
   font-size: 14px;
   color: #4a5565;
   text-align: left;
-  padding-left: 24px;
 }
 
 
@@ -646,4 +514,64 @@ const reportCheck = () => {
   padding: 8px 16px;
   cursor: pointer;
 }
+
+/* Tabs */
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  background: #ececf0;
+  padding: 4px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+.tab {
+  background: white;
+  border-radius: 14px;
+  padding: 6px 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.tab.active {
+  background: #030213;
+  color: white;
+}
+
+
+
+.good-container {
+  display: flex;              /* 가로 정렬 */
+  align-items: center;
+  padding-top: 10px;        /* 세로 가운데 정렬 */
+  gap: 10px;                  /* 두 div 사이 간격 */
+}
+
+.good {
+  background: #f55252;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.cheer{
+  background: #966def;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.finish {
+  background: #01cb52;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.delete-btn {
+  background: url('/images/icons/trashcan.svg') no-repeat center center;
+  background-size: 20px 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #888;
+}
+
+
 </style>
