@@ -41,7 +41,8 @@
             </div>
 
             <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else :src="`/images/fashionpost${postId}.jpg`" alt="Knit Outfit" class="post-image" />
+            <img v-else src="/images/fashionpost1.jpg" alt="Knit Outfit" class="post-image" />
+
             <div class="post-content-text" v-html="postData.content || '내용 없음'">
               </div>
           </div>
@@ -56,16 +57,8 @@
               class="action-button"
               :class="{ 'active-like': postReaction.isLiked }"
               @click="togglePostReaction('good')">
-            <button 
-              class="action-button"
-              :class="{ 'active-like': postReaction.isLiked }"
-              @click="togglePostReaction('good')">
               <span class="icon">❤️</span> 좋아요 {{ postData.good || 0 }}
             </button>
-            <button 
-              class="action-button"
-              :class="{ 'active-cheer': postReaction.isCheered }"
-              @click="togglePostReaction('cheer')">
             <button 
               class="action-button"
               :class="{ 'active-cheer': postReaction.isCheered }"
@@ -81,7 +74,6 @@
             <div class="comment-header">
               <h3>댓글 {{ commentData?.length || 0 }}</h3>
               </div>
-              </div>
 
             <ul class="comment-list" v-if="commentData && commentData.length > 0">
               <li v-for="comment in commentData" :key="comment.num" class="comment-item">
@@ -89,7 +81,6 @@
                 <div class="comment-content">
                   <div class="comment-author-info">
                     <strong>{{ comment.memberName || 'Unknown User' }}</strong>
-                    </div>
                     </div>
                   <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
                   
@@ -106,22 +97,7 @@
                       @click="toggleCommentReaction(comment, 'cheer')">
                       <span class="icon">💪</span> 힘내요 {{ comment.cheer || 0 }}
                     </div>
-                  
-                  <div class="comment-actions">
-                    <div 
-                      class="comment-likes" 
-                      :class="{ 'active-like': comment.userReaction === 'good' }"
-                      @click="toggleCommentReaction(comment, 'good')">
-                      <span class="icon">👍</span> 좋아요 {{ comment.good || 0 }}
-                    </div>
-                    <div 
-                      class="comment-cheers" 
-                      :class="{ 'active-cheer': comment.userReaction === 'cheer' }"
-                      @click="toggleCommentReaction(comment, 'cheer')">
-                      <span class="icon">💪</span> 힘내요 {{ comment.cheer || 0 }}
-                    </div>
                   </div>
-
 
                 </div>
                 <div class="more-options">...</div>
@@ -192,39 +168,6 @@ import HeaderView from '../../HeaderView.vue';
 import FooterView from '../../FooterView.vue';
 
 const route = useRoute(); 
-import { ref, onMounted, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import HeaderView from '../../HeaderView.vue'
-import FooterView from '../../FooterView.vue'
-
-/* =========================== axios 인스턴스 (Board 스타일) =========================== */
-const router = useRouter()
-const api = axios.create({
-  baseURL: '/api',
-  withCredentials: true,
-})
-api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('token')
-  if (token) {
-    config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err?.response?.status === 401) {
-      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
-      router.push('/')
-    }
-    return Promise.reject(err)
-  }
-)
-
-/* =============================== 상태 =============================== */
-const route = useRoute()
 
 const postData = ref(null);
 const commentData = ref([]);
@@ -244,224 +187,16 @@ const postReaction = reactive({
   isCheering: false
 });
 
-const postData = ref(null)
-const commentData = ref([])
-const isLoading = ref(true)
-const error = ref(null)
-
-/* 로그인 사용자 정보 */
-const memberNum = ref(null)
-const memberId = ref(null)
-const memberEmail = ref(null)
-const memberState = ref(null)
-const currentMemberName = ref('') // 댓글 등 즉시 표시용
-
-/* 기존 하드코딩 제거: currentMemberNum → memberNum 사용 */
-const FASHION_POST_CATEGORY = 1
-
-/* 반응 상태 */
-const postReaction = reactive({
-  isLiked: false,
-  isCheered: false,
-  isLiking: false,
-  isCheering: false,
-})
-
-/* 상세 이미지 표시용 */
-const mainImages = ref([])      // photoCategoryNum === 1
-const itemImages = ref([])      // photoCategoryNum !== 1
-const activeMainIndex = ref(0)
-const fallbackImage = '/images/fallback.png'
-
-/* ====================== 경로 변환: DB path+name → /images/... ====================== 
-   예) path: C:\3rdProjectFE\public\images\fashion
-       name: 1234-abcd.png
-   → /images/fashion/1234-abcd.png
-*/
-const toPublicImageSrc = (path, name) => {
-  if (!name) return null
-  if (/^https?:\/\//i.test(name)) return name // 이미 절대 URL이면 그대로
-  if (path && /public[\\/]/i.test(path)) {
-    const afterPublic = path.split(/public[\\/]/i).pop() || ''
-    const base = afterPublic.replaceAll('\\', '/').replace(/^\/+/, '')
-    return (`/${base}/${name}`).replace(/\/+/g, '/')
-  }
-  if (path?.startsWith('/')) {
-    return (`${path}/${name}`).replace(/\/+/g, '/')
-  }
-  // 안전 기본값 (프로젝트 기본 폴더 가정)
-  return (`/images/fashion/${name}`).replace(/\/+/g, '/')
-}
-
-/* photos 배열 → mainImages/itemImages 구성 */
-const buildImagesFromPhotos = (photos = []) => {
-  const byPost = photos
-    .filter(p => Number(p?.photoCategoryNum) === 1)
-    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
-  const byItem = photos
-    .filter(p => Number(p?.photoCategoryNum) !== 1)
-    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
-
-  mainImages.value = byPost.map(p => toPublicImageSrc(p?.path, p?.name)).filter(Boolean)
-  itemImages.value = byItem.map(p => toPublicImageSrc(p?.path, p?.name)).filter(Boolean)
-  activeMainIndex.value = 0
-}
-
-const onImgError = (e) => { e.target.src = fallbackImage }
-
-/* =============================== 초기 로딩 =============================== */
-const postId = ref(null)
 onMounted(async () => {
   postId.value = route.params.id; 
 
-  // 1) 인증 정보 조회
-  const token = sessionStorage.getItem('token')
-  if (!token) {
-    alert('로그인 후 이용해 주세요.')
-    router.push('/')
-    return
-  }
-
-  try {
-    const authRes = await api.get('/member-service/member/auth')
-    const d = authRes?.data ?? {}
-    memberNum.value = Number(d.memberNum ?? d.num ?? d.number) || null
-    memberId.value = d.memberId ?? null
-    memberEmail.value = d.memberEmail ?? d.email ?? null
-    memberState.value = d.memberState ?? null
-    currentMemberName.value = d.memberName ?? d.name ?? '' // 즉시 표시용 이름
-
-    // 디버그 로깅
-    console.log('[member auth raw]', d)
-    console.log('[memberNum]', memberNum.value)
-    console.log('[memberId]', memberId.value)
-    console.log('[memberEmail]', memberEmail.value)
-    console.log('[memberState]', memberState.value)
-
-    if (!memberNum.value) {
-      alert('회원 정보를 확인할 수 없습니다. 다시 로그인해 주세요.')
-      router.push('/')
-      return
-    }
-  } catch (e) {
-    console.error('인증 정보 조회 실패:', e)
-    router.push('/')
-    return
-  }
-
-  // 2) 라우트 파라미터 확인
-  postId.value = route.params.id
   if (!postId.value) {
-    error.value = '게시글 ID가 주소에 포함되지 않았습니다. (예: /fashionpost/1)'
-    isLoading.value = false
-    return
-  }
-
-  // 3) 상세/댓글 로딩
-  try {
-    isLoading.value = true
-    error.value = null
-
-    const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
-    postData.value = postRes.data
-
-    // 상세의 photos를 사용해 정적 경로로 이미지 구성
-    buildImagesFromPhotos(postData.value?.photos || [])
-
-    const commentsRes = await api.get('/manager-service/comments/getcomments', {
-      params: { postType: 'fashion', postNum: postId.value }
-    })
-    commentData.value = (commentsRes.data || []).map(comment => ({
-      ...comment,
-      userReaction: null,
-      isReacting: false,
-    }))
-  } catch (err) {
-    console.error('데이터 로딩 에러:', err)
-    error.value = '게시글 정보를 불러오는 데 실패했습니다.'
-  } finally {
-    isLoading.value = false
-  }
-})
-
-/* =========================== 게시글 반응 토글 =========================== */
-const togglePostReaction = async (reactionType) => {
-  if (postReaction.isLiking || postReaction.isCheering) return
-
-  const isLikeAction = reactionType === 'good'
-  if (isLikeAction) postReaction.isLiking = true
-  else postReaction.isCheering = true
-
-  const payload = {
-    memberNum: memberNum.value,
-    postCategoryNum: FASHION_POST_CATEGORY,
-    reactionType, // 'good' | 'cheer'
+    error.value = "게시글 ID가 주소에 포함되지 않았습니다. (예: /fashionpost/1)";
+    isLoading.value = false;
+    return;
   }
 
   try {
-    await api.post(`/manager-service/posts/fashion/react/${postId.value}`, payload)
-
-    if (isLikeAction) {
-      const wasLiked = postReaction.isLiked
-      postReaction.isLiked = !wasLiked
-      postData.value.good += wasLiked ? -1 : 1
-
-      if (postReaction.isLiked && postReaction.isCheered) {
-        postReaction.isCheered = false
-        postData.value.cheer -= 1
-      }
-    } else {
-      const wasCheered = postReaction.isCheered
-      postReaction.isCheered = !wasCheered
-      postData.value.cheer += wasCheered ? -1 : 1
-
-      if (postReaction.isCheered && postReaction.isLiked) {
-        postReaction.isLiked = false
-        postData.value.good -= 1
-      }
-    }
-  } catch (err) {
-    console.error(`Error toggling post ${reactionType}:`, err)
-    alert('반응을 등록하는 데 실패했습니다.')
-  } finally {
-    if (isLikeAction) postReaction.isLiking = false
-    else postReaction.isCheering = false
-  }
-}
-
-/* =========================== 댓글 반응 토글 =========================== */
-const toggleCommentReaction = async (comment, reactionType) => {
-  if (comment.isReacting) return
-  comment.isReacting = true
-
-  const payload = {
-    memberNum: memberNum.value,
-    reactionType, // 'good' | 'cheer'
-  }
-
-  try {
-    await api.post(`/manager-service/comments/${comment.num}/react`, payload)
-
-    const currentReaction = comment.userReaction
-    if (reactionType === 'good') {
-      if (currentReaction === 'good') {
-        comment.userReaction = null
-        comment.good -= 1
-      } else {
-        comment.userReaction = 'good'
-        comment.good += 1
-        if (currentReaction === 'cheer') comment.cheer -= 1
-      }
-    } else {
-      if (currentReaction === 'cheer') {
-        comment.userReaction = null
-        comment.cheer -= 1
-      } else {
-        comment.userReaction = 'cheer'
-        comment.cheer += 1
-        if (currentReaction === 'good') comment.good -= 1
-      }
-    }
     isLoading.value = true;
     error.value = null;
 
@@ -490,15 +225,11 @@ const toggleCommentReaction = async (comment, reactionType) => {
     // commentData.value의 각 comment.userReaction 값을 설정해야 함)
 
   } catch (err) {
-    console.error(`Error toggling comment ${reactionType}:`, err)
-    alert('댓글 반응을 등록하는 데 실패했습니다.')
+    console.error("데이터 로딩 에러:", err);
+    error.value = "게시글 정보를 불러오는 데 실패했습니다.";
   } finally {
-    comment.isReacting = false
+    isLoading.value = false;
   }
-}
-
-/* =============================== 댓글 등록 =============================== */
-const newCommentText = ref('')
 });
 
 // --- 게시글 반응 토글 함수 ---
@@ -599,10 +330,11 @@ const toggleCommentReaction = async (comment, reactionType) => {
 // ------------------------------------
 
 
+// 댓글 등록 함수
 const handleCommentSubmit = async () => {
   if (!newCommentText.value.trim()) {
-    alert('댓글 내용을 입력해주세요.')
-    return
+    alert("댓글 내용을 입력해주세요.");
+    return;
   }
 
   const currentMemberName = '이민준'; 
@@ -611,10 +343,9 @@ const handleCommentSubmit = async () => {
     const newCommentPayload = {
       content: newCommentText.value,
       memberNum: currentMemberNum.value,
-      memberNum: memberNum.value,
       postType: 'fashion',
-      postNum: postId.value,
-    }
+      postNum: postId.value
+    };
 
     const response = await axios.post(`/api/manager-service/comments/createcomment`, newCommentPayload);
     const newCommentFromServer = response.data;
@@ -631,20 +362,6 @@ const handleCommentSubmit = async () => {
     
     newCommentText.value = '';
 
-    const res = await api.post('/manager-service/comments/createcomment', newCommentPayload)
-    const created = res.data || {}
-
-    if (!created.memberName) {
-      created.memberName = currentMemberName.value || '익명'
-    }
-
-    commentData.value.push({
-      ...created,
-      userReaction: null,
-      isReacting: false,
-    })
-
-    newCommentText.value = ''
   } catch (err) {
     console.error("댓글 등록 에러:", err);
     alert("댓글 등록에 실패했습니다. (로그인 상태 확인 또는 백엔드 API 확인 필요)");
@@ -661,11 +378,6 @@ const popularMentors = ref([
   { name: '배민', field: '브랜딩', likes: 189 },
   { name: '트렌드분석이', field: '트렌드 분석', likes: 156 },
 ]);
-    console.error('댓글 등록 에러:', err)
-    alert('댓글 등록에 실패했습니다. (로그인 상태 확인 또는 백엔드 API 확인 필요)')
-  }
-}
-
 </script>
 
 <style scoped>
@@ -678,13 +390,6 @@ const popularMentors = ref([
   --bg-light: #F9FAFB;
   --bg-white: #FFFFFF;
   --separator-color: #E5E7EB;
-  /* [신규] 반응 색상 */
-  --like-color: #D32F2F;
-  --like-bg: #ffebee;
-  --like-border: #ffcdd2;
-  --cheer-color: #1976D2;
-  --cheer-bg: #e3f2fd;
-  --cheer-border: #bbdefb;
   /* [신규] 반응 색상 */
   --like-color: #D32F2F;
   --like-bg: #ffebee;
@@ -894,7 +599,6 @@ const popularMentors = ref([
   justify-content: center;
   gap: 0.25rem;
   transition: background-color 0.2s, color 0.2s, border-color 0.2s; 
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s; 
 }
 .action-button:hover {
   background-color: var(--bg-light);
@@ -918,19 +622,6 @@ const popularMentors = ref([
 }
 /* ---------------------------------- */
 
-
-.action-button.active-like {
-  background-color: var(--like-bg);
-  color: var(--like-color);
-  border-color: var(--like-border);
-  font-weight: bold;
-}
-.action-button.active-cheer {
-  background-color: var(--cheer-bg);
-  color: var(--cheer-color);
-  border-color: var(--cheer-border);
-  font-weight: bold;
-}
 
 .comment-section {
   padding: 1.5rem;
@@ -1017,12 +708,6 @@ const popularMentors = ref([
   margin-top: 0.5rem;
 }
 .comment-likes, .comment-cheers {
-.comment-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-.comment-likes, .comment-cheers {
   font-size: 12px;
   color: var(--text-light);
   cursor: pointer;
@@ -1031,13 +716,7 @@ const popularMentors = ref([
   padding: 2px 6px;
   border-radius: 4px;
   transition: background-color 0.2s, color 0.2s;
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
 }
-.comment-likes .icon, .comment-cheers .icon {
 .comment-likes .icon, .comment-cheers .icon {
   margin-right: 4px;
   font-size: 1.1em;
@@ -1058,23 +737,6 @@ const popularMentors = ref([
   font-weight: bold;
 }
 /* ------------------------ */
-
-  font-size: 1.1em;
-}
-.comment-likes:hover, .comment-cheers:hover {
-  background-color: var(--bg-light);
-}
-
-.comment-likes.active-like {
-  color: var(--like-color);
-  background-color: var(--like-bg);
-  font-weight: bold;
-}
-.comment-cheers.active-cheer {
-  color: var(--cheer-color);
-  background-color: var(--cheer-bg);
-  font-weight: bold;
-}
 
 
 .comment-form {
@@ -1207,12 +869,13 @@ const popularMentors = ref([
   cursor: pointer;
 }
 
+/* 로딩 및 에러 상태 스타일 추가 */
 .state {
   text-align: center;
   color: var(--text-light);
   padding: 2rem;
 }
 .state.error {
-  color: #e53935;
+  color: #e53935; /* 빨간색 에러 메시지 */
 }
 </style>
