@@ -37,13 +37,14 @@
               <div>착용 제품</div>
               <strong v-for="item in postData.items" :key="item.name">{{ item.name }}</strong>
             </div>
-            <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else :src="`/images/fashionpost${postId}.jpg`" alt="Knit Outfit" class="post-image" />
+            <img :src="mainImages[activeMainIndex]" @error="onImgError" alt="메인 이미지">
+            <div v-for="(imgSrc, index) in itemImages" :key="index">
+              <img :src="imgSrc" @error="onImgError" alt="아이템 이미지">
+            </div>
             <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
           </div>
 
           <div class="post-meta">
-            <span>조회 {{ postData.views || 0 }}</span> <span>·</span>
             <span>댓글 {{ commentData?.length || 0 }}</span>
           </div>
 
@@ -100,9 +101,7 @@
         <div class="widget category-widget">
           <h3>카테고리</h3>
           <div class="category-list">
-            <button v-for="category in categories" :key="category" :class="{ active: category === '전체' }">
-              {{ category }}
-            </button>
+            <button v-for="tag in postHashtags" :key="tag.num">{{ tag.name }}</button>
           </div>
         </div>
         <div class="widget mentors-widget">
@@ -141,12 +140,36 @@ const route = useRoute();
 const router = useRouter(); // router 인스턴스 가져오기
 
 const postData = ref(null);
+const postHashtags = ref([]) // <--- hashtags 저장할 ref 추가
 const commentData = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
 const newCommentText = ref('');
 const postId = ref(null);
+
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+})
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
+      router.push('/')
+    }
+    return Promise.reject(err)
+  }
+)
 
 // --- [수정] 실제 로그인 구현 후 이 부분은 수정되어야 합니다 ---
 // (예: sessionStorage에서 토큰을 디코딩하여 사용자 번호/이름 가져오기)
@@ -156,6 +179,62 @@ const currentMemberName = ref('이민준'); // 임시: 현재 로그인된 사�
 
 const FASHION_POST_CATEGORY = 1;
 
+const toPublicImageSrc = (path, name) => {
+  if (!name) return null
+  if (/^https?:\/\//i.test(name)) return name // 혹시 절대 URL이면 통과
+
+  // 1. path에 'public' 디렉토리 표시가 있는지 확인합니다.
+  if (path && /public[\\/]/i.test(path)) {
+    // 2. 'public' 이후의 경로만 추출합니다. (예: images\fashion)
+    const afterPublic = path.split(/public[\\/]/i).pop() || ''
+    // 3. 윈도우 경로 구분자(\)를 웹 URL 구분자(/)로 변경하고, 맨 앞 슬래시를 제거합니다. (예: images/fashion)
+    const base = afterPublic.replaceAll('\\', '/').replace(/^\/+/, '')
+    // 4. 최종 웹 경로를 만듭니다. (예: /images/fashion/1234-abcd.png)
+    //    중복 슬래시(//)는 하나로 정리합니다.
+    return (`/${base}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 5. 만약 path가 이미 /images/... 같은 웹 경로 형태면 그대로 사용합니다.
+  if (path?.startsWith('/')) {
+    return (`${path}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 6. 위 조건들에 맞지 않으면 기본 경로를 사용합니다. (이 부분은 프로젝트 구조에 맞게 조정 필요)
+  //    예) /images/fashion/1234-abcd.png
+  return (`/images/fashion/${name}`).replace(/\/+/g, '/')
+}
+
+const mainImages = ref([])
+const itemImages = ref([])
+const activeMainIndex = ref(0)
+
+const onImgError = (e) => {
+  if (e?.target) e.target.src = '/images/fashionpost1.jpg'
+}
+
+const buildImagesFromPhotos = (photos = []) => {
+  const byPost = photos
+    .filter(p => Number(p?.photoCategoryNum) === 1) // 카테고리 1번은 메인 이미지로 가정
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const byItem = photos
+    .filter(p => Number(p?.photoCategoryNum) !== 1) // 그 외는 아이템 이미지로 가정
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+
+  // 각 사진 정보(p)에서 path와 name을 꺼내 toPublicImageSrc 함수로 URL 변환
+  mainImages.value = byPost
+    .map(p => toPublicImageSrc(p?.path, p?.name))
+    .filter(Boolean) // null 값 제거
+
+  itemImages.value = byItem
+    .map(p => toPublicImageSrc(p?.path, p?.name))
+    .filter(Boolean) // null 값 제거
+
+  activeMainIndex.value = 0 // 첫 번째 메인 이미지를 활성화
+}
+
+
+
+
 const postReaction = reactive({
   isLiked: false,
   isCheered: false,
@@ -164,6 +243,20 @@ const postReaction = reactive({
 });
 
 onMounted(async () => {
+  postId.value = route.params.id
+  if (!postId.value) {
+    error.value = '게시글 ID가 주소에 포함되지 않았습니다.'
+    isLoading.value = false
+    return
+  }
+
+  const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
+  postData.value = postRes.data
+
+  postHashtags.value = Array.isArray(postData.value?.hashtags) ? postData.value.hashtags : []
+
+  buildImagesFromPhotos(postData.value?.photos || [])
+
   postId.value = route.params.id;
   if (!postId.value) {
     error.value = "게시글 ID가 주소에 포함되지 않았습니다.";
@@ -178,8 +271,10 @@ const fetchPostAndComments = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const postResponse = await axios.get(`/api/manager-service/posts/fashion/${postId.value}`);
+    const postResponse = await api.get(`/manager-service/posts/fashion/${postId.value}`);
     postData.value = postResponse.data;
+
+    buildImagesFromPhotos(postData.value?.photos || [])
 
     const commentsResponse = await axios.get(`/api/manager-service/comments/getcomments`, {
       params: { postType: 'fashion', postNum: postId.value }
