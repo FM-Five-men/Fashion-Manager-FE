@@ -1,9 +1,9 @@
 <template>
-  <div id="mentoring-post-page">
+  <div id="fashion-community-page">
     <HeaderView />
     <section class="community-banner">
-      <h1>FASHION MENTORING</h1>
-      <p>전문가와 함께 성장하세요</p>
+      <h1>FASHION COMMUNITY</h1>
+      <p>당신의 스타일을 공유하세요</p>
     </section>
 
     <main class="main-container">
@@ -29,22 +29,33 @@
           </div>
 
           <div class="post-body">
-            <div class="tags">
-              <span class="recruiting-badge">{{ postData.status === 'RECRUITING' ? '모집중' : '모집완료' }}</span>
-            </div>
             <h2>{{ postData.title || '제목 없음' }}</h2>
-            <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else :src="`/images/mentoringpost${postId}.jpg`" alt="Mentoring default image" class="post-image" />
+            <div class="tags" v-if="postData.hashTags && postData.hashTags.length > 0">
+              <span v-for="tag in postData.hashTags" :key="tag.name">{{ tag.name }}</span>
+            </div>
+            <div class="product-info" v-if="postData.items && postData.items.length > 0">
+              <div>착용 제품</div>
+              <strong v-for="item in postData.items" :key="item.name">{{ item.name }}</strong>
+            </div>
+            <img :src="mainImages[activeMainIndex]" @error="onImgError" alt="메인 이미지">
+            <div v-for="(imgSrc, index) in itemImages" :key="index">
+              <img :src="imgSrc" @error="onImgError" alt="아이템 이미지">
+            </div>
             <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
           </div>
 
           <div class="post-meta">
-            <span>조회 {{ postData.views || 0 }}</span> <span>·</span>
             <span>댓글 {{ commentData?.length || 0 }}</span>
           </div>
 
           <div class="post-actions">
-            </div>
+            <button class="action-button" :class="{ 'active-like': postReaction.isLiked }" @click="togglePostReaction('good')">
+              <span class="icon">❤️</span> 좋아요 {{ postData.good || 0 }}
+            </button>
+            <button class="action-button" :class="{ 'active-cheer': postReaction.isCheered }" @click="togglePostReaction('cheer')">
+              <span class="icon">💪</span> 힘내요 {{ postData.cheer || 0 }}
+            </button>
+          </div>
 
           <section class="comment-section">
             <div class="comment-header">
@@ -58,7 +69,15 @@
                     <strong>{{ comment.memberName || 'Unknown User' }}</strong>
                   </div>
                   <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
+                  <div class="comment-actions">
+                    <div class="comment-likes" :class="{ 'active-like': comment.userReaction === 'good' }" @click="toggleCommentReaction(comment, 'good')">
+                      <span class="icon">👍</span> 좋아요 {{ comment.good || 0 }}
+                    </div>
+                    <div class="comment-cheers" :class="{ 'active-cheer': comment.userReaction === 'cheer' }" @click="toggleCommentReaction(comment, 'cheer')">
+                      <span class="icon">💪</span> 힘내요 {{ comment.cheer || 0 }}
+                    </div>
                   </div>
+                </div>
                 <div class="comment-edit-actions" v-if="comment.memberNum === currentMemberNum">
                   <button @click="editComment(comment)">수정</button>
                   <button @click="deleteComment(comment.num)">삭제</button>
@@ -82,9 +101,7 @@
         <div class="widget category-widget">
           <h3>카테고리</h3>
           <div class="category-list">
-            <button v-for="category in categories" :key="category" :class="{ active: category === '전체' }">
-              {{ category }}
-            </button>
+            <button v-for="tag in postHashtags" :key="tag.num">{{ tag.name }}</button>
           </div>
         </div>
         <div class="widget mentors-widget">
@@ -123,6 +140,7 @@ const route = useRoute();
 const router = useRouter(); // router 인스턴스 가져오기
 
 const postData = ref(null);
+const postHashtags = ref([]) // <--- hashtags 저장할 ref 추가
 const commentData = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
@@ -130,17 +148,115 @@ const error = ref(null);
 const newCommentText = ref('');
 const postId = ref(null);
 
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+})
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
+      router.push('/')
+    }
+    return Promise.reject(err)
+  }
+)
+
 // --- [수정] 실제 로그인 구현 후 이 부분은 수정되어야 합니다 ---
-const currentMemberNum = ref(4); 
-const currentMemberName = ref('이민준');
+// (예: sessionStorage에서 토큰을 디코딩하여 사용자 번호/이름 가져오기)
+const currentMemberNum = ref(4); // 임시: 현재 로그인된 사용자 번호
+const currentMemberName = ref('이민준'); // 임시: 현재 로그인된 사용자 이름
 // ----------------------------------------------------
 
-const MENTORING_POST_CATEGORY = 3; // 멘토링 카테고리 번호 (백엔드 확인 필요)
+const FASHION_POST_CATEGORY = 1;
 
-// [수정] postReaction 관련 코드 제거
-// const postReaction = reactive({ ... });
+const toPublicImageSrc = (path, name) => {
+  if (!name) return null
+  if (/^https?:\/\//i.test(name)) return name // 혹시 절대 URL이면 통과
+
+  // 1. path에 'public' 디렉토리 표시가 있는지 확인합니다.
+  if (path && /public[\\/]/i.test(path)) {
+    // 2. 'public' 이후의 경로만 추출합니다. (예: images\fashion)
+    const afterPublic = path.split(/public[\\/]/i).pop() || ''
+    // 3. 윈도우 경로 구분자(\)를 웹 URL 구분자(/)로 변경하고, 맨 앞 슬래시를 제거합니다. (예: images/fashion)
+    const base = afterPublic.replaceAll('\\', '/').replace(/^\/+/, '')
+    // 4. 최종 웹 경로를 만듭니다. (예: /images/fashion/1234-abcd.png)
+    //    중복 슬래시(//)는 하나로 정리합니다.
+    return (`/${base}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 5. 만약 path가 이미 /images/... 같은 웹 경로 형태면 그대로 사용합니다.
+  if (path?.startsWith('/')) {
+    return (`${path}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 6. 위 조건들에 맞지 않으면 기본 경로를 사용합니다. (이 부분은 프로젝트 구조에 맞게 조정 필요)
+  //    예) /images/fashion/1234-abcd.png
+  return (`/images/fashion/${name}`).replace(/\/+/g, '/')
+}
+
+const mainImages = ref([])
+const itemImages = ref([])
+const activeMainIndex = ref(0)
+
+const onImgError = (e) => {
+  if (e?.target) e.target.src = '/images/fashionpost1.jpg'
+}
+
+const buildImagesFromPhotos = (photos = []) => {
+  const byPost = photos
+    .filter(p => Number(p?.photoCategoryNum) === 1) // 카테고리 1번은 메인 이미지로 가정
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const byItem = photos
+    .filter(p => Number(p?.photoCategoryNum) !== 1) // 그 외는 아이템 이미지로 가정
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+
+  // 각 사진 정보(p)에서 path와 name을 꺼내 toPublicImageSrc 함수로 URL 변환
+  mainImages.value = byPost
+    .map(p => toPublicImageSrc(p?.path, p?.name))
+    .filter(Boolean) // null 값 제거
+
+  itemImages.value = byItem
+    .map(p => toPublicImageSrc(p?.path, p?.name))
+    .filter(Boolean) // null 값 제거
+
+  activeMainIndex.value = 0 // 첫 번째 메인 이미지를 활성화
+}
+
+
+
+
+const postReaction = reactive({
+  isLiked: false,
+  isCheered: false,
+  isLiking: false,
+  isCheering: false
+});
 
 onMounted(async () => {
+  postId.value = route.params.id
+  if (!postId.value) {
+    error.value = '게시글 ID가 주소에 포함되지 않았습니다.'
+    isLoading.value = false
+    return
+  }
+
+  const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
+  postData.value = postRes.data
+
+  postHashtags.value = Array.isArray(postData.value?.hashtags) ? postData.value.hashtags : []
+
+  buildImagesFromPhotos(postData.value?.photos || [])
+
   postId.value = route.params.id;
   if (!postId.value) {
     error.value = "게시글 ID가 주소에 포함되지 않았습니다.";
@@ -148,18 +264,20 @@ onMounted(async () => {
     return;
   }
   await fetchPostAndComments();
-  // TODO: Fetch user's reaction status for comments
+  // TODO: Fetch user's reaction status for the post and comments
 });
 
 const fetchPostAndComments = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const postResponse = await axios.get(`/api/manager-service/posts/mentoring/${postId.value}`);
+    const postResponse = await api.get(`/manager-service/posts/fashion/${postId.value}`);
     postData.value = postResponse.data;
 
+    buildImagesFromPhotos(postData.value?.photos || [])
+
     const commentsResponse = await axios.get(`/api/manager-service/comments/getcomments`, {
-      params: { postType: 'mentoring', postNum: postId.value }
+      params: { postType: 'fashion', postNum: postId.value }
     });
     commentData.value = commentsResponse.data.map(c => ({ ...c, userReaction: null, isReacting: false }));
 
@@ -174,19 +292,54 @@ const fetchPostAndComments = async () => {
   }
 };
 
-// [수정] togglePostReaction 함수 전체 제거
-// const togglePostReaction = async (reactionType) => { ... };
+const togglePostReaction = async (reactionType) => {
+  if (postReaction.isLiking || postReaction.isCheering) return;
+  const isLikeAction = reactionType === 'good';
+  if (isLikeAction) postReaction.isLiking = true; else postReaction.isCheering = true;
+  const payload = { memberNum: currentMemberNum.value, postCategoryNum: FASHION_POST_CATEGORY, reactionType };
+  try {
+    await axios.post(`/api/manager-service/posts/fashion/react/${postId.value}`, payload);
+    if (isLikeAction) {
+      const wasLiked = postReaction.isLiked;
+      postReaction.isLiked = !wasLiked;
+      postData.value.good += wasLiked ? -1 : 1;
+      if (postReaction.isLiked && postReaction.isCheered) {
+        postReaction.isCheered = false; postData.value.cheer -= 1;
+      }
+    } else {
+      const wasCheered = postReaction.isCheered;
+      postReaction.isCheered = !wasCheered;
+      postData.value.cheer += wasCheered ? -1 : 1;
+      if (postReaction.isCheered && postReaction.isLiked) {
+        postReaction.isLiked = false; postData.value.good -= 1;
+      }
+    }
+  } catch (err) { console.error(`Error:`, err); alert("실패"); }
+  finally { if (isLikeAction) postReaction.isLiking = false; else postReaction.isCheering = false; }
+};
 
-// [수정] 멘토링 댓글 반응 기능 제거
 const toggleCommentReaction = async (comment, reactionType) => {
-  console.log("Mentoring comments do not support reactions.");
-  // 멘토링 댓글에 반응 기능이 필요하다면 여기에 Fashion/Review와 동일한 로직 구현
+  if (comment.isReacting) return;
+  comment.isReacting = true;
+  const payload = { memberNum: currentMemberNum.value, reactionType };
+  try {
+    await axios.post(`/api/manager-service/comments/${comment.num}/react`, payload);
+    const currentReaction = comment.userReaction;
+    if (reactionType === 'good') {
+      if (currentReaction === 'good') { comment.userReaction = null; comment.good -= 1; }
+      else { comment.userReaction = 'good'; comment.good += 1; if (currentReaction === 'cheer') { comment.cheer -= 1; } }
+    } else {
+      if (currentReaction === 'cheer') { comment.userReaction = null; comment.cheer -= 1; }
+      else { comment.userReaction = 'cheer'; comment.cheer += 1; if (currentReaction === 'good') { comment.good -= 1; } }
+    }
+  } catch (err) { console.error(`Error:`, err); alert("실패"); }
+  finally { comment.isReacting = false; }
 };
 
 const handleCommentSubmit = async () => {
   if (!newCommentText.value.trim()) { alert("댓글 내용을 입력해주세요."); return; }
   try {
-    const payload = { content: newCommentText.value, memberNum: currentMemberNum.value, postType: 'mentoring', postNum: postId.value };
+    const payload = { content: newCommentText.value, memberNum: currentMemberNum.value, postType: 'fashion', postNum: postId.value };
     const response = await axios.post(`/api/manager-service/comments/createcomment`, payload);
     const newComment = response.data;
     if (!newComment.memberName) { newComment.memberName = currentMemberName.value; }
@@ -197,16 +350,17 @@ const handleCommentSubmit = async () => {
 
 // --- [수정] 수정/삭제 함수 추가 ---
 const editPost = () => {
-  // 수정 페이지로 이동
-  router.push({ name: 'editmentoringpost', params: { id: postId.value } });
+  // 패션 게시판 수정 라우터 이름 확인 필요 (라우터에 'editfashionpost'로 추가 가정)
+  // router.push({ name: 'editfashionpost', params: { id: postId.value } });
+  alert('패션 게시글 수정 기능 구현 필요 (라우터 설정 확인)');
 };
 
 const deletePost = async () => {
   if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
     try {
-      await axios.delete(`/api/manager-service/posts/mentoring/${postId.value}`);
+      await axios.delete(`/api/manager-service/posts/fashion/${postId.value}`);
       alert('게시글이 삭제되었습니다.');
-      router.push({ name: 'mentoringboard' });
+      router.push({ name: 'fashionboardview' });
     } catch (err) { console.error("게시글 삭제 에러:", err); alert('게시글 삭제 실패'); }
   }
 };
@@ -214,7 +368,8 @@ const deletePost = async () => {
 const editComment = (comment) => {
   const newContent = prompt('댓글 수정:', comment.content);
   if (newContent !== null && newContent.trim() !== comment.content) {
-    // TODO: 댓글 수정 API 호출
+    // TODO: 댓글 수정 API 호출 (PUT /api/manager-service/comments/{commentNum})
+    // 예시: axios.put(`/api/manager-service/comments/${comment.num}`, { content: newContent }).then(...)
     alert(`댓글 수정 API 호출: ${comment.num}, 내용: ${newContent}`);
     // 성공 시
     // const index = commentData.value.findIndex(c => c.num === comment.num);
@@ -270,17 +425,6 @@ const popularMentors = ref([
   right: 0;
 }
 
-/* [수정] 멘토링 댓글 반응 관련 스타일 제거 */
-/* .comment-likes, .comment-cheers { ... } */
-/* .comment-likes:hover, .comment-cheers:hover { ... } */
-/* .comment-likes.active-like { ... } */
-/* .comment-cheers.active-cheer { ... } */
-
-/* [수정] 멘토링 게시글 반응 관련 스타일 제거 */
-/* .action-button.active-like { ... } */
-/* .action-button.active-cheer { ... } */
-
-
 /* 기존 스타일 복사 */
 :root {
   --primary-color: #155DFC;
@@ -291,11 +435,15 @@ const popularMentors = ref([
   --bg-light: #F9FAFB;
   --bg-white: #FFFFFF;
   --separator-color: #E5E7EB;
-  --recruiting-color: #008236;
-  --recruiting-bg: #DCFCE7;
+  --like-color: #D32F2F;
+  --like-bg: #ffebee;
+  --like-border: #ffcdd2;
+  --cheer-color: #1976D2;
+  --cheer-bg: #e3f2fd;
+  --cheer-border: #bbdefb;
 }
 
-#mentoring-post-page {
+#fashion-community-page {
   font-family: 'ABeeZee', 'Arimo', sans-serif;
   background-color: var(--bg-white);
   color: var(--text-primary);
@@ -430,19 +578,25 @@ const popularMentors = ref([
   padding: 2px 8px;
   border-radius: 4px;
 }
-.tags span.recruiting-badge {
-  background-color: var(--recruiting-bg);
-  color: var(--recruiting-color);
-  font-weight: bold;
-  padding: 4px 12px;
+.product-info {
+  background: var(--bg-light);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 12px;
+  color: var(--text-light);
+}
+.product-info strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-top: 2px;
 }
 .post-image {
   width: 100%;
   height: auto;
   border-radius: 4px;
   margin-bottom: 1rem;
-  object-fit: cover;
-  max-height: 500px;
 }
 .post-content-text {
   font-size: 16px;
@@ -451,13 +605,6 @@ const popularMentors = ref([
 }
 .post-content-text p {
   margin: 0.5rem 0;
-}
-.post-content-text pre {
-  background-color: var(--bg-light);
-  padding: 1rem;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-family: monospace;
 }
 
 .post-meta {
@@ -472,7 +619,6 @@ const popularMentors = ref([
   padding: 1rem 1.5rem 1.5rem;
   border-top: 5px solid var(--separator-color);
 }
-/* [수정] 공유 버튼 외 다른 버튼 스타일 제거 */
 .action-button {
   flex: 1;
   padding: 0.75rem;
@@ -495,6 +641,19 @@ const popularMentors = ref([
   font-size: 1.2em;
 }
 
+.action-button.active-like {
+  background-color: var(--like-bg);
+  color: var(--like-color);
+  border-color: var(--like-border);
+  font-weight: bold;
+}
+.action-button.active-cheer {
+  background-color: var(--cheer-bg);
+  color: var(--cheer-color);
+  border-color: var(--cheer-border);
+  font-weight: bold;
+}
+
 .comment-section {
   padding: 1.5rem;
   border-top: 5px solid var(--separator-color);
@@ -510,7 +669,6 @@ const popularMentors = ref([
   margin: 0;
   font-weight: bold;
 }
-
 .comment-list {
   list-style: none;
   padding: 0;
@@ -546,14 +704,52 @@ const popularMentors = ref([
 .comment-author-info strong {
   font-size: 14px;
 }
+.author-badge {
+  font-size: 12px;
+  background: #EFF6FF;
+  color: var(--primary-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
 .comment-text {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0.5rem 0;
-  word-break: break-word;
 }
-/* [수정] 멘토링 댓글 반응 관련 스타일 제거 */
-/* .comment-actions { ... } */
+.comment-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.comment-likes, .comment-cheers {
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.comment-likes .icon, .comment-cheers .icon {
+  margin-right: 4px;
+  font-size: 1.1em;
+}
+.comment-likes:hover, .comment-cheers:hover {
+  background-color: var(--bg-light);
+}
+
+.comment-likes.active-like {
+  color: var(--like-color);
+  background-color: var(--like-bg);
+  font-weight: bold;
+}
+.comment-cheers.active-cheer {
+  color: var(--cheer-color);
+  background-color: var(--cheer-bg);
+  font-weight: bold;
+}
+
 
 .comment-form {
   display: flex;
@@ -637,10 +833,6 @@ const popularMentors = ref([
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #F3F4F6;
-}
-.mentor-list li:last-child {
-  border-bottom: none;
 }
 .mentor-info {
   display: flex;

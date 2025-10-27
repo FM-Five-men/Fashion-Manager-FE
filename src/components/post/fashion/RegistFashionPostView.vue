@@ -13,7 +13,7 @@
 
     <!-- 메인 카드 -->
     <main class="main-content">
-      <form class="card" @submit.prevent="onSubmit">
+      <form class="card" @submit.prevent="onSubmit" novalidate>
         <!-- 제목 -->
         <div class="form-row">
           <label class="label" for="title">제목</label>
@@ -156,7 +156,6 @@
             class="textarea"
             rows="10"
             placeholder="내용을 입력하세요"
-            required
           ></textarea>
         </div>
 
@@ -202,80 +201,102 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import HeaderView from '../../HeaderView.vue';
-import FooterView from '../../FooterView.vue';
+import HeaderView from '../../HeaderView.vue'
+import FooterView from '../../FooterView.vue'
 
-/* --------------------------- 라우터 --------------------------- */
 const router = useRouter()
-const goBoard = () => router.push({ name: 'fashionBoard' })
 
-/* --------------------------- 폼 상태 --------------------------- */
+/* 1) axios 인스턴스: 모든 요청에 토큰 자동 첨부 */
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+})
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token') || ''
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+/* ---------------- 로그인 회원정보 ---------------- */
+const memberNum = ref(null)
+const toNumber = (v) => {
+  const n = Number(v)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+onMounted(() => {
+  api.get('/member-service/member/auth')
+    .then((res) => {
+      const d = res?.data ?? {}
+      // 응답키가 num/number/memberNum 등으로 다를 수 있어 대비
+      memberNum.value = toNumber(d.memberNum ?? d.num ?? d.number)
+      if (!memberNum.value) {
+        alert('회원 번호를 확인할 수 없습니다. 다시 로그인해주세요.')
+        router.push('/')
+      }
+    })
+    .catch(() => {
+      router.push('/')
+    })
+})
+
+/* ---------------- 폼 ---------------- */
 const form = reactive({
   title: '',
   content: '', // nullable
   items: { clothes: '', top: '', bottom: '', shoes: '', accessory: '' },
-  images: [],
 })
 
-/* --------------------------- 해시태그(번호/이름) --------------------------- */
-// 모달에서 고를 수 있는 옵션 [{ id:number, name:string }]
-const hashtagOptions = ref([])
+/* ---------------- 해시태그 ---------------- */
+const hashtagOptions = ref([]) // [{id, name}]
 const hashtagMap = computed(() => {
   const m = new Map()
   hashtagOptions.value.forEach(o => m.set(o.id, o.name))
   return m
 })
-
-// 실제 선택 결과(번호 배열) — 서버에 그대로 보냄
 const selectedHashtagIds = ref([])
 
-// 모달 상태
 const showHashtagModal = ref(false)
 const hashtagLoading = ref(false)
-const modalChecked = ref([]) // 모달 내 체크박스 바인딩
+const modalChecked = ref([])
 
-// 이름 헬퍼
 const hashtagName = (id) => hashtagMap.value.get(id) ?? `#${id}`
 
-// 모달 열기 → API 호출하여 옵션 구성
-const openHashtagModal = async () => {
+const openHashtagModal = () => {
   showHashtagModal.value = true
   hashtagLoading.value = true
-  modalChecked.value = [...selectedHashtagIds.value] // 이미 선택한 것 미리 체크
-  try {
-    const { data } = await axios.get('/api/manager-service/hashtag/selecthashtag')
-    // data: [{hashTagNum, hashTagName}]
-    hashtagOptions.value = Array.isArray(data)
-      ? data
-          .map(x => ({
-            id: Number(x.hashTagNum),
-            name: String(x.hashTagName),
-          }))
-          .filter(o => !Number.isNaN(o.id) && !!o.name)
-      : []
-  } catch (e) {
-    console.error('해시태그 목록 조회 실패:', e)
-    hashtagOptions.value = []
-  } finally {
-    hashtagLoading.value = false
-  }
+  modalChecked.value = [...selectedHashtagIds.value]
+
+  // ✅ 백엔드 해시태그 조회
+  api.get('/manager-service/hashtag/selecthashtag')
+    .then(({ data }) => {
+      hashtagOptions.value = Array.isArray(data)
+        ? data
+            .map(x => ({ id: Number(x.hashTagNum), name: String(x.hashTagName) }))
+            .filter(o => !Number.isNaN(o.id) && !!o.name)
+        : []
+    })
+    .catch((e) => {
+      console.error('해시태그 목록 조회 실패:', e)
+      hashtagOptions.value = []
+    })
+    .finally(() => {
+      hashtagLoading.value = false
+    })
 }
 
-const closeHashtagModal = () => {
-  showHashtagModal.value = false
-
-}
-
+const closeHashtagModal = () => { showHashtagModal.value = false }
 const confirmHashtags = () => {
-  // 중복 제거 병합
   const set = new Set([...selectedHashtagIds.value, ...modalChecked.value])
   selectedHashtagIds.value = Array.from(set)
   closeHashtagModal()
 }
-
 const removeHashtag = (id) => {
   selectedHashtagIds.value = selectedHashtagIds.value.filter(x => x !== id)
 }
@@ -330,58 +351,65 @@ const removeItemImage = (i) => {
 }
 
 /* ---------------- 제출: POST /api/manager-service/posts/fashion ---------------- */
-const onSubmit = async () => {
-  // ✅ 제목만 필수 (내용은 비어도 됨)
+const onSubmit = () => {
   if (!form.title.trim()) {
     alert('제목을 입력하세요.')
     return
   }
 
-  // ✅ 아이템 최소 1개 입력
   const itemTexts = [
     form.items.clothes,
     form.items.top,
     form.items.bottom,
     form.items.shoes,
-    form.items.accessory,
-  ]
-    .map(v => (v || '').trim())
-    .filter(Boolean)
+    form.items.accessory
+  ].map(v => (v || '').trim()).filter(Boolean)
+
   if (itemTexts.length === 0) {
     alert('패션 아이템(의류/상의/하의/신발/악세서리) 중 최소 1개를 입력하세요.')
     return
   }
 
-  // TODO: 로그인 사용자에서 memberNum 가져오기
-  const memberNum = 4
-
-  try {
-    const fd = new FormData()
-
-    const payload = {
-      title: form.title.trim(),
-      content: (form.content || '').trim() || null, // nullable
-      memberNum,
-      hashtag: selectedHashtagIds.value,            // 번호 배열
-      items: itemTexts,                              // (숫자 ID가 필요하면 여기서 매핑)
-    }
-    fd.append('payload', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
-
-    // ✅ 이미지 전송 분리
-    postImages.value.forEach(f => fd.append('postImages', f))
-    itemImages.value.forEach(f => fd.append('itemImages', f))
-
-    await axios.post('/api/manager-service/posts/fashion', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      withCredentials: true,
-    })
-
-    alert('작성되었습니다.')
-    router.push({ name: 'fashionBoard' })
-  } catch (e) {
-    console.error('게시글 작성 실패:', e)
-    alert('작성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+  if (postImages.value.length === 0 && itemImages.value.length === 0) {
+    alert('최소 1개 이상의 이미지를 등록해주세요. (게시글 또는 아이템 이미지)') // 사용자에게 어떤 이미지가 필요한지 명시
+    return // 함수 실행 중단
   }
+
+  if (!memberNum.value) {
+    alert('회원 번호를 확인할 수 없습니다. 다시 로그인해 주세요.')
+    return
+  }
+
+  const newPost = {
+    title: form.title.trim(),
+    memberNum: memberNum.value,
+    hashtag: selectedHashtagIds.value,
+    items: itemTexts,
+    // content는 nullable이라 필요 시에만 포함하고 싶다면 아래처럼:
+    // ...(form.content?.trim() ? { content: form.content.trim() } : {})
+  }
+  if (form.content?.trim()) {
+    newPost.content = form.content.trim()
+  }
+
+  const fd = new FormData()
+  fd.append('newPost', new Blob([JSON.stringify(newPost)], { type: 'application/json' }))
+  postImages.value.forEach(f => fd.append('postImages', f))
+  itemImages.value.forEach(f => fd.append('itemImages', f))
+
+  // ✅ Content-Type은 자동 설정(수동 지정 X: boundary 깨짐 방지)
+  api.post('/manager-service/posts/fashion', fd, {
+    validateStatus: (s) => (s >= 200 && s < 300) || s === 201 || s === 204
+  })
+  .then((res) => {
+    console.log('[작성 성공 status]', res.status)
+    alert('작성되었습니다.')
+    router.push({ path: '/fashionboardview' })
+  })
+  .catch((e) => {
+    console.error('게시글 작성 실패:', e?.response?.status, e?.response?.data)
+    alert('작성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+  })
 }
 </script>
 
