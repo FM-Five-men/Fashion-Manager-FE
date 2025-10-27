@@ -17,9 +17,10 @@ import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
 import FashionPostView from '../components/post/fashion/FashionPostView.vue';
 
+import InfluencerPageView from '../components/influencer/InfluencerPageView.vue';
+
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
-// import InfluencerPageView from '../components/InfluencerPageView.vue'; // 예시
 // import MessageView from '../components/MessageView.vue'; // 예시
 // import MyPageView from '../components/MyPageView.vue'; // 예시
 import RegisterAdminView from '../components/management/RegisterAdminView.vue';
@@ -77,7 +78,7 @@ const routes = [
   {
     path: '/influencerpage',
     name: 'influencerpage',
-    // component: InfluencerPageView // 실제 컴포넌트로 연결 필요
+    component: InfluencerPageView
   },{
     path: '/message',
     name: 'message',
@@ -86,11 +87,8 @@ const routes = [
     path: '/mypage',
     name: 'mypage',
     // component: MyPageView // 실제 컴포넌트로 연결 필요
-  }
-  // '/fashionpost' and '/reviewpost' from features were likely superseded
-  // by '/fashionboardview' and '/reviewpostview' from HEAD. Adjust if needed.
-  ,{
-    path: '/fashionpost',
+  },{
+    path: '/fashionpost/:id',
     name: 'fashionpost',
     component: FashionPostView
   },{
