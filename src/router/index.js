@@ -16,8 +16,13 @@ import RegistReviewPostView from '../components/post/review/RegistReviewPostView
 import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
 import FashionPostView from '../components/post/fashion/FashionPostView.vue';
+import RegistFashionPostView from '../components/post/fashion/RegistFashionPostView.vue';
 
-import InfluencerPageView from '../components/influencer/InfluencerPageView.vue';
+// influencerPage
+import InfluencerPageView from '../components/influencer/01_Page/InfluencerPageView.vue';  // 인플루언서 리스트 페이지
+import InfluencerProfileView from '../components/influencer/01_Page/InfluencerProfileView.vue';  // 인플루언서 상세 페이지
+import InfluencerApplyView from '../components/influencer/01_Page/InfluencerApplyView.vue'; // 인플루언서 신청 페이지
+import MenteeApplyView from '../components/influencer/01_Page/MenteeApplyView.vue'; // 멘토링 신청 페이지
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -43,8 +48,8 @@ const routes = [
 
   // Routes primarily from HEAD branch (more specific)
   {
-    path: '/mentoringboard',
-    name: 'mentoringboard',
+    path: '/mentoringboardview',
+    name: 'mentoringboardview',
     component: MentoringBoardView
   }, {
     path: '/registmentoringpost',
@@ -56,8 +61,8 @@ const routes = [
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
-    path: '/reviewboard',
-    name: 'reviewboard',
+    path: '/reviewboardview',
+    name: 'reviewboardview',
     component: ReviewBoardView
   }, {
     path: '/registreviewpost',
@@ -75,12 +80,30 @@ const routes = [
     component: FashionBoardView
   },
 
-  // Routes primarily from features branch
+  // influencerPage 
   {
     path: '/influencerpage',
     name: 'influencerpage',
     component: InfluencerPageView
-  },{
+  }, {
+    path: '/influencerpage/:num',
+    name: 'influencerpage-profile',
+    component: InfluencerProfileView,
+    props: true
+  }, { 
+    path: '/influencerapply',
+    name: 'influencerapply',
+    component: InfluencerApplyView,
+    props: true
+  }, { 
+    path: '/menteeapply',
+    name: 'menteeapply',
+    component: MenteeApplyView,
+    props: true
+  },
+  
+  
+  {
     path: '/message',
     name: 'message',
     // component: MessageView // 실제 컴포넌트로 연결 필요
@@ -92,6 +115,10 @@ const routes = [
     path: '/fashionpost/:id',
     name: 'fashionpost',
     component: FashionPostView
+  }, {
+    path: '/registfashionpost',
+    name: 'registfashionpost',
+    component: RegistFashionPostView
   },{
     path: '/',
     name: 'login',
