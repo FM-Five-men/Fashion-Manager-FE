@@ -36,7 +36,7 @@ filter-icon<template>
 
 
     <!-- 게시물 리스트 -->
-    <div class="post-card" v-for="apply in applies" :key="apply.num">
+    <div class="post-card" v-for="apply in filteredApplies" :key="apply.num">
     <!-- 썸네일 이미지 -->
     <div class="post-image">
         <img src="https://placehold.co/120x120" alt="게시물 이미지" />
@@ -50,7 +50,7 @@ filter-icon<template>
             <!-- 상세보기 / 삭제 버튼 -->
             <div class="post-actions">
                 <button class="post-detail-btn" @click="moveFashion(apply.num)">상세보기</button>
-                <button class="delete-btn" @click.stop="fashionDelete(apply.num)"></button>
+                <button class="delete-btn" @click.stop="applyDelete(apply.title,apply.memberNum)"></button>
             </div>
         </div>
 
@@ -114,8 +114,8 @@ onMounted(async () => {
   }
 });
 
-const fashionDelete = (num) => {
-    axios.delete(`/api/manager-service/posts/fashion/${num}`,{
+const applyDelete = (title,num) => {
+    axios.delete(`/api/manager-service/influencerApply/deleteInfluencerApply?title=${title}&memberNum=${num}`,{
         headers: { Authorization: `Bearer ${token}` }
     }).then(
         (res) => {
@@ -147,6 +147,19 @@ const mentoringDelete = (num) => {
 const moveFashion = (num) => {
     router.push(`/fashionpost/${num}`);
 }
+
+const filteredApplies = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase(); // 검색어 소문자로 변환
+  if (!query) return applies.value; // 검색어 없으면 전체 목록
+  
+  return applies.value.filter(apply => {
+    return (
+      (apply.title && apply.title.toLowerCase().includes(query)) ||
+      (apply.memberName && apply.memberName.toLowerCase().includes(query)) ||
+      (apply.content && apply.content.toLowerCase().includes(query))
+    );
+  });
+});
 </script>
 
 <style scoped>
@@ -246,6 +259,7 @@ const moveFashion = (num) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding-bottom: 40px;
 }
 
 /* 이름 + 제목 */
