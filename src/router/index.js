@@ -7,25 +7,24 @@ import FindPasswordView from '../components/management/FindPasswordView.vue';
 import AdminLoginView from '../components/management/AdminLoginView.vue';
 import ChangePasswordView from '../components/management/ChangePasswordView.vue';
 
-// Imports from HEAD branch (assuming these are the correct paths)
+// 게시글 관련 컴포넌트
 import MentoringBoardView from '../components/post/mentoring/MentoringBoardView.vue';
-import RegistMentoringPostView from '../components/post/mentoring/RegistMentoringPostView.vue';
-import MentoringPostView from '../components/post/mentoring/MentoringPostView.vue'; // 상세 보기
+import RegistMentoringPostView from '../components/post/mentoring/RegistMentoringPostView.vue'; // 수정 시 재활용
+import MentoringPostView from '../components/post/mentoring/MentoringPostView.vue';
 import ReviewBoardView from '../components/post/review/ReviewBoardView.vue';
-import RegistReviewPostView from '../components/post/review/RegistReviewPostView.vue';
-import ReviewPostView from '../components/post/review/ReviewPostView.vue'; // 상세 보기
+import RegistReviewPostView from '../components/post/review/RegistReviewPostView.vue'; // 수정 시 재활용
+import ReviewPostView from '../components/post/review/ReviewPostView.vue';
 import FashionBoardView from '../components/post/fashion/FashionBoardView.vue';
-import FashionPostView from '../components/post/fashion/FashionPostView.vue'; // 상세 보기
+// import RegistFashionPostView from '../components/post/fashion/RegistFashionPostView.vue'; // 패션 글쓰기/수정 컴포넌트 (파일이 있다면 import)
+import FashionPostView from '../components/post/fashion/FashionPostView.vue';
 
 import InfluencerPageView from '../components/influencer/InfluencerPageView.vue';
-
-// Imports from features branch (assuming these are the correct paths)
 import RegisterAdminView from '../components/management/RegisterAdminView.vue';
 import MessageView from '../components/message/MessageView.vue';
 import AdminView from '../components/management/AdminView.vue';
 import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
-// import MyPageView from '../components/MyPageView.vue'; // 필요시 주석 해제 및 import
+// import MyPageView from '../components/MyPageView.vue';
 
 const routes = [
   // --- 공통 & 회원 관리 ---
@@ -36,34 +35,24 @@ const routes = [
   { path: '/findpassword', name: 'findpassword', component: FindPasswordView },
   { path: '/changepassword', name: 'changepassword', component: ChangePasswordView },
 
-  // --- 게시판 (목록, 작성, 상세) ---
+  // --- 게시판 (목록, 작성, 상세, 수정) ---
   // Fashion
   { path: '/fashionboardview', name: 'fashionboardview', component: FashionBoardView },
-  { path: '/fashionpost/:id', name: 'fashionpost', component: FashionPostView }, // 상세 보기
+  // { path: '/registfashionpost', name: 'registfashionpost', component: RegistFashionPostView }, // 패션 글쓰기 경로 (컴포넌트 확인 필요)
+  // { path: '/editfashionpost/:id', name: 'editfashionpost', component: RegistFashionPostView }, // *** 패션 글수정 경로 추가 ***
+  { path: '/fashionpost/:id', name: 'fashionpost', component: FashionPostView },
 
   // Review
   { path: '/reviewboard', name: 'reviewboard', component: ReviewBoardView },
-  { path: '/registreviewpost', name: 'registreviewpost', component: RegistReviewPostView }, // 글 작성 (ID 없이)
-  // { path: '/registreviewpost/:id', name: 'editreviewpost', component: RegistReviewPostView }, // 수정 경로 (필요시 별도 정의)
-  // { // 기존 경로 주석 처리
-  //   path: '/reviewpostview',
-  //   name: 'reviewpostview',
-  //   component: ReviewPostView
-  // },
-  { // 수정된 경로 추가
-    path: '/reviewpost/:id', // 동적 파라미터 :id 추가
-    name: 'reviewpost',       // 이름 변경 (선택 사항)
-    component: ReviewPostView // 상세 보기 컴포넌트 연결
-  },
+  { path: '/registreviewpost', name: 'registreviewpost', component: RegistReviewPostView }, // 글 작성
+  { path: '/editreviewpost/:id', name: 'editreviewpost', component: RegistReviewPostView }, // *** 글 수정 경로 추가 ***
+  { path: '/reviewpost/:id', name: 'reviewpost', component: ReviewPostView },
 
   // Mentoring
   { path: '/mentoringboard', name: 'mentoringboard', component: MentoringBoardView },
-  { path: '/registmentoringpost', name: 'registmentoringpost', component: RegistMentoringPostView },
-  { // Mentoring 상세 경로는 이미 :id 포함
-    path: '/mentoringpost/:id',
-    name: 'mentoringpost',
-    component: MentoringPostView
-  },
+  { path: '/registmentoringpost', name: 'registmentoringpost', component: RegistMentoringPostView }, // 글 작성
+  { path: '/editmentoringpost/:id', name: 'editmentoringpost', component: RegistMentoringPostView }, // *** 글 수정 경로 추가 ***
+  { path: '/mentoringpost/:id', name: 'mentoringpost', component: MentoringPostView },
 
   // --- 인플루언서 ---
   { path: '/influencerpage', name: 'influencerpage', component: InfluencerPageView },
@@ -72,14 +61,14 @@ const routes = [
   { path: '/message', name: 'message', component: MessageView },
 
   // --- 마이페이지 ---
-  // { path: '/mypage', name: 'mypage', component: MyPageView }, // 필요시 주석 해제
+  // { path: '/mypage', name: 'mypage', component: MyPageView },
 
   // --- 관리자 ---
   { path: '/adminlogin', name: 'adminlogin', component: AdminLoginView },
   { path: '/registeradmin', name: 'registeradmin', component: RegisterAdminView },
-  { path: '/admin', name: 'admin', component: AdminView }, // 관리자 메인 (대시보드 등)
-  { path: '/reportlist', name: 'reportlist', component: ReportListView }, // 신고 목록
-  { path: '/memberlist', name: 'memberlist', component: MemberListView }  // 회원 목록
+  { path: '/admin', name: 'admin', component: AdminView },
+  { path: '/reportlist', name: 'reportlist', component: ReportListView },
+  { path: '/memberlist', name: 'memberlist', component: MemberListView }
 ];
 
 
