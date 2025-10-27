@@ -8,9 +8,6 @@
           <!-- 이름 / 지원가능 -->
           <div class="name-line">
             <span class="name">{{ influencer.name }}</span>
-            <span v-if="influencer.canApply" class="status-chip">
-              지원가능
-            </span>
           </div>
 
           <!-- 핸들 -->
@@ -218,15 +215,7 @@ const instaDisplay = computed(() => {
   font-weight: 500;
   color: #000;
 }
-.status-chip {
-  background: #2fad51;
-  color: #fff;
-  font-size: 12px;
-  line-height: 20px;
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-weight: 500;
-}
+
 
 /* 핸들 (회색 아이디 텍스트) */
 .handle {
@@ -409,7 +398,7 @@ const instaDisplay = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 60%;
+  object-position: center 0%;
   display: block;
   
 }

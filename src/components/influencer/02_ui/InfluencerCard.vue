@@ -39,19 +39,6 @@ export default {
     item: {
       type: Object,
       required: true,
-      /*
-        기대 형태:
-        {
-          num: 16,                // ✅ 상세 페이지 들어갈 때 쓸 고유 번호
-          memberName: "트렌드세터이",
-          title: "트렌드세터이의 분석 노트",
-          content: "글로벌 패션 리서치 기업 근무...",
-          insta: "insta_trendsetter",
-          phone: "010-3131-3131",
-          thumbnailUrl: "...",
-          ...
-        }
-      */
     },
   },
 
@@ -72,7 +59,7 @@ export default {
           num: this.item.memberNum,
         },
         query: {
-          thumb: this.item.thumbnailUrl, // ✅ 이미지도 같이 넘긴다!
+          thumb: this.item.thumbnailUrl, // 이미지도 같이 넘김
         },
       });
     },
@@ -82,9 +69,26 @@ export default {
       this.isFollowed = !this.isFollowed;
     },
 
-    // 이미지 에러 처리
+      // 이미지 에러 처리 (서버 이미지가 없을 경우, public 폴더의 기본 이미지 중 하나로 랜덤 대체)
     onImgErrorLocal(e) {
-      e.target.style.display = 'none';
+      // 1️⃣ 기본 이미지 풀
+      const fallbackPool = [
+        "/images/influencer_page/influencerImg1.png",
+        "/images/influencer_page/influencerImg2.png",
+        "/images/influencer_page/influencerImg3.png",
+        "/images/influencer_page/influencerImg4.png",
+        "/images/influencer_page/influencerImg5.png",
+        "/images/influencer_page/influencerImg6.png",
+        "/images/influencer_page/influencerImg7.png",
+        "/images/influencer_page/influencerImg8.png",
+      ];
+
+      // 2️⃣ 카드별 고유 랜덤 인덱스 생성 (멤버 번호 기반 고정 or 랜덤)
+      const seed = this.item.memberNum || Math.random() * 1000;
+      const randomIndex = Math.floor(seed % fallbackPool.length);
+
+      // 3️⃣ fallback 이미지 적용
+      e.target.src = fallbackPool[randomIndex];
     },
   },
 };

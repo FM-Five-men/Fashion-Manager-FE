@@ -5,25 +5,23 @@
     </header>
 
     <main class="page-main">
-      <!-- 상단 프로필 영역 -->
-      <!-- ✅ 팔로우 상태 내려줌 -->
-      <!-- ✅ 팔로우 버튼 눌렀을 때 실행 -->
+      <!-- 상단 프로필 -->
       <InfluencerHeaderSection
         :influencer="influencer"
         :formatted-bio="formattedBio"
-        :is-followed="isFollowed"       
-        @toggle-follow="toggleFollow"   
+        :is-followed="isFollowed"
+        @toggle-follow="toggleFollow"
         @apply="applyMentoring"
       />
 
-      <!-- 하단 포스트/멘토링 + 검색/페이지네이션 영역 -->
-      <!-- ✅ 섹션 간 간격 (임시로 유지 가능) -->
+      <!-- 하단 카드/탭 -->
       <InfluencerContentSection
-        style="margin-top: 60px"          
+        class="content-block"
+        :member-num="influencer.memberNum"
         :highlight-posts="highlightPosts"
         v-model:page="page"
         :total-pages="totalPages"
-        v-model:search-keyword="searchKeyword"
+        v-model:searchKeyword="searchKeyword"
         @search="onSearch"
       />
     </main>
@@ -34,10 +32,9 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, onMounted, watch } from "vue"; // 🔸 watch 유지
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 
 import HeaderView from "../../HeaderView.vue";
@@ -45,16 +42,14 @@ import FooterView from "../../FooterView.vue";
 import InfluencerHeaderSection from "../02_ui/InfluencerHeaderSection.vue";
 import InfluencerContentSection from "../02_ui/InfluencerContentSection.vue";
 
-// 게이트웨이 경로 그대로 유지
-const API_URL = "/api/manager-service/influencerPage/selectInfluencerPage";
-
-// 라우터 가져오기 (이제 props 안 쓸 거야)
 const route = useRoute();
+const router = useRouter();
 
-// -----------------------------
-// 상태 정의
-// -----------------------------
+/* ─────────────────────────────
+   상단 인플루언서 프로필 상태
+───────────────────────────── */
 const influencer = ref({
+  memberNum: null,
   name: "",
   subtitle: "",
   bio: "",
@@ -70,78 +65,88 @@ const influencer = ref({
 
 const isFollowed = ref(false);
 
-const highlightPosts = ref([]);
+/* ─────────────────────────────
+   하단 카드 영역 (게시물 리스트)
+───────────────────────────── */
+const highlightPosts = ref([]); // ContentSection 으로 내려갈 카드들
 const page = ref(1);
-const totalPages = ref(10);
+const totalPages = ref(1);
 const searchKeyword = ref("");
 
-// -----------------------------
-// computed - 줄바꿈 변환
-// -----------------------------
 const formattedBio = computed(() =>
   (influencer.value.bio || "").replace(/\n/g, "<br />")
 );
 
-// -----------------------------
-// 사용자 액션 핸들러
-// -----------------------------
-const toggleFollow = () => {
-  // ✅ 팔로우 ↔ 언팔로우 토글
+function toggleFollow() {
   isFollowed.value = !isFollowed.value;
+}
 
-  // (선택) 서버에 팔로우/언팔로우 API 날리려면 여기서 분기 가능
-  // ex)
-  // if (isFollowed.value) {
-  //   axios.post('/api/follow', { memberNum: ... })
-  // } else {
-  //   axios.post('/api/unfollow', { memberNum: ... })
-  // }
-};
+function applyMentoring() {
+  router.push("/menteeapply");
+}
 
-const applyMentoring = () => {
-  console.log("멘토링 신청 클릭됨 (memberNum):", route.params.num || route.query.num);
-};
+function onSearch(payload) {
+  console.log("검색 요청:", payload);
+}
 
-const onSearch = () => {
-  console.log("검색 실행:", searchKeyword.value);
-};
+/* ─────────────────────────────
+   유틸: 기본(랜덤) 프로필 이미지 선택
+   public/images/influencer_page/influencerImg1~8.png 가 있다고 가정
+───────────────────────────── */
+// 🆕 추가
+function getRandomFallbackImage() {
+  const idx = Math.floor(Math.random() * 8) + 1; // 1~8
+  // Vite 기준 public 폴더는 / 로 접근 가능
+  return `/images/influencer_page/influencerImg${idx}.png`;
+}
 
-// -----------------------------
-// API 호출: 인플루언서 상세 조회
-// -----------------------------
-const fetchInfluencerDetail = async () => {
+/* ─────────────────────────────
+   1. 인플루언서 상세 불러오기
+───────────────────────────── */
+async function fetchInfluencerDetail() {
   try {
     const memberNum = route.params.num || route.query.num;
 
-    console.log("[Axios 요청 시작] memberNum =", memberNum);
+    const res = await axios.get(
+      "/api/manager-service/influencerPage/selectInfluencerPage",
+      { params: { memberNum } }
+    );
 
-    const res = await axios.get(API_URL, {
-      params: { memberNum },
-    });
-
-    console.log("[Axios 응답]", res.data);
-
-    const data = Array.isArray(res.data) ? res.data[0] : res.data;
-
+    const dataArr = Array.isArray(res.data) ? res.data : [res.data];
+    const data = dataArr[0];
     if (!data) {
-      console.warn("⚠️ 해당 인플루언서를 찾을 수 없습니다.");
+      // 만약 데이터 자체가 없으면 fallback 채운 기본값으로 세팅
+      influencer.value = {
+        memberNum: null,
+        name: "",
+        subtitle: "",
+        bio: "",
+        handle: "",
+        phone: "",
+        instagram: "",
+        likes: 0,
+        cheers: 0,
+        mainImageUrl: getRandomFallbackImage(), // 🆕 fallback
+        canApply: false,
+        badges: [],
+      };
       return;
     }
 
-    // ✅ mainImageUrl 안전하게 계산
+    // 서버에서 대표 이미지 후보를 최대한 뽑는다
     let mainImage = "";
-
     if (data.photoPaths) {
-      // case 1: "a.jpg,b.jpg"
       if (typeof data.photoPaths === "string") {
+        // "a.jpg,b.jpg" 형태면 첫 번째만
         mainImage = data.photoPaths.split(",")[0];
-      }
-      // case 2: ["a.jpg","b.jpg"]
-      else if (Array.isArray(data.photoPaths)) {
+      } else if (Array.isArray(data.photoPaths)) {
+        // ["a.jpg", "b.jpg", ...] 면 첫 번째
         mainImage = data.photoPaths[0] || "";
-      }
-      // case 3: { path: "..."} 같은 객체
-      else if (typeof data.photoPaths === "object" && data.photoPaths !== null) {
+      } else if (
+        typeof data.photoPaths === "object" &&
+        data.photoPaths !== null
+      ) {
+        // { path: "..."} 또는 { url: "..."} 식일 수도 있음
         if (data.photoPaths.path) {
           mainImage = data.photoPaths.path;
         } else if (data.photoPaths.url) {
@@ -150,8 +155,14 @@ const fetchInfluencerDetail = async () => {
       }
     }
 
-    // ✅ 상태 세팅
+    // 이미지 없으면 랜덤 썸네일로 대체
+    // 🔸 변경: fallback 강제 적용
+    if (!mainImage || mainImage.trim() === "") {
+      mainImage = getRandomFallbackImage();
+    }
+
     influencer.value = {
+      memberNum: data.memberNum,
       name: data.memberName || "",
       subtitle: data.title || "",
       bio: data.content || "",
@@ -160,27 +171,123 @@ const fetchInfluencerDetail = async () => {
       instagram: data.insta || "",
       likes: data.likes ?? 0,
       cheers: data.cheers ?? 0,
-      mainImageUrl: mainImage || influencer.value.mainImageUrl || "",
+      mainImageUrl: mainImage, // 🔸 비어있으면 랜덤 들어감
       canApply: true,
-      badges: data.badges || [], // <-- 🔥 이 줄 추가
+      badges: data.badges || [],
     };
   } catch (err) {
     console.error("❌ 인플루언서 상세 조회 실패:", err);
-  }
-};
 
-// -----------------------------
-// onMounted - 최초 실행 시점
-// -----------------------------
-onMounted(() => {
-  // ✅ URL에 썸네일 미리보기(thumbnail)용으로 thumb이 있을 때 먼저 보여주기
-  if (route.query.thumb) {
-    influencer.value.mainImageUrl = route.query.thumb;
+    // 🔸 에러가 나도 최소한 화면은 안 깨지게 기본값 세팅
+    influencer.value = {
+      memberNum: null,
+      name: "",
+      subtitle: "",
+      bio: "",
+      handle: "",
+      phone: "",
+      instagram: "",
+      likes: 0,
+      cheers: 0,
+      mainImageUrl: getRandomFallbackImage(), // 🆕 fallback
+      canApply: false,
+      badges: [],
+    };
   }
+}
 
-  // ✅ 그리고 실제 상세 정보 요청
-  fetchInfluencerDetail();
+/* ─────────────────────────────
+   2. 인플루언서가 올린 게시물(Posts 탭) 가져오기
+───────────────────────────── */
+async function fetchPostsForMember(memberNum) {
+  try {
+    // 전체 게시물 목록 받아오기
+    const listRes = await axios.get(
+      "/api/manager-service/posts/fashion/all"
+    );
+    const allPosts = listRes.data || [];
+
+    // 이 멤버가 쓴 글만 필터
+    // memberNum / member_num 등 케이스 다 대응
+    const mine = allPosts.filter(
+      (p) => String(p.memberNum || p.member_num) === String(memberNum)
+    );
+
+    // 최대 4개만 사용 (UI 상 한 줄에 4장)
+    const topFour = mine.slice(0, 4);
+    const enriched = [];
+
+    for (const post of topFour) {
+      try {
+        // 게시물 상세 불러오기
+        const detailRes = await axios.get(
+          `/api/manager-service/posts/fashion/${post.num}`
+        );
+        const d = detailRes.data;
+
+        // 대표 이미지 후보 (photos 배열, 혹은 photo_path류)
+        const thumbPhoto =
+          Array.isArray(d.photos) && d.photos.length > 0
+            ? d.photos[0].imageUrl || d.photos[0].path || ""
+            : d.photo_path || d.photoPath || "";
+
+        enriched.push({
+          title: d.title || post.title || "",
+          desc: d.content || "", // 본문 요약
+          imgUrl: thumbPhoto || "",
+
+          // 좋아요/댓글/온도 등 메타
+          likes: d.good ?? post.good ?? 0,
+          comments: d.cheer ?? post.cheer ?? 0,
+          hotRate:
+            d.temp !== undefined && d.temp !== null
+              ? Math.round(d.temp) + "%"
+              : "0%",
+
+          postNum: d.num,
+          memberNum: d.memberNum || d.member_num,
+        });
+      } catch (innerErr) {
+        console.warn("게시물 상세 조회 실패:", innerErr);
+
+        enriched.push({
+          title: post.title || "",
+          desc: "",
+          imgUrl: "",
+          likes: post.good ?? 0,
+          comments: post.cheer ?? 0,
+          hotRate: "0%",
+          postNum: post.num,
+          memberNum: post.memberNum || post.member_num,
+        });
+      }
+    }
+
+    highlightPosts.value = enriched;
+    totalPages.value = Math.max(1, Math.ceil(enriched.length / 4));
+  } catch (err) {
+    console.error("❌ 게시물 목록 조회 실패:", err);
+  }
+}
+
+/* ─────────────────────────────
+   mount + memberNum 감시
+───────────────────────────── */
+onMounted(async () => {
+  // 먼저 인플루언서 정보(=> memberNum)를 채운다
+  await fetchInfluencerDetail();
+  // 게시물 로딩은 watch에서 처리 (memberNum 준비된 뒤 동작)
 });
+
+// 🔸 memberNum 변할 때마다 게시물 로드
+watch(
+  () => influencer.value.memberNum,
+  async (newVal) => {
+    if (newVal) {
+      await fetchPostsForMember(newVal);
+    }
+  }
+);
 </script>
 
 <style scoped>
@@ -198,18 +305,21 @@ onMounted(() => {
 
 .header-wrapper {
   width: 100%;
-  max-width: 1440px; /* 🔥 캔버스 폭과 동일하게 고정 */
+  max-width: 1440px;
   margin: 0 auto;
   overflow: hidden;
 }
 
 .header-wrapper :deep(header),
 .header-wrapper :deep(.header) {
-  width: 100% !important; /* HeaderView.vue 안의 100vw 무효화 */
+  width: 100% !important;
   max-width: 1440px !important;
   margin: 0 auto !important;
   left: 0 !important;
   right: 0 !important;
 }
 
+.content-block {
+  margin-top: 60px;
+}
 </style>

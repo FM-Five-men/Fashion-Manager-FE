@@ -21,6 +21,8 @@ import RegistFashionPostView from '../components/post/fashion/RegistFashionPostV
 // influencerPage
 import InfluencerPageView from '../components/influencer/01_Page/InfluencerPageView.vue';  // 인플루언서 리스트 페이지
 import InfluencerProfileView from '../components/influencer/01_Page/InfluencerProfileView.vue';  // 인플루언서 상세 페이지
+import InfluencerApplyView from '../components/influencer/01_Page/InfluencerApplyView.vue'; // 인플루언서 신청 페이지
+import MenteeApplyView from '../components/influencer/01_Page/MenteeApplyView.vue'; // 멘토링 신청 페이지
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -81,11 +83,21 @@ const routes = [
     path: '/influencerpage',
     name: 'influencerpage',
     component: InfluencerPageView
-  },{
+  }, {
     path: '/influencerpage/:num',
     name: 'influencerpage-profile',
     component: InfluencerProfileView,
-    props: true, 
+    props: true
+  }, { 
+    path: '/influencerapply',
+    name: 'influencerapply',
+    component: InfluencerApplyView,
+    props: true
+  }, { 
+    path: '/menteeapply',
+    name: 'menteeapply',
+    component: MenteeApplyView,
+    props: true
   },
   
   

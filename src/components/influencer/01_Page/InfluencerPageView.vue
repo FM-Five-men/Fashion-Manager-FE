@@ -13,18 +13,28 @@
         <p class="subtitle">패션 세계를 만들어가는 트렌드세터를 팔로우하세요</p>
       </section>
 
-      <!-- 실제 카드들 -->
-      <section v-if="!loading && !error" class="grid">
-        <InfluencerCard
-          v-for="item in pagedList"
-          :key="item.num"
-          :item="item"
-        />
-      </section>
+      <!-- 카드 영역 + 신청하기 버튼을 한 덩어리로 감싸는 래퍼 -->
+      <div class="grid-wrapper">
+        <div class="grid-inner">
+          <!-- 실제 카드들 -->
+          <section v-if="!loading && !error" class="grid">
+            <InfluencerCard
+              v-for="item in pagedList"
+              :key="item.num"
+              :item="item"
+            />
+          </section>
 
-      <!-- 로딩/에러 상태 표시 -->
-      <div v-if="loading" class="state">불러오는 중...</div>
-      <div v-if="error" class="state error">{{ error }}</div>
+          <!-- 로딩/에러 상태 표시 -->
+          <div v-if="loading" class="state">불러오는 중...</div>
+          <div v-if="error" class="state error">{{ error }}</div>
+
+          <!-- ✅ 신청하기 버튼 -->
+          <button class="apply-btn" @click="goToApplyPage">
+            + 인플루언서 신청하기
+          </button>
+        </div>
+      </div>
     </main>
 
     <!-- ✅ [새로 추가된 영역] 페이지네이션 / 검색 / 신청하기 UI
@@ -47,6 +57,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 import HeaderView from '../../HeaderView.vue'
@@ -57,19 +68,26 @@ import InfluencerCard from '../02_ui/InfluencerCard.vue'
 
 const API_URL  = '/api/manager-service/influencerPage/selectInfluencerPage'
 const FILE_BASE = '/api/manager-service'
-const LOCAL_BASE_MAIN = '/images/influencerPage'
+const LOCAL_BASE_MAIN = '/images/influencer_page'
 const LOCAL_BASE_FALLBACK = '/images/influencerList'
 
-const loading = ref(true)
-const error = ref('')
+const loading = ref(true);
+const error = ref('');
+
+const router = useRouter();
 
 // 전체 데이터 (백엔드 전체 리스트)
-const pages = ref([])
+const pages = ref([]);
 
 // 페이지네이션/검색 상태
-const currentPage = ref(1)
-const pageSize = 8
-const searchCondition = ref({ type: 'all', keyword: '' })
+const currentPage = ref(1);
+const pageSize = 8;
+const searchCondition = ref({ type: 'all', keyword: '' });
+
+// 신청하기 버튼 눌렀을 때 이동
+function goToApplyPage() {
+  router.push('/influencerapply')
+}
 
 // 서버 이미지 경로 변환
 function makeServerFileUrl(p) {
@@ -81,34 +99,52 @@ function makeServerFileUrl(p) {
 
 // 서버에서 받은 데이터 -> 카드 데이터 형태로 매핑
 function mapItem(raw, idx) {
+  // 1) 백엔드에서 내려오는 photoPaths 배열을 꺼냄
+  //    예: ["/images/influencer_page/38510e30-....jpg"]
   const gallery = Array.isArray(raw.photoPaths)
-    ? raw.photoPaths.map(makeServerFileUrl)
+    ? raw.photoPaths.map(makeServerFileUrl) // ↓ makeServerFileUrl 로 FILE_BASE 붙여 절대경로화
     : []
+
+  // 2) 서버가 실제로 업로드/리네임한 첫 번째 이미지를 1순위 썸네일로 사용
+  //    예: "/api/manager-service/images/influencer_page/38510e30-....jpg"
   const serverThumb = gallery[0] || null
+
+  // 3) 서버 이미지가 없을 경우를 대비해서, 로컬 기본 썸네일 경로를 준비
+  //    idx 기반으로 influencerImg1.png ~ influencerImg8.png 순환
   const n = (idx % 8) + 1
+
+  //    ✅ 여기서 LOCAL_BASE_MAIN 경로도 snake_case 폴더명을 사용
+  //    예: "/images/influencer_page/influencerImg3.png"
   const localMain = `${LOCAL_BASE_MAIN}/influencerImg${n}.png`
+
+  //    마지막 최후의 폴백
   const localBackup = `${LOCAL_BASE_FALLBACK}/influencerImg${n}.png`
 
   return {
     num: raw.num,
-    memberNum: raw.memberNum, // ✅ 이 한 줄 추가!
+    memberNum: raw.memberNum,
     title: raw.title,
     content: raw.content,
     memberName: raw.memberName,
+
+    // 4) 우선순위:
+    //    (1) 서버 업로드 썸네일 (백엔드에서 rename된 실제 파일)
+    //    (2) snake_case 경로의 기본 로컬 샘플 이미지
+    //    (3) fallback 폴더 이미지
     thumbnailUrl: serverThumb || localMain || localBackup,
   }
 }
 
+
 // 이미지 깨졌을 때 폴백
 function onImgError(item) {
-  if (item.thumbnailUrl?.startsWith(LOCAL_BASE_MAIN)) {
-    item.thumbnailUrl = item.thumbnailUrl.replace(
-      LOCAL_BASE_MAIN,
-      LOCAL_BASE_FALLBACK
-    )
-  } else {
-    item.thumbnailUrl = null
+  const current = item.thumbnailUrl
+  if (current?.startsWith(LOCAL_BASE_MAIN)) {
+    // -> fallback 시도
+    item.thumbnailUrl = current.replace(LOCAL_BASE_MAIN, LOCAL_BASE_FALLBACK)
+    return
   }
+  item.thumbnailUrl = null
 }
 
 // 전체 리스트 호출
@@ -194,10 +230,6 @@ function onSearch({ type, keyword }) {
   currentPage.value = 1 // 검색하면 1페이지로 리셋
 }
 
-// 신청 버튼은 지금 Pagination.vue에서 안 쓰는 상태면 그냥 둬도 되고 제거해도 돼
-function goToApplyPage() {
-  console.log('신청하기 이동')
-}
 
 onMounted(() => {
   fetchList()
@@ -393,4 +425,52 @@ onMounted(() => {
   right: 0 !important;
 }
 
+/* grid-wrapper: 전체를 가운데로 모아주는 껍데기 */
+.grid-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* 가운데로 모으기 */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* grid-inner: 카드 그리드 + 버튼을 실제로 포지셔닝하는 상자 */
+.grid-inner {
+  position: relative;
+  /* 그리드 폭에 딱 맞도록 */
+  display: inline-block;
+
+  /* 아래쪽에 공간 조금 확보해서 버튼이 겹치지 않게 */
+  padding-bottom: 48px;
+  box-sizing: border-box;
+}
+
+/* 버튼을 grid-inner의 오른쪽 아래에 절대 배치 */
+.apply-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #000;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: opacity .15s ease;
+}
+
+.apply-btn:hover {
+  opacity: 0.85;
+}
 </style>
