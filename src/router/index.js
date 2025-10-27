@@ -33,6 +33,8 @@ import MessageView from '../components/message/MessageView.vue';
 import AdminView from '../components/management/AdminView.vue';
 import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
+import PostListView from '../components/post/PostListView.vue';
+import InfluencerListView from '../components/influencer/InfluencerListView.vue';
 
 
 const routes = [
@@ -109,11 +111,8 @@ const routes = [
     path: '/mypage',
     name: 'mypage',
     // component: MyPageView // 실제 컴포넌트로 연결 필요
-  }
-  // '/fashionpost' and '/reviewpost' from features were likely superseded
-  // by '/fashionboardview' and '/reviewpostview' from HEAD. Adjust if needed.
-  ,{
-    path: '/fashionpost',
+  },{
+    path: '/fashionpost/:id',
     name: 'fashionpost',
     component: FashionPostView
   }, {
@@ -157,17 +156,28 @@ const routes = [
     name: 'message',
     component: MessageView
   },{
+    path: '/influencerlist',
+    name: 'influencerlist',
+    component: InfluencerListView
+  },{
     path: '/admin',
     name: 'admin',
-    component: AdminView
-  },{
-    path: '/reportlist',
-    name: 'reportlist',
-    component: ReportListView
-  },{
-    path: '/memberlist',
-    name: 'memberlist',
-    component: MemberListView
+    component: AdminView,
+    children: [
+                {
+                  path: '',
+                  name: 'memberlist',
+                  component: MemberListView
+                },{
+                  path: 'reportlist',
+                  name: 'reportlist',
+                  component: ReportListView
+                },{
+                  path: 'postlist',
+                  name: 'postlist',
+                  component: PostListView
+                }
+    ]
   }
 ]
 

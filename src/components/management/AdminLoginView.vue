@@ -30,7 +30,7 @@ const login = async () => {
           const token = response.data;
           sessionStorage.setItem("token", token);
           if(token){
-            router.push('/main')
+            router.push('/admin')
           }
         }else{
           showModal.value = true;
