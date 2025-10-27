@@ -101,15 +101,20 @@
         <div class="widget category-widget">
           <h3>카테고리</h3>
           <div class="category-list">
-            <button v-for="tag in postHashtags" :key="tag.num">{{ tag.name }}</button>
+            {/* postHashtags 데이터는 onMounted에서 postData.hashtags로 채워집니다. */}
+            <button v-for="tag in postHashtags" :key="tag.num || tag.name">{{ tag.name }}</button>
           </div>
         </div>
         <div class="widget mentors-widget">
           <h3><span class="icon">🏆</span> 인기 멘토</h3>
           <ul class="mentor-list">
-            <li v-for="mentor in popularMentors" :key="mentor.name">
+            {/* key를 고유 ID(num)로 변경 */}
+            <li v-for="mentor in popularMentors" :key="mentor.num || mentor.name">
               <div class="mentor-info">
-                <strong>{{ mentor.name }}</strong>
+                {/* @click 핸들러와 스타일 바인딩 추가 */}
+                <strong @click="goToMentorPage(mentor.num)" :style="{ cursor: mentor.num ? 'pointer' : 'default' }">
+                  {{ mentor.name }}
+                </strong>
                 <span>{{ mentor.field }}</span>
               </div>
               <div class="mentor-likes">
@@ -121,10 +126,11 @@
         <div class="widget cta-widget">
           <h3>멘토로 활동하기</h3>
           <p>패션 전문가와 함께하세요</p>
-          <button class="cta-button">신청하기</button>
+          {/* @click 핸들러 추가 */}
+          <button class="cta-button" @click="goToApplyPage">신청하기</button>
         </div>
       </aside>
-    </main>
+      </main>
     <FooterView/>
   </div>
 </template>
@@ -138,6 +144,29 @@ import FooterView from '../../FooterView.vue';
 
 const route = useRoute();
 const router = useRouter(); // router 인스턴스 가져오기
+
+// ▼▼▼▼▼ 라우팅 함수 추가 ▼▼▼▼▼
+/**
+ * 인플루언서 신청 페이지('/influencerapply')로 이동합니다.
+ */
+const goToApplyPage = () => {
+  router.push({ name: 'influencerapply' });
+};
+
+/**
+ * 멘토(인플루언서)의 상세 프로필 페이지로 이동합니다.
+ * @param {number | null} mentorNum - 이동할 인플루언서의 고유 ID (member_num)
+ */
+const goToMentorPage = (mentorNum) => {
+  if (!mentorNum) {
+    console.warn("이 멘토의 상세 페이지 ID가 없습니다.");
+    return; // mentorNum이 null, 0, undefined 이면 이동하지 않음
+  }
+  // router/index.js 에 정의된 name: 'influencerpage-profile' 사용
+  router.push({ name: 'influencerpage-profile', params: { num: mentorNum } });
+};
+// ▲▲▲▲▲ 라우팅 함수 추가 ▲▲▲▲▲
+
 
 const postData = ref(null);
 const postHashtags = ref([]) // <--- hashtags 저장할 ref 추가
@@ -301,12 +330,11 @@ onMounted(async () => {
   }
   await fetchPostAndComments();
 
-  const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
-  postData.value = postRes.data
-
-  postHashtags.value = Array.isArray(postData.value?.hashtags) ? postData.value.hashtags : []
-
-  buildImagesFromPhotos(postData.value?.photos || [])
+  // fetchPostAndComments 함수 내부에서 postHashtags.value를 설정하도록 이동
+  // const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
+  // postData.value = postRes.data
+  // postHashtags.value = Array.isArray(postData.value?.hashtags) ? postData.value.hashtags : []
+  // buildImagesFromPhotos(postData.value?.photos || [])
 
   postId.value = route.params.id;
   if (!postId.value) {
@@ -325,6 +353,8 @@ const fetchPostAndComments = async () => {
     const postResponse = await api.get(`/manager-service/posts/fashion/${postId.value}`);
     postData.value = postResponse.data;
 
+    // ▼▼▼▼▼ postHashtags 설정 이동 ▼▼▼▼▼
+    postHashtags.value = Array.isArray(postData.value?.hashtags) ? postData.value.hashtags : []
     buildImagesFromPhotos(postData.value?.photos || [])
 
     const commentsResponse = await api.get(`/manager-service/comments/getcomments`, {
@@ -349,7 +379,8 @@ const togglePostReaction = async (reactionType) => {
   if (isLikeAction) postReaction.isLiking = true; else postReaction.isCheering = true;
   const payload = { memberNum: currentMemberNum.value, postCategoryNum: FASHION_POST_CATEGORY, reactionType };
   try {
-    await api.post(`/manager-service/posts/fashion/react/${postId.value}`, payload);
+    // [수정] API 경로 수정 (백엔드 컨트롤러 확인 필요)
+    await axios.post(`/api/manager-service/posts/fashion/react`, payload, { params: { postNum: postId.value } });
     if (isLikeAction) {
       const wasLiked = postReaction.isLiked;
       postReaction.isLiked = !wasLiked;
@@ -427,7 +458,7 @@ const editPost = () => {
 const deletePost = async () => {
   if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
     try {
-      await api.delete(`/manager-service/posts/fashion/${postId.value}`);
+      await axios.delete(`/api/manager-service/posts/fashion/delete`, { params: { postNum: postId.value } });
       alert('게시글이 삭제되었습니다.');
       router.push({ name: 'fashionboardview' });
     } catch (err) { console.error("게시글 삭제 에러:", err); alert('게시글 삭제 실패'); }
@@ -438,7 +469,7 @@ const editComment = (comment) => {
   const newContent = prompt('댓글 수정:', comment.content);
   if (newContent !== null && newContent.trim() !== comment.content) {
     // TODO: 댓글 수정 API 호출 (PUT /api/manager-service/comments/{commentNum})
-    // 예시: axios.put(`/api/manager-service/comments/${comment.num}`, { content: newContent }).then(...)
+    // 예시: axios.put(`/api/manager-service/comments/updatecomment`, { content: newContent }, { params: { commentNum: comment.num } }).then(...)
     alert(`댓글 수정 API 호출: ${comment.num}, 내용: ${newContent}`);
     // 성공 시
     // const index = commentData.value.findIndex(c => c.num === comment.num);
@@ -449,8 +480,9 @@ const editComment = (comment) => {
 const deleteComment = async (commentNum) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
-    await api.delete(`/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
-    alert('댓글이 삭제되었습니다.');
+      // [수정] API 경로 수정 (DELETE /api/manager-service/comments/deletecomment?commentNum=XX)
+      await axios.delete(`/api/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
+      alert('댓글이 삭제되었습니다.');
       commentData.value = commentData.value.filter(c => c.num !== commentNum);
     } catch (err) { console.error("댓글 삭제 에러:", err); alert('댓글 삭제 실패'); }
   }
@@ -458,11 +490,15 @@ const deleteComment = async (commentNum) => {
 // ----------------------------
 
 const categories = ref(['전체', '코디 조언', '스타일링', '쇼핑 동행', '브랜드 추천', '트렌드 분석']);
+
+// ▼▼▼▼▼ popularMentors 데이터 수정 ▼▼▼▼▼
+// DB 데이터(member_num) 기반으로 num 추가
 const popularMentors = ref([
-  { name: '김패션', field: '코디 멘토링', likes: 234 },
-  { name: '배민', field: '브랜딩', likes: 189 },
-  { name: '트렌드분석이', field: '트렌드 분석', likes: 156 },
+  { num: 2, name: '김패션', field: '코디 멘토링', likes: 234 }, // member_num: 2
+  { num: null, name: '배민', field: '브랜딩', likes: 189 }, // DB에 '배민' 없음
+  { num: 31, name: '트렌드분석이', field: '트렌드 분석', likes: 156 } // '트렌드세터이' (member_num: 31)로 가정
 ]);
+// ▲▲▲▲▲ popularMentors 데이터 수정 ▲▲▲▲▲
 </script>
 
 <style scoped>
@@ -902,6 +938,12 @@ const popularMentors = ref([
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
+  /* ▼▼▼ 구분선 추가 ▼▼▼ */
+  border-bottom: 1px solid #F3F4F6;
+}
+/* ▼▼▼ 마지막 아이템 구분선 제거 ▼▼▼ */
+.mentor-list li:last-child {
+  border-bottom: none;
 }
 .mentor-info {
   display: flex;
@@ -910,6 +952,14 @@ const popularMentors = ref([
 .mentor-info strong {
   font-size: 14px;
   color: var(--text-primary);
+  /* ▼▼▼ 폰트 굵게 및 간격 조정 ▼▼▼ */
+  font-weight: 600; 
+  margin-bottom: 2px;
+}
+/* ▼▼▼ 멘토 이름 호버 스타일 추가 ▼▼▼ */
+.mentor-info strong[style*="cursor: pointer"]:hover {
+  color: var(--primary-color, #155DFC);
+  text-decoration: underline;
 }
 .mentor-info span {
   font-size: 12px;
@@ -922,6 +972,8 @@ const popularMentors = ref([
   display: flex;
   align-items: center;
   gap: 2px;
+  /* ▼▼▼ 줄바꿈 방지 ▼▼▼ */
+  white-space: nowrap; 
 }
 
 .cta-widget {
@@ -948,6 +1000,12 @@ const popularMentors = ref([
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
+  /* ▼▼▼ 호버 트랜지션 추가 ▼▼▼ */
+  transition: background-color 0.2s, color 0.2s;
+}
+/* ▼▼▼ 버튼 호버 스타일 추가 ▼▼▼ */
+.cta-button:hover {
+  background-color: #f0f5ff; /* 약간 어두운 흰색 */
 }
 
 .state {
