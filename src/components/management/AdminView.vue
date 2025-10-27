@@ -1,11 +1,12 @@
 <template>
+    <HeaderView/>
     <div class="wrapper">
-        <div class="container-1">
+        <div class="container-1" @click="goTo('/admin')">
             <div class="title-wrapper">
             <div class="title">전체 회원 조회</div>
             </div>
         </div>
-        <div class="container-2">
+        <div class="container-2" @click="goTo('/admin/reportlist')">
             <div class="title-wrapper">
                 <div class="title">신고 목록 조회</div>
             </div>
@@ -21,12 +22,26 @@
             </div>
         </div>
     </div>
+    <router-view/>
+    <FooterView/>
 </template>
+
+<script setup>
+import { useRouter } from "vue-router";
+import FooterView from "../FooterView.vue";
+import HeaderView from "../HeaderView.vue";
+
+const router = useRouter();
+
+function goTo(path) {
+  router.push(path);
+}
+</script>
 
 <style scoped>
 .wrapper {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start;
   gap: 20px; /* 🔹 두 박스 간의 간격 (원하면 30px 등으로 조정 가능) */
 }
@@ -43,6 +58,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+  cursor: pointer;
 }
 
 .container-2 {
@@ -58,6 +74,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   gap: 4px;
+  cursor: pointer;
 }
 
 .container-3 {
@@ -73,6 +90,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   gap: 4px;
+  cursor: pointer;
 }
 
 .container-4 {
@@ -88,6 +106,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   gap: 4px;
+  cursor: pointer;
 }
 
 .title-wrapper {

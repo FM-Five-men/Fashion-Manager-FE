@@ -85,29 +85,87 @@
     <!-- 🪟 모달 -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
-        <!-- 기존 HTML 코드 삽입 -->
-        <div class="profile-wrapper">
-            <!-- 원본 HTML 구조 유지 -->
-            <div
-            style="width: 1384px; height: 931px; background: white; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex"
-            >
-            <div
-                style="align-self: stretch; height: 931.33px; position: relative; background: #F9FAFB"
-            >
-                <!-- 🔹 닫기 버튼 -->
-                <button class="close-btn" @click="closeModal">×</button>
+        <div class="profile-container">
+            <div class="profile-header">
+            <div class="header-content">
+                <div class="profile-info">
+                <div class="avatar">
+                    <img src="https://placehold.co/88x88" alt="프로필 이미지" />
+                    <div class="edit-icon"></div>
+                </div>
+                <div class="profile-text">
+                    <div class="profile-name">
+                    <span>{{selectedMember.memberId}}</span>
+                    <span class="badge">{{selectedMember.memberStateName}}</span>
+                    </div>
+                    <p class="email">{{selectedMember.memberEmail}}</p>
+                </div>
+                </div>
+            </div>
 
-                <!-- 🔹 원본 HTML 삽입 (김지수 프로필 부분) -->
-                <div
-                style="width: 1384px; height: 329.33px; left: 0px; top: 0px; position: absolute; background: linear-gradient(135deg, #0A0A0A 0%, #CBCBCC 100%); flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex"
-                >
-                <!-- (중략 - 원본 내부 HTML 그대로 유지) -->
-                <!-- 너가 주신 나머지 div 코드는 그대로 여기에 들어감 -->
+            <div class="stats">
+                
+                <div class="stat-item">
+                <div class="stat-number">{{ selectedMember.memberGoodCount }}</div>
+                <div class="stat-label">좋아요</div>
+                </div>
+                
+                <div class="stat-item">
+                <div class="stat-number">{{ selectedMember.memberCheerCount }}</div>
+                <div class="stat-label">힘내요</div>
+                </div>
+
+                <div class="stat-item">
+                <div class="stat-number">{{ selectedMember.memberReportCount }}</div>
+                <div class="stat-label">신고 당한 횟수</div>
                 </div>
             </div>
             </div>
+
+            <div class="profile-body">
+            <div class="info-card">
+                <h3>기본 정보</h3>
+                <div class="info-grid">
+                <div><label>이름</label><p>{{ selectedMember.memberName }}</p></div>
+                <div><label>회원 등급</label><p>{{ selectedMember.memberStateName }}</p></div>
+                <div><label>이메일</label><p>{{ selectedMember.memberEmail }}</p></div>
+                <div><label>나이</label><p>{{ selectedMember.memberAge }}</p></div>
+                <div><label>키</label><p>{{ selectedMember.memberHeight }}</p></div>
+                <div><label>몸무게</label><p>{{ selectedMember.memberWeight }}</p></div>
+                <div><label>활동 상태</label><p>{{ selectedMember.memberStatus }}</p></div>
+                <div><label>메시지 수락 여부</label><p>{{ selectedMember.memberMessageAllow }}</p></div>
+                </div>
+            </div>
+
+            <!-- ✅ 추가: 회원 등급 변경 -->
+            <div class="info-card">
+            <h3>회원 등급 변경</h3>
+            <div class="status-change-box">
+                <select v-model="selectedRight" class="status-dropdown">
+                <option value="1">관리자</option>
+                <option value="2">일반회원</option>
+                <option value="3">인플루언서</option>
+                </select>
+                <button class="status-btn" @click="updateRight">변경</button>
+            </div>
+            </div>
+            
+
+            <!-- ✅ 추가: 활동 상태 변경 -->
+            <div class="info-card">
+            <h3>활동 상태 변경</h3>
+            <div class="status-change-box">
+                <select v-model="selectedStatus" class="status-dropdown">
+                <option value="활동중">활동중</option>
+                <option value="휴면">휴면</option>
+                <option value="정지">정지</option>
+                </select>
+                <button class="status-btn" @click="updateStatus">변경</button>
+            </div>
+            </div>
+            </div>
         </div>
-        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -130,6 +188,8 @@ const searchQuery = ref("");
 
 const members = ref([]);
 const selectedMember = ref({});
+const selectedStatus = ref("활동중");
+const selectedRight = ref(2);
 
 // onMounted에서 데이터 로드
 onMounted(async () => {
@@ -145,12 +205,7 @@ onMounted(async () => {
       memberState.value = authRes.data.memberState;
     }
 
-    const memberRes = await axios.get(
-      "/api/member-service/member/selectmemberright",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const memberRes = await axios.get("/api/member-service/member/selectmemberright");
     console.log(memberRes)
     members.value = memberRes.data;
   } catch (err) {
@@ -188,11 +243,33 @@ function openModal(member) {
 function closeModal() {
   showModal.value = false;
 }
+
+const updateStatus = () => {
+    const data = new FormData();
+    data.append("id",selectedMember.value.memberId)
+    data.append("updateState",selectedStatus.value)
+    axios.post('/api/member-service/member/updatestate',data).then(
+        (res) => {
+            console.log(res)
+        }
+    )
+}
+
+const updateRight = () => {
+    const data = new FormData();
+    data.append('num',selectedMember.value.memberNum)
+    data.append('updateRight',selectedRight.value)
+    axios.post('/api/member-service/member/updateright',data).then(
+        (res) => {
+            console.log(res)
+        }
+    )
+}
 </script>
 
 <style scoped>
 .filter-container {
-  width: 100%;
+  width: 800px;
   max-width: 1232px;
   padding: 24px;
   background-color: white;
@@ -448,6 +525,8 @@ function closeModal() {
   overflow-y: auto;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 /* ✅ 모달 박스 (정중앙 위치) */
@@ -661,5 +740,190 @@ function closeModal() {
   border-radius: 8px;
   padding: 8px 16px;
   cursor: pointer;
+}
+
+
+
+
+
+.profile-container {
+  width: 1384px;
+  background: #f9fafb;
+  color: #0a0a0a;
+  font-family: Arial, sans-serif;
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #0a0a0a 0%, #cbcbcc 100%);
+  color: white;
+  padding: 48px 116px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.avatar img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid white;
+  object-fit: cover;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.email {
+  color: #f3e8ff;
+  font-size: 14px;
+}
+
+.edit-button {
+  background: white;
+  color: #0a0a0a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.stat-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  text-align: center;
+  padding: 16px;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #f3e8ff;
+}
+
+.profile-body {
+  padding: 40px 148px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  width: 1038px;
+}
+
+.info-card h3 {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 40px;
+}
+
+.info-grid label {
+  color: #6a7282;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.info-grid p {
+  font-size: 16px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.style-tag {
+  display: inline-block;
+  background: #f3e8ff;
+  color: #8200db;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+
+/* ✅ 드롭다운 + 버튼 스타일 */
+.status-change-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status-dropdown {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.status-btn {
+  background-color: #8200db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.status-btn:hover {
+  background-color: #6e00b0;
+}
+
+.status-message {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #4a5565;
 }
 </style>

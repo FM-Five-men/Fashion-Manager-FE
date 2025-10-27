@@ -27,6 +27,7 @@ import MessageView from '../components/message/MessageView.vue';
 import AdminView from '../components/management/AdminView.vue';
 import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
+import PostListView from '../components/post/PostListView.vue';
 
 
 const routes = [
@@ -128,18 +129,36 @@ const routes = [
     path: '/message',
     name: 'message',
     component: MessageView
-  },{
+   }
+   ,{
+    path: '/postlist',
+    name: 'postlist',
+    component: PostListView
+   }
+  // ,{
+  //   path: '/memberlist',
+  //   name: 'memberlist',
+  //   component: MemberListView
+  // },{
+  //   path: '/reportlist',
+  //   name: 'reportlist',
+  //   component: ReportListView
+  // }
+  ,{
     path: '/admin',
     name: 'admin',
-    component: AdminView
-  },{
-    path: '/reportlist',
-    name: 'reportlist',
-    component: ReportListView
-  },{
-    path: '/memberlist',
-    name: 'memberlist',
-    component: MemberListView
+    component: AdminView,
+    children: [
+                {
+                  path: '',
+                  name: 'memberlist',
+                  component: MemberListView
+                },{
+                  path: 'reportlist',
+                  name: 'reportlist',
+                  component: ReportListView
+                }
+    ]
   }
 ]
 
