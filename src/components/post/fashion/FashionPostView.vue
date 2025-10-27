@@ -148,6 +148,10 @@ const error = ref(null);
 const newCommentText = ref('');
 const postId = ref(null);
 
+const memberId = ref(null)
+const memberEmail = ref(null)
+const memberState = ref(null)
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
@@ -243,13 +247,7 @@ const postReaction = reactive({
 });
 
 onMounted(async () => {
-  postId.value = route.params.id
-  if (!postId.value) {
-    error.value = '게시글 ID가 주소에 포함되지 않았습니다.'
-    isLoading.value = false
-    return
-  }
-
+  
   const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
   postData.value = postRes.data
 
