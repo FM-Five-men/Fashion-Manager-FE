@@ -30,7 +30,7 @@
 
           <div class="post-body">
             <h2>{{ postData.title || '제목 없음' }}</h2>
-            <div class="tags" v-if="postData.hashTags && postData.hashTags.length > 0">
+            <div class="tags" v-if="postData.hashTags?.length">
               <span v-for="tag in postData.hashTags" :key="tag.name">{{ tag.name }}</span>
             </div>
             
@@ -41,12 +41,52 @@
                 </strong>
             </div>
 
-            <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else src="/images/fashionpost1.jpg" alt="Knit Outfit" class="post-image" />
+            <!-- ✅ 게시글 사진(카테고리 1) 먼저: 대표 이미지 + 추가 이미지 썸네일 -->
+            <div v-if="mainImages.length" class="post-images">
+              <!-- 대표 이미지 -->
+              <img
+                :src="mainImages[activeMainIndex]"
+                alt="Post image"
+                class="post-image"
+                @error="onImgError($event)"
+              />
 
-            <div class="post-content-text" v-html="postData.content || '내용 없음'">
+              <!-- 썸네일 스트립 (있을 때만) -->
+              <div v-if="mainImages.length > 1" class="thumb-strip">
+                <button
+                  v-for="(src, i) in mainImages"
+                  :key="`main-${i}`"
+                  class="thumb"
+                  :class="{ active: i === activeMainIndex }"
+                  @click="activeMainIndex = i"
+                >
+                  <img :src="src" alt="thumb" @error="onImgError($event)" />
+                </button>
               </div>
+            </div>
+
+            <!-- 본문 HTML -->
+            <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
+
+            <!-- ✅ 아이템 사진(카테고리 != 1) 하단에 모아 표시 -->
+            <div v-if="itemImages.length" class="items-block">
+              <div class="items-header">
+                <div class="items-title">착용 아이템 사진</div>
+                <div class="items-count">{{ itemImages.length }}개</div>
+              </div>
+
+              <div class="items-grid">
+                <div
+                  v-for="(src, i) in itemImages"
+                  :key="`item-${i}`"
+                  class="item-card"
+                >
+                  <img :src="src" alt="item" @error="onImgError($event)" />
+                </div>
+              </div>
+            </div>
           </div>
+
 
           <div class="post-meta">
             <span>조회 {{ postData.views || 0 }}</span> <span>·</span>

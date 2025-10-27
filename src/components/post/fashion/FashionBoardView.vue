@@ -17,6 +17,8 @@
               v-for="(post, idx) in posts"
               :key="post.num"
               class="community-card"
+              @click="goDetail(post.num)"
+              style="cursor:pointer"
             >
               <!-- 상단 컬러 스트립 -->
               <div class="card-topbar" :style="{ background: colorByTemp(temperature(post.good, post.cheer)) }"></div>
@@ -226,15 +228,39 @@ const pageMaker  = ref(null)
 const keyword = ref('')
 const searchType = ref('TW')   // '전체'
 
-/* ===== 공통 유틸 ===== */
-const GATEWAY_PREFIX = '/api/manager-service';
+/* ===== (NEW) 사용자 인증 정보 ===== */
+const memberId = ref(null)
+const memberEmail = ref(null)
+const memberState = ref(null)
 
-const buildImageSrc = (imageUrl) => {
-  if (!imageUrl) return null;
-  if (/^https?:\/\//i.test(imageUrl)) return imageUrl;     // 절대 URL이면 그대로
-  if (imageUrl.startsWith('/files/')) return `${GATEWAY_PREFIX}${imageUrl}`; // /files → /api/manager-service/files
-  return imageUrl; 
-};
+/* ===== 이미지 유틸: DB의 로컬 파일 경로 → 브라우저 경로로 변환 =====
+   예) path: C:/3rdProjectFE/public/images/fashion
+       name: 334296f6-...-a0.png
+   → /images/fashion/334296f6-...-a0.png
+*/
+const toPublicImageSrc = (path, name) => {
+  if (!name) return null
+
+  // 이미 절대 URL이면 그대로 사용
+  if (/^https?:\/\//i.test(name)) return name
+
+  // path에 'public' 구간이 있으면 그 뒤만 취해 웹 루트로 매핑
+  if (path && /public[\\/]/i.test(path)) {
+    const afterPublic = path.split(/public[\\/]/i).pop() || ''
+    // 윈도우 백슬래시 → 슬래시
+    const base = afterPublic.replaceAll('\\', '/').replace(/^\/+/, '')
+    // 최종 브라우저 경로(중복 슬래시 정리)
+    return (`/${base}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // path가 이미 '/images/...' 형태면 그대로 결합
+  if (path?.startsWith('/')) {
+    return (`${path}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 그 외에는 기본 폴더를 가정
+  return (`/images/fashion/${name}`).replace(/\/+/g, '/')
+}
 
 // photos에서 대표 썸네일 고르기: 게시글(카테고리 1) 우선, num 오름차순
 const pickThumbFromPhotos = (photos = []) => {
@@ -245,33 +271,34 @@ const pickThumbFromPhotos = (photos = []) => {
     .filter((p) => Number(p?.photoCategoryNum) !== 1)
     .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
   const chosen = byPost[0] || byItem[0]
-  return chosen ? buildImageSrc(chosen.imageUrl, chosen.path, chosen.name) : null
+
+  // ⬇️ 백엔드 파일서버를 거치지 않고 정적 경로로 변환
+  return chosen ? toPublicImageSrc(chosen.path, chosen.name) : null
 }
 
 // 썸네일 캐시
 const thumbCache = new Map()
 
-// 단일 글의 썸네일 로드 (✅ 상세 API 경로 수정: /posts/fashion/{num})
+// 단일 글의 썸네일 로드 (상세 API에서 photos 메타만 받아와 로컬 정적 경로로 변환)
 const loadThumbForPost = async (post) => {
   const key = Number(post?.num);
   if (!key) return null;
   if (thumbCache.has(key)) return thumbCache.get(key);
 
   try {
-    // ✅ 상세 호출로 변경 (params 제거)
-    const { data } = await api.get(`/manager-service/posts/fashion/${key}`);
-    const thumb = pickThumbFromPhotos(data?.photos);
-    thumbCache.set(key, thumb);
-    return thumb;
+    const { data } = await api.get(`/manager-service/posts/fashion/${key}`)
+    const thumb = pickThumbFromPhotos(data?.photos)
+    thumbCache.set(key, thumb)
+    return thumb
   } catch (e) {
-    console.warn('썸네일 로딩 실패:', key, e);
-    thumbCache.set(key, null);
-    return null;
+    console.warn('썸네일 로딩 실패:', key, e)
+    thumbCache.set(key, null)
+    return null
   }
-};
+}
 
 /* ===== 표시값 계산 ===== */
-const fallbackImage = 'https://placehold.co/236x242'
+const fallbackImage = '/images/fallback.png' // public/images/fallback.png 있으면 사용, 없으면 바꿔주세요.
 const temperature = (good = 0, cheer = 0) => {
   const g = Number(good) || 0
   const c = Number(cheer) || 0
@@ -284,7 +311,10 @@ const colorByTemp = (t) => (t <= 25 ? '#6A5BFF' : t <= 50 ? '#2E9BFF' : t <= 75 
 
 /* ===== 라우팅 ===== */
 const goWrite = () => router.push({ name: 'registfashionpost' })
-const goDetail = (num) => { console.log('go detail:', num) }
+const goDetail = (num) => {
+  if (!num) return
+  router.push(`/fashionpost/${num}`)
+}
 
 /* ===== 데이터 로딩 ===== */
 const fetchPosts = async () => {
@@ -299,10 +329,10 @@ const fetchPosts = async () => {
     const { data } = await api.get('/manager-service/posts/fashion', { params })
     const list = Array.isArray(data?.list) ? data.list : []
 
-    // 우선 목록 세팅
+    // 목록 세팅
     posts.value = list.map((p) => ({ ...p, _thumb: null }))
 
-    // 썸네일 병렬 로딩
+    // 썸네일 병렬 로딩 (정적 경로로 변환됨)
     const thumbs = await Promise.all(posts.value.map((p) => loadThumbForPost(p)))
     posts.value.forEach((p, i) => { p._thumb = thumbs[i] || null })
 
@@ -341,7 +371,7 @@ const goPage = (p) => {
   }
 }
 
-/* ===== mounted ===== */
+/* ===== onMounted ===== */
 onMounted(async () => {
   const token = sessionStorage.getItem('token')
   if (!token) {
@@ -349,6 +379,34 @@ onMounted(async () => {
     router.push('/')
     return
   }
+
+  // (1) 예시대로: 인증 정보 확인 + 콘솔 출력
+  try {
+    const authRes = await axios.get('/api/member-service/member/auth', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    console.log('[member auth]', authRes)
+
+    if (authRes?.data?.memberId == null) {
+      router.push('/')
+      return
+    }
+
+    memberId.value = authRes.data.memberId
+    memberEmail.value = authRes.data.memberEmail
+    memberState.value = authRes.data.memberState
+
+    // 디버그 로그
+    console.log('memberId:', memberId.value)
+    console.log('memberEmail:', memberEmail.value)
+    console.log('memberState:', memberState.value)
+  } catch (e) {
+    console.error('인증 정보 조회 실패:', e)
+    router.push('/')
+    return
+  }
+
+  // (2) 데이터 로딩
   await Promise.all([fetchPosts(), fetchSidebarPopular()])
 })
 </script>
