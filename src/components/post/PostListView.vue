@@ -1,4 +1,4 @@
-<template>
+filter-icon<template>
   <div class="filter-container">
     <!-- 헤더 -->
     <div class="filter-header">

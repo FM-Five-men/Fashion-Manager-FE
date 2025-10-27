@@ -27,15 +27,43 @@
 </template>
 
 <script setup>
+import axios from "axios";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import FooterView from "../FooterView.vue";
 import HeaderView from "../HeaderView.vue";
 
 const router = useRouter();
+const token = sessionStorage.getItem("token");
+
+const memberId = ref("");
+const memberEmail = ref("");
+const memberState = ref("");
 
 function goTo(path) {
   router.push(path);
 }
+
+
+onMounted(async () => {
+  try {
+    const authRes = await axios.get("/api/member-service/member/auth", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!authRes.data.memberId) {
+      router.push("/");
+    } else {
+      memberId.value = authRes.data.memberId;
+      memberEmail.value = authRes.data.memberEmail;
+      memberState.value = authRes.data.memberState;
+      if(authRes.data.memberState != "관리자"){
+        router.push("/");
+      }
+    }
+  } catch (err) {
+    console.error("Error loading reports:", err);
+  }
+});
 </script>
 
 <style scoped>
