@@ -192,7 +192,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-/** axios 인스턴스: 모든 요청에 세션 토큰 자동 첨부 */
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
