@@ -148,6 +148,12 @@ const error = ref(null);
 const newCommentText = ref('');
 const postId = ref(null);
 
+const memberId = ref(null);      // <-- 추가
+const memberEmail = ref(null);   // <-- 추가
+const memberState = ref(null);   // <-- 추가
+const currentMemberNum = ref(null); // 댓글용 (이전 답변 참고)
+const currentMemberName = ref(null); // 댓글용 (이전 답변 참고)
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
@@ -171,10 +177,8 @@ api.interceptors.response.use(
   }
 )
 
-// --- [수정] 실제 로그인 구현 후 이 부분은 수정되어야 합니다 ---
-// (예: sessionStorage에서 토큰을 디코딩하여 사용자 번호/이름 가져오기)
-const currentMemberNum = ref(4); // 임시: 현재 로그인된 사용자 번호
-const currentMemberName = ref('이민준'); // 임시: 현재 로그인된 사용자 이름
+
+
 // ----------------------------------------------------
 
 const FASHION_POST_CATEGORY = 1;
@@ -207,6 +211,8 @@ const toPublicImageSrc = (path, name) => {
 const mainImages = ref([])
 const itemImages = ref([])
 const activeMainIndex = ref(0)
+
+
 
 const onImgError = (e) => {
   if (e?.target) e.target.src = '/images/fashionpost1.jpg'
@@ -243,12 +249,57 @@ const postReaction = reactive({
 });
 
 onMounted(async () => {
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    alert('로그인 후 이용해 주세요.');
+    router.push('/');
+    return;
+  }
+
+  try {
+    // 사용자 인증 정보 조회 API 먼저 호출
+    const authRes = await api.get('/member-service/member/auth', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log('[member auth]', authRes);
+
+    if (authRes?.data?.memberId == null) {
+      alert('사용자 정보를 가져올 수 없습니다.');
+      router.push('/');
+      return;
+    }
+
+    // --- 이제 선언된 ref에 값을 할당합니다 ---
+    memberId.value = authRes.data.memberId;
+    memberEmail.value = authRes.data.memberEmail;
+    memberState.value = authRes.data.memberState;
+    currentMemberNum.value = authRes.data.memberId; // 댓글용 번호도 같이 할당
+    currentMemberName.value = authRes.data.memberName; // 댓글용 이름도 같이 할당 (memberName 필드 확인 필요)
+    // -----------------------------------------
+
+    // 디버그 로그
+    console.log('memberId:', memberId.value);
+    console.log('memberEmail:', memberEmail.value);
+    console.log('memberState:', memberState.value);
+
+  } catch (e) {
+    console.error('인증 정보 조회 실패:', e);
+    // 401 외의 에러 처리 (예: 네트워크 오류 등)
+    if (e.response?.status !== 401) {
+       alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+    }
+    // 인증 실패 시 로그인 페이지로 보낼 수도 있습니다. (401은 인터셉터에서 처리)
+    // router.push('/');
+    return; // 인증 실패 시 이후 로직 중단
+  }
+
   postId.value = route.params.id
   if (!postId.value) {
     error.value = '게시글 ID가 주소에 포함되지 않았습니다.'
     isLoading.value = false
     return
   }
+  await fetchPostAndComments();
 
   const postRes = await api.get(`/manager-service/posts/fashion/${postId.value}`)
   postData.value = postRes.data
@@ -264,7 +315,7 @@ onMounted(async () => {
     return;
   }
   await fetchPostAndComments();
-  // TODO: Fetch user's reaction status for the post and comments
+
 });
 
 const fetchPostAndComments = async () => {
@@ -276,7 +327,7 @@ const fetchPostAndComments = async () => {
 
     buildImagesFromPhotos(postData.value?.photos || [])
 
-    const commentsResponse = await axios.get(`/api/manager-service/comments/getcomments`, {
+    const commentsResponse = await api.get(`/manager-service/comments/getcomments`, {
       params: { postType: 'fashion', postNum: postId.value }
     });
     commentData.value = commentsResponse.data.map(c => ({ ...c, userReaction: null, isReacting: false }));
@@ -298,7 +349,7 @@ const togglePostReaction = async (reactionType) => {
   if (isLikeAction) postReaction.isLiking = true; else postReaction.isCheering = true;
   const payload = { memberNum: currentMemberNum.value, postCategoryNum: FASHION_POST_CATEGORY, reactionType };
   try {
-    await axios.post(`/api/manager-service/posts/fashion/react/${postId.value}`, payload);
+    await api.post(`/manager-service/posts/fashion/react/${postId.value}`, payload);
     if (isLikeAction) {
       const wasLiked = postReaction.isLiked;
       postReaction.isLiked = !wasLiked;
@@ -323,7 +374,7 @@ const toggleCommentReaction = async (comment, reactionType) => {
   comment.isReacting = true;
   const payload = { memberNum: currentMemberNum.value, reactionType };
   try {
-    await axios.post(`/api/manager-service/comments/${comment.num}/react`, payload);
+    await api.post(`/manager-service/comments/${comment.num}/react`, payload);
     const currentReaction = comment.userReaction;
     if (reactionType === 'good') {
       if (currentReaction === 'good') { comment.userReaction = null; comment.good -= 1; }
@@ -338,14 +389,32 @@ const toggleCommentReaction = async (comment, reactionType) => {
 
 const handleCommentSubmit = async () => {
   if (!newCommentText.value.trim()) { alert("댓글 내용을 입력해주세요."); return; }
+  // --- 사용자 정보 확인 추가 ---
+  if (currentMemberNum.value === null) {
+      alert('사용자 정보를 가져올 수 없습니다. 페이지를 새로고침하거나 다시 로그인해주세요.');
+      return;
+  }
+  // -------------------------
   try {
     const payload = { content: newCommentText.value, memberNum: currentMemberNum.value, postType: 'fashion', postNum: postId.value };
-    const response = await axios.post(`/api/manager-service/comments/createcomment`, payload);
+    // --- axios.post 대신 api.post 사용 ---
+    const response = await api.post(`/manager-service/comments/createcomment`, payload); // <-- 수정됨
+    // ---------------------------------
     const newComment = response.data;
-    if (!newComment.memberName) { newComment.memberName = currentMemberName.value; }
+    if (!newComment.memberName && currentMemberName.value) { // currentMemberName ref 사용
+        newComment.memberName = currentMemberName.value;
+    }
     commentData.value.push({ ...newComment, userReaction: null, isReacting: false });
     newCommentText.value = '';
-  } catch (err) { console.error("댓글 등록 에러:", err); alert("댓글 등록 실패"); }
+  } catch (err) {
+    console.error("댓글 등록 에러:", err);
+    // 401 에러는 인터셉터에서 처리될 수 있지만, 다른 상태 코드나 네트워크 에러 대비
+    if (err.response) {
+      alert(`댓글 등록 실패 (상태: ${err.response.status})`);
+    } else {
+      alert("댓글 등록 실패 (네트워크 또는 알 수 없는 오류)");
+    }
+  }
 };
 
 // --- [수정] 수정/삭제 함수 추가 ---
@@ -358,7 +427,7 @@ const editPost = () => {
 const deletePost = async () => {
   if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
     try {
-      await axios.delete(`/api/manager-service/posts/fashion/${postId.value}`);
+      await api.delete(`/manager-service/posts/fashion/${postId.value}`);
       alert('게시글이 삭제되었습니다.');
       router.push({ name: 'fashionboardview' });
     } catch (err) { console.error("게시글 삭제 에러:", err); alert('게시글 삭제 실패'); }
@@ -380,8 +449,8 @@ const editComment = (comment) => {
 const deleteComment = async (commentNum) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
-      await axios.delete(`/api/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
-      alert('댓글이 삭제되었습니다.');
+    await api.delete(`/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
+    alert('댓글이 삭제되었습니다.');
       commentData.value = commentData.value.filter(c => c.num !== commentNum);
     } catch (err) { console.error("댓글 삭제 에러:", err); alert('댓글 삭제 실패'); }
   }
