@@ -233,6 +233,7 @@ const memberId = ref(null)
 const memberEmail = ref(null)
 const memberState = ref(null)
 
+
 /* ===== 이미지 유틸: DB의 로컬 파일 경로 → 브라우저 경로로 변환 =====
    예) path: C:/3rdProjectFE/public/images/fashion
        name: 334296f6-...-a0.png
@@ -298,7 +299,7 @@ const loadThumbForPost = async (post) => {
 }
 
 /* ===== 표시값 계산 ===== */
-const fallbackImage = '/images/fallback.png' // public/images/fallback.png 있으면 사용, 없으면 바꿔주세요.
+const fallbackImage = '/images/defaultimage.png' // public/images/fallback.png 있으면 사용, 없으면 바꿔주세요.
 const temperature = (good = 0, cheer = 0) => {
   const g = Number(good) || 0
   const c = Number(cheer) || 0

@@ -370,6 +370,11 @@ const onSubmit = () => {
     return
   }
 
+  if (postImages.value.length === 0 && itemImages.value.length === 0) {
+    alert('최소 1개 이상의 이미지를 등록해주세요. (게시글 또는 아이템 이미지)') // 사용자에게 어떤 이미지가 필요한지 명시
+    return // 함수 실행 중단
+  }
+
   if (!memberNum.value) {
     alert('회원 번호를 확인할 수 없습니다. 다시 로그인해 주세요.')
     return
