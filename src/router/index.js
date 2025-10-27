@@ -29,6 +29,7 @@ import AdminView from '../components/management/AdminView.vue';
 import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
 import PostListView from '../components/post/PostListView.vue';
+import InfluencerListView from '../components/influencer/InfluencerListView.vue';
 
 
 const routes = [
@@ -127,22 +128,11 @@ const routes = [
     path: '/message',
     name: 'message',
     component: MessageView
-   }
-   ,{
-    path: '/postlist',
-    name: 'postlist',
-    component: PostListView
-   }
-  // ,{
-  //   path: '/memberlist',
-  //   name: 'memberlist',
-  //   component: MemberListView
-  // },{
-  //   path: '/reportlist',
-  //   name: 'reportlist',
-  //   component: ReportListView
-  // }
-  ,{
+  },{
+    path: '/influencerlist',
+    name: 'influencerlist',
+    component: InfluencerListView
+  },{
     path: '/admin',
     name: 'admin',
     component: AdminView,
@@ -155,6 +145,10 @@ const routes = [
                   path: 'reportlist',
                   name: 'reportlist',
                   component: ReportListView
+                },{
+                  path: 'postlist',
+                  name: 'postlist',
+                  component: PostListView
                 }
     ]
   }

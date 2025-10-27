@@ -11,7 +11,7 @@
                 <div class="title">신고 목록 조회</div>
             </div>
         </div>
-        <div class="container-3">
+        <div class="container-3" @click="goTo('/admin/postlist')">
             <div class="title-wrapper">
                 <div class="title">게시물 조회</div>
             </div>

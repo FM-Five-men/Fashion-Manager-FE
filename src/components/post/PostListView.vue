@@ -83,10 +83,13 @@
         </div>
         <div class="post-title">{{ post.title }}</div>
         <div class="post-title">{{ post.name }}</div>
-        <button class="post-detail-btn">상세보기</button>
+        <button class="post-detail-btn" v-if="post.type == 'fashion'" @click="moveFashion(post.num)">상세보기</button>
+        <button class="post-detail-btn" v-else-if="post.type == 'review'">상세보기</button>
+        <button class="post-detail-btn" v-else-if="post.type == 'mentoring'">상세보기</button>
+    
         <button class="delete-btn" @click.stop="fashionDelete(post.num)" v-if="post.type == 'fashion'"></button>
-        <button class="delete-btn" @click.stop="reviewDelete(post.num)" v-if="post.type == 'review'"></button>
-        <button class="delete-btn" @click.stop="mentoringDelete(post.num)" v-if="post.type == 'mentoring'"></button>
+        <button class="delete-btn" @click.stop="reviewDelete(post.num)" v-else-if="post.type == 'review'"></button>
+        <button class="delete-btn" @click.stop="mentoringDelete(post.num)" v-else-if="post.type == 'mentoring'"></button>
       </div>
 
       <!-- 중단: 작성자, 작성일 -->
@@ -229,7 +232,9 @@ const mentoringDelete = (num) => {
     )
 }
 
-
+const moveFashion = (num) => {
+    router.push(`/fashionpost/${num}`);
+}
 </script>
 
 <style scoped>
