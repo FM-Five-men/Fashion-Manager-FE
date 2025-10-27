@@ -222,6 +222,7 @@ onMounted(async () => {
       }
     }).then(
       (res) => {
+        console.log(res)
         res.data.forEach(item => {
           console.log(item);
           item.type = "sent";        
@@ -241,6 +242,7 @@ onMounted(async () => {
       }
     }).then(
       (res) => {
+        console.log(res)
         res.data.forEach(item => {
           console.log(item);    
           item.type = "received";    
