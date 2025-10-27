@@ -45,7 +45,7 @@
           </template>
 
           <template v-else-if="loading">
-            <div v-for="s in 12" :key="s" class="community-card skeleton"> {/* amount 값과 일치 */}
+            <div v-for="s in 12" :key="s" class="community-card skeleton">
               <div class="card-topbar"></div>
               <div class="card-image sk"></div>
               <div class="card-content">
@@ -107,11 +107,11 @@
             aria-label="다음"
           >›</button>
         </div>
-      </div> {/* pagination-container 끝 */}
-    </div> {/* main-content-area 끝 */}
+      </div>
+    </div>
 
     <FooterView/>
-  </div> {/* page-container 끝 */}
+  </div>
 </template>
 
 <script setup>

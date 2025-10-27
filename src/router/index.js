@@ -35,6 +35,7 @@ import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
 import PostListView from '../components/post/PostListView.vue';
 import InfluencerListView from '../components/influencer/InfluencerListView.vue';
+import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
 
 const routes = [
@@ -178,6 +179,11 @@ const routes = [
                   component: PostListView
                 }
     ]
+  }, {
+    path: '/fashion/posts/:postNum/edit',
+    name: 'modifyfashionpostview',
+    component: ModifyFashionPostView,
+    props: true
   }
 ]
 
