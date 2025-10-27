@@ -19,8 +19,9 @@
             >
               <div class="card-topbar" style="background: #6A5BFF;"></div>
 
+              {/* ✅ 게시글 번호에 맞는 이미지 로드 */}
               <img
-                :src="fallbackImage"
+                :src="'/images/mentoringpost' + post.num + '.jpg'"
                 alt="게시글 이미지"
                 class="card-image"
                 @error="($event) => ($event.target.src = fallbackImage)"
@@ -34,7 +35,8 @@
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M8 8c1.328 0 2.4-1.072 2.4-2.4S9.328 3.2 8 3.2 5.6 4.272 5.6 5.6 6.672 8 8 8Zm0 1.6c-1.94 0-5.333 0.971-5.333 2.8v0.933h10.666V12.4c0-1.829-3.393-2.8-5.333-2.8Z" stroke="#1E1E1E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span class="author-name">작성자 번호: {{ post.author_num }}</span>
+                    {/* ✅ 작성자 번호 대신 이름 표시 */}
+                    <span class="author-name">{{ post.memberName || '작성자 정보 없음' }}</span>
                   </div>
                   <span class="chip-status" :class="{ finished: post.FINISH === 1 }">
                       {{ post.FINISH === 1 ? '마감' : '모집중' }}
@@ -45,7 +47,8 @@
           </template>
 
           <template v-else-if="loading">
-            <div v-for="s in 12" :key="s" class="community-card skeleton"> {/* amount 값과 일치 */}
+             {/* 스켈레톤 로딩 UI */}
+            <div v-for="s in 12" :key="s" class="community-card skeleton">
               <div class="card-topbar"></div>
               <div class="card-image sk"></div>
               <div class="card-content">
@@ -69,21 +72,9 @@
       </div>
 
       <div class="pagination-container">
-        <div class="search-row">
-          <div class="search-bar">
-            <input
-              v-model.trim="keyword"
-              type="text"
-              placeholder="제목 또는 내용 검색"
-              class="search-input"
-              @keyup.enter="applySearch"
-            />
-          </div>
-          <button class="search-btn" @click="applySearch">
-            <span>검색</span>
-          </button>
-        </div>
+        {/* ✅ 검색창 제거됨 */}
 
+        {/* 페이지네이션 */}
         <div class="page-row" v-if="totalPages > 1">
           <button
             class="arrow-btn"
@@ -115,83 +106,104 @@
 </template>
 
 <script setup>
-import HeaderView from '../../HeaderView.vue' // 경로 확인 필요
-import FooterView from '../../FooterView.vue' // 경로 확인 필요
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
+import HeaderView from '../../HeaderView.vue';
+import FooterView from '../../FooterView.vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
-const router = useRouter()
+const router = useRouter();
 
 /* ================== axios 인스턴스 (json-server용 baseURL) ================== */
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // json-server 주소
-})
+  baseURL: 'http://localhost:3000', // ✅ json-server 주소로 변경
+});
 
 /* ===== 상태 ===== */
-const loading = ref(false)
-const posts = ref([])
-const pageNum = ref(1)
-const amount = ref(12); // <-- 페이지당 게시글 수를 12로 변경
-const totalPages = ref(1)
-const totalCount = ref(0)
-
-const keyword = ref('')
+const loading = ref(false);
+const posts = ref([]);
+const pageNum = ref(1);
+const amount = ref(12); // 페이지당 게시글 수
+const totalPages = ref(1);
+const totalCount = ref(0);
 
 /* ===== 기본 이미지 ===== */
-const fallbackImage = '/images/defaultimage.png' // public 폴더 기준
+const fallbackImage = '/images/defaultimage.png'; // public 폴더 기준
 
 /* ===== 라우팅 ===== */
-const goWrite = () => router.push({ name: 'registMentoringPost' }) // 경로 확인
+// ✅ 글 작성 페이지로 이동 ('registmentoringpost' 이름 사용)
+const goWrite = () => router.push({ name: 'registmentoringpost' });
+// ✅ 상세 페이지로 이동 ('mentoringpost' 이름 사용)
 const goDetail = (num) => {
-  if (!num) return
-  router.push(`/mentoringpost/${num}`) // 경로 확인
-}
+  if (!num) return;
+  router.push({ name: 'mentoringpost', params: { id: num } });
+};
 
 /* ============ 데이터 불러오기 (json-server용) ============ */
 const fetchMentoringPosts = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     const params = {
       _page: pageNum.value,
       _limit: amount.value,
-      _sort: 'num',
-      _order: 'desc',
+      _sort: 'num', // 'num' 필드 기준으로 정렬
+      _order: 'desc', // 내림차순 (최신순)
+    };
+
+    // 1. 멘토링 게시글 목록 조회
+    const response = await api.get('/Mentoring_Post', { params });
+    let fetchedPosts = Array.isArray(response.data) ? response.data : [];
+
+    // 2. 작성자 이름 가져오기 (각 게시글 별로 Member 조회)
+    if (fetchedPosts.length > 0) {
+      // 게시글 목록 순회하며 작성자 정보 비동기 요청
+      const memberPromises = fetchedPosts.map(async (post) => {
+        if (post.author_num != null) {
+          try {
+            const memberResponse = await api.get(`/Member/${post.author_num}`);
+            // NAME 필드를 memberName으로 추가
+            return { ...post, memberName: memberResponse.data?.NAME || '알 수 없음' };
+          } catch (memberError) {
+            console.error(`작성자(${post.author_num}) 정보 조회 실패:`, memberError);
+            return { ...post, memberName: '정보 조회 실패' }; // 조회 실패 시
+          }
+        } else {
+          return { ...post, memberName: '작성자 정보 없음' }; // author_num이 없는 경우
+        }
+      });
+      // 모든 작성자 정보 조회가 완료될 때까지 기다림
+      fetchedPosts = await Promise.all(memberPromises);
     }
-    if (keyword.value) {
-      params.q = keyword.value
-    }
 
-    const response = await api.get('/Mentoring_Post', { params })
+    posts.value = fetchedPosts; // 최종 데이터 상태 업데이트
 
-    posts.value = Array.isArray(response.data) ? response.data : []
-
-    totalCount.value = Number(response.headers['x-total-count'] || 0)
-    totalPages.value = Math.max(1, Math.ceil(totalCount.value / amount.value))
+    // 총 개수 및 페이지 계산 (json-server 헤더 사용)
+    totalCount.value = Number(response.headers['x-total-count'] || 0);
+    totalPages.value = Math.max(1, Math.ceil(totalCount.value / amount.value));
 
   } catch (e) {
-    console.error('멘토링 게시글 조회 실패:', e)
-    posts.value = []
-    totalPages.value = 1
-    totalCount.value = 0
+    console.error('멘토링 게시글 조회 실패:', e);
+    posts.value = []; // 에러 시 초기화
+    totalPages.value = 1;
+    totalCount.value = 0;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
-/* ===== 검색/페이지네이션 ===== */
-const applySearch = () => { pageNum.value = 1; fetchMentoringPosts() }
+/* ===== 페이지네이션 ===== */
 const goPage = (p) => {
   if (p >= 1 && p <= totalPages.value && p !== pageNum.value) {
-    pageNum.value = p
-    fetchMentoringPosts()
+    pageNum.value = p;
+    fetchMentoringPosts(); // 페이지 변경 시 데이터 다시 로드
   }
-}
+};
 
 /* ===== onMounted ===== */
 onMounted(async () => {
-  await fetchMentoringPosts()
-})
+  // 컴포넌트 마운트 시 첫 페이지 데이터 로드
+  await fetchMentoringPosts();
+});
 </script>
 
 <style scoped>
@@ -217,7 +229,6 @@ onMounted(async () => {
   width: calc(100% + 114px); /* 양쪽 패딩만큼 확장 */
   height: 200px; /* 필요시 조정 */
   margin: 0 -57px 24px -57px; /* 패딩 상쇄 및 하단 마진 */
-  /* background-image 는 template에서 인라인 스타일로 설정 */
   background-size: cover;
   background-position: center;
   position: relative;
@@ -278,7 +289,7 @@ onMounted(async () => {
   height: 100px; /* 이미지 높이 조절 */
   object-fit: cover;
   display: block;
-  background-color: #f3f4f6;
+  background-color: #f3f4f6; /* 이미지 로딩 전 배경색 */
   flex-shrink: 0;
 }
 .card-content {
@@ -335,9 +346,9 @@ onMounted(async () => {
 }
 
 /* 스켈레톤 */
-.skeleton .card-image.sk { height: 100px; }
-.sk-title { height: 16px; width: 80%; margin-bottom: 6px; background: #f3f4f6; border-radius: 4px; }
-.sk-meta { height: 12px; width: 60%; background: #f3f4f6; border-radius: 4px; margin-top: auto; }
+.skeleton .card-image.sk { height: 100px; background: #f3f4f6; }
+.skeleton .sk-title { height: 16px; width: 80%; margin-bottom: 6px; background: #f3f4f6; border-radius: 4px; }
+.skeleton .sk-meta { height: 12px; width: 60%; background: #f3f4f6; border-radius: 4px; margin-top: auto; }
 .skeleton .card-content { justify-content: flex-start; } /* 스켈레톤은 위에서부터 채움 */
 
 
@@ -363,8 +374,11 @@ onMounted(async () => {
   z-index: 5;
   font-size: 14px;
 }
+.write-post-text {
+  /* 텍스트 스타일 필요 시 추가 */
+}
 
-/* ===== 검색/페이지네이션 ===== */
+/* ===== 페이지네이션 ===== */
 .pagination-container {
   width: 100%;
   display: flex;
@@ -374,35 +388,12 @@ onMounted(async () => {
   margin-top: 32px; /* 카드 그리드와 간격 조정 */
   margin-bottom: 30px;
 }
-.search-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px; /* 페이지네이션과의 간격 조정 */
-}
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: #f6f6f8;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0 12px;
-  width: 400px; /* 검색창 너비 조정 */
-  height: 40px;
-}
 
-.search-input {
-  flex: 1; border: none; background: transparent; font-size: 14px; color:#374151;
-}
-.search-input:focus { outline: none; }
-.search-btn {
-  background: #111827; color:#fff; border:none; border-radius: 8px;
-  min-width: 62px; height: 40px; padding: 0 14px; font-size: 14px; font-weight: 700; cursor:pointer;
-}
+/* ✅ 검색창 관련 스타일 제거됨 */
 
-/* 페이지네이션 버튼 스타일 (FashionBoardView.vue 참고) */
+/* 페이지네이션 버튼 스타일 */
 .page-row {
-  display:flex; align-items:center; gap: 8px; font-size: 14px; color:#222; margin-top: 10px;
+  display:flex; align-items:center; gap: 8px; font-size: 14px; color:#222; margin-top: 10px; /* 검색창 없으므로 margin-top 조정 */
 }
 .arrow-btn {
   background: #fff; border: 1px solid #e5e7eb; color:#374151; cursor:pointer; padding: 6px 10px; border-radius: 8px; line-height: 1; /* 아이콘 수직 정렬 */
