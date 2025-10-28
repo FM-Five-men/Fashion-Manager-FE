@@ -44,6 +44,7 @@
         </div>
     </div>
 
+    <div class="card-container">
     <div 
         class="user-card"
         v-for="member in filteredMembers"
@@ -75,9 +76,10 @@
 
             <!-- 프로필 이미지 -->
             <div class="profile-img">
-                <img src="https://placehold.co/64x64" alt="프로필 이미지" />
+                <img :src="getRandomImage()" alt="프로필 이미지" />
             </div>
         </div>
+    </div>
     </div>
     
 
@@ -90,7 +92,7 @@
             <div class="header-content">
                 <div class="profile-info">
                 <div class="avatar">
-                    <img src="https://placehold.co/88x88" alt="프로필 이미지" />
+                    <img :src="getRandomImage()" alt="프로필 이미지" />
                     <div class="edit-icon"></div>
                 </div>
                 <div class="profile-text">
@@ -163,6 +165,16 @@
                 <button class="status-btn" @click="updateStatus">변경</button>
             </div>
             </div>
+
+
+            <div class="info-card">
+            <h3>신고 횟수 조정</h3>
+            <div class="status-change-box">
+                <button class="plus-btn" @click="reportPlus">+1</button>
+                <button class="minus-btn" @click="reportMinus">-1</button>
+            </div>
+            </div>
+
             </div>
         </div>
       </div>
@@ -190,6 +202,11 @@ const members = ref([]);
 const selectedMember = ref({});
 const selectedStatus = ref("활동중");
 const selectedRight = ref(2);
+
+function getRandomImage() {
+  const randomNum = Math.floor(Math.random() * 14) + 1; // 1~9 사이 숫자
+  return `/images/influencer_page/influencerImg${randomNum}.png`;
+}
 
 // onMounted에서 데이터 로드
 onMounted(async () => {
@@ -264,6 +281,28 @@ const updateRight = () => {
             console.log(res)
         }
     )
+}
+
+const reportPlus = () => {
+  const data = new FormData()
+  data.append('memberNum',selectedMember.value.memberNum);
+
+  axios.post('/api/manager-service/report/reportplus',data).then(
+    (res) => {
+      console.log(res)
+    }
+  )
+}
+
+const reportMinus = () => {
+  const data = new FormData()
+  data.append('memberNum',selectedMember.value.memberNum);
+
+  axios.post('/api/manager-service/report/reportminus',data).then(
+    (res) => {
+      console.log(res)
+    }
+  )
 }
 </script>
 
@@ -898,6 +937,7 @@ const updateRight = () => {
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: center; 
 }
 
 .status-dropdown {
@@ -925,5 +965,18 @@ const updateRight = () => {
   margin-top: 10px;
   font-size: 14px;
   color: #4a5565;
+}
+
+.plus-btn {
+  background-color: #eb2e03ac;
+}
+
+.minus-btn {
+  background-color: #2563eb;
+}
+
+.card-container {
+  height: 700px;
+  overflow-y: scroll;
 }
 </style>
