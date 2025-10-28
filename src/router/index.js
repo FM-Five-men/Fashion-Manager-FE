@@ -58,7 +58,7 @@ const routes = [
     component: RegistMentoringPostView
   }, {
     // Kept '/mentoringpost' from HEAD as it has a component linked
-    path: '/mentoringpost/:id',
+    path: '/mentoringpost/1',
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
@@ -71,7 +71,7 @@ const routes = [
     component: RegistReviewPostView
   }, {
     // Using '/reviewpostview' from HEAD
-    path: '/reviewpostview',
+    path: '/reviewpostview/1',
     name: 'reviewpostview',
     component: ReviewPostView
   }, {

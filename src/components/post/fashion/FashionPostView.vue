@@ -23,7 +23,6 @@
               </div>
             </div>
             <div class="post-edit-actions" v-if="postData.memberNum === currentMemberNum">
-              <button @click="editPost">수정</button>
               <button @click="deletePost">삭제</button>
             </div>
           </div>
@@ -79,7 +78,6 @@
                   </div>
                 </div>
                 <div class="comment-edit-actions" v-if="comment.memberNum === currentMemberNum">
-                  <button @click="editComment(comment)">수정</button>
                   <button @click="deleteComment(comment.num)">삭제</button>
                 </div>
               </li>

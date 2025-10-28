@@ -1,346 +1,421 @@
 <template>
-  <div id="review-board-page">
-    <HeaderView />
-
-    <!-- Hero Banner -->
-    <section class="banner">
-      <div class="banner-overlay"></div>
-      <div class="banner-text">
+  <div id="review-community-page" class="page">
+    <HeaderView/>
+    <!-- Hero / Banner -->
+    <!-- 배너 이미지를 바꾸고 싶으면 아래 style의 --hero-url 경로만 바꾸면 됩니다 -->
+    <section class="hero" style="--hero-url: url('/images/FMbanner.jpg')">
+      <div class="hero-content">
         <h1>REVIEW COMMUNITY</h1>
-        <p>당신의 경험을 공유해주세요</p>
+        <p>당신의 경험을 공유하세요</p>
       </div>
     </section>
 
-    <main class="container">
-      <div class="layout">
-        <!-- LEFT: trending + grid -->
-        <section class="main-col">
-          <!-- Trending -->
+    <!-- Main -->
+    <main class="main">
+      <!-- Content (왼쪽) -->
+      <section class="content" aria-label="content area">
+        <!-- Trending -->
+        <section class="trending">
           <h2 class="section-title">지금 떠오르는 후기를 찾아보세요</h2>
-          <div class="trend-row" v-if="trending.length">
-            <article
-              class="trend-card"
-              v-for="t in trending"
-              :key="`trend-${t.num}`"
-              @click="goDetail(t.num)"
-            >
-              <img :src="t._thumb || fallbackImage" alt="" @error="onImgError" />
-              <div class="trend-grad"></div>
-              <div class="trend-title line-2">{{ t.title }}</div>
+          <div class="trend-grid">
+
+          <router-link to="/reviewpostview/1" class="trend-card" aria-label="뉴발란스 2002R 실착용 후기">
+            <article class="trend-card">
+              <img src="/public/images/review/review2.jpg" alt="" class="trend-img" />
+              <div class="trend-gradient"></div>
+              <h3 class="trend-title">뉴발란스 2002R 실착용 후기</h3>
+            </article>
+          </router-link>
+            <article class="trend-card">
+              <img src="/public/images/review/review1.jpg" alt="" class="trend-img" />
+              <div class="trend-gradient"></div>
+              <h3 class="trend-title">2025 럭셔리 핸드백 컬렉션 솔직 후기</h3>
+            </article>
+
+
+            <article class="trend-card">
+              <img src="/public/images/review/review3.jpg" alt="" class="trend-img" />
+              <div class="trend-gradient"></div>
+              <h3 class="trend-title">패스트 패션 명품 듀프 제품 분석</h3>
             </article>
           </div>
-          <div v-else class="muted">트렌딩 후기가 없습니다.</div>
-
-          <!-- Tabs + Write -->
-          <div class="tabs">
-            <div class="tab-wrap">
-              <button
-                v-for="c in [{num:0, NAME:'전체'}, ...categories]"
-                :key="`cat-${c.num}`"
-                class="tab"
-                :class="{ active: activeCat === c.num }"
-                @click="setCategory(c.num)"
-              >
-                {{ c.NAME }}
-              </button>
-            </div>
-            <button class="write-btn" @click="goWrite">글 작성</button>
-          </div>
-
-          <!-- Cards grid -->
-          <div v-if="loading" class="loading">불러오는 중…</div>
-          <div v-else class="cards-grid">
-            <article
-              v-for="p in posts"
-              :key="p.num"
-              class="card"
-              @click="goDetail(p.num)"
-            >
-              <div class="card-top">
-                <span class="pill">{{ categoryName(p.review_category_num) }}</span>
-                <span class="dot">·</span>
-                <span class="date">{{ formatDate(p._createdAt) }}</span>
-                <span class="hot" v-if="p.good >= 200">인기</span>
-              </div>
-
-              <h3 class="title line-2">{{ p.title }}</h3>
-
-              <div class="author-row">
-                <div class="author">@{{ p._author || '익명' }}</div>
-                <div class="rating">
-                  <span v-for="i in 5" :key="i" class="star" :class="{ on: i <= Math.round(p._rating) }">★</span>
-                  <span class="rating-num">{{ Number(p._rating || 0).toFixed(1) }}</span>
-                </div>
-              </div>
-
-              <img class="thumb" :src="p._thumb || fallbackImage" alt="" @error="onImgError" />
-
-              <div class="stats">
-                <span>👍 {{ p.good || 0 }}</span>
-                <span>💬 {{ p._commentCount || 0 }}</span>
-                <span>👁 {{ p._views || 0 }}</span>
-              </div>
-            </article>
-          </div>
-
-          <!-- Search + pagination -->
-          <div class="search-bar">
-            <select v-model="searchField">
-              <option value="title">제목</option>
-            </select>
-            <input
-              v-model.trim="searchTitle"
-              placeholder="검색어를 입력해주세요"
-              @keyup.enter="applySearch"
-            />
-            <button @click="applySearch">검색</button>
-          </div>
-
-          <nav v-if="totalPages > 1" class="pagination">
-            <button :disabled="pageNum===1" @click="goPage(pageNum-1)">‹</button>
-            <button
-              v-for="p in pageList"
-              :key="p"
-              :class="{ active: pageNum===p }"
-              @click="goPage(p)"
-            >{{ p }}</button>
-            <button :disabled="pageNum===totalPages" @click="goPage(pageNum+1)">›</button>
-          </nav>
         </section>
 
-        <!-- RIGHT: sidebar -->
-        <aside class="side-col">
-          <div class="side-box">
-            <div class="side-title">후기</div>
-            <ul class="hot-list">
-              <li
-                v-for="h in hotList"
-                :key="`hot-${h.num}`"
-                @click="goDetail(h.num)"
-              >
-                <div class="hot-title line-1">{{ h.title }}</div>
-                <div class="hot-meta">
-                  {{ h._author || '익명' }} · {{ timeAgo(h._createdAt) }}
-                </div>
-              </li>
-            </ul>
+        <!-- Discover -->
+        <section class="discover">
+          <h2 class="section-title">내게 필요한 후기를 찾아보세요!</h2>
+
+          <div class="discover-controls">
+            <div class="chip-group">
+              <button class="chip chip--active">옷</button>
+              <button class="chip">온라인 쇼핑몰</button>
+              <button class="chip">오프라인 매장</button>
+              <button class="chip">악세서리</button>
+              <button class="chip">멘토링</button>
+            </div>
+            <button class="btn btn-primary">글 작성</button>
           </div>
-        </aside>
+
+          <div class="card-grid">
+    <template v-if="!loading && !errorMsg">
+      <article
+        v-for="post in reviews"
+        :key="post.num"
+        class="card"
+      >
+        <div class="card-body">
+          <div class="card-top">
+            <!-- 카테고리 뱃지/날짜 등은 나중에 연결 -->
+            <span class="pill">{{ post.categoryName }}</span>
+            <span class="date">작성자: {{ post.authorName }}</span>
+          </div>
+
+          <h3 class="card-title">{{ post.title }}</h3>
+          <p class="card-desc">{{ post.content }}</p>
+          <!-- 내용이 길면 미리보기로 바꾸고 싶다면 위 줄 대신 아래 줄 사용
+          <p class="card-desc">{{ preview(post.content, 120) }}</p>
+          -->
+        </div>
+      </article>
+    </template>
+
+    <article v-else class="card">
+      <div class="card-body">
+        <h3 class="card-title">
+          {{ loading ? '불러오는 중…' : errorMsg }}
+        </h3>
       </div>
+    </article>
+  </div>
+
+          <!-- Search & Pagination -->
+          <div class="search-pagination">
+            <div class="search-boxes">
+              <div class="select-like">
+                <span>제목</span>
+                <i class="chev"></i>
+              </div>
+              <div class="input-like">검색어를 입력하세요</div>
+              <button class="btn btn-primary btn-search">
+                <i class="ico-search"></i>
+                검색
+              </button>
+            </div>
+
+            
+          </div>
+        </section>
+      </section>
+
+      <!-- Sidebar (오른쪽) -->
+      <aside class="sidebar" aria-label="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-icon"></div>
+          <span>후기</span>
+        </div>
+
+        <ul class="sidebar-list">
+          <li class="side-item">
+            <a href="#" class="side-link">
+              <span class="side-title">2025 럭셔리 핸드백 컬렉션 솔직 후기</span>
+              <span class="side-meta"><span>BagAddict</span> • <span>1시간 전</span></span>
+            </a>
+          </li>
+          <li class="side-item">
+            <a href="#" class="side-link">
+              <span class="side-title">디자이너 스니커즈 10종 비교 리뷰</span>
+              <span class="side-meta"><span>SneakerHead</span> • <span>4시간 전</span></span>
+            </a>
+          </li>
+          <li class="side-item">
+            <a href="#" class="side-link">
+              <span class="side-title">패스트 패션 명품 듀프 제품 분석</span>
+              <span class="side-meta"><span>BudgetFashion</span> • <span>7시간 전</span></span>
+            </a>
+          </li>
+          <li class="side-item">
+            <a href="#" class="side-link">
+              <span class="side-title">맞춤 테일러링 서비스 이용 후기</span>
+              <span class="side-meta"><span>TailoredLife</span> • <span>10시간 전</span></span>
+            </a>
+          </li>
+          <li class="side-item">
+            <a href="#" class="side-link">
+              <span class="side-title">2025 온라인 스타일링 서비스 비교</span>
+              <span class="side-meta"><span>StyleSeeker</span> • <span>1일 전</span></span>
+            </a>
+          </li>
+        </ul>
+      </aside>
     </main>
 
-    <footer class="site-footer">
-      <div class="inner">
-        <div>FASHION MANAGER</div>
-        <div class="links">
-          <a>소개</a><a>커뮤니티</a><a>가이드라인</a><a>문의</a>
-        </div>
-        <small>© 2025 Fashion Manager Project. All rights reserved.</small>
-      </div>
-    </footer>
+    <!-- Footer -->
+    <FooterView/>
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import HeaderView from '../../HeaderView.vue';
+import HeaderView from '../../HeaderView.vue'
+import FooterView from '../../FooterView.vue'
 
-// ---- json-server 절대 URL
-const JSON_API = 'http://localhost:3000'
-const J = axios.create({ baseURL: JSON_API })
+/** 리뷰 글(제목/내용/작성자)만 사용하는 최소 모델 */
+const reviews = ref([]) // { num, title, content, memberNum, authorName }
 
-// state
+/** 간단한 에러/로딩 상태(필요시 UI로 뺄 수 있음) */
 const loading = ref(false)
-const posts = ref([])
-const trending = ref([])
-const hotList = ref([])
-const categories = ref([])
-const activeCat = ref(0)
-const searchTitle = ref('')
-const searchField = ref('title')
+const errorMsg = ref('')
 
-// paging
-const pageNum = ref(1)
-const amount = ref(8)
-const total = ref(0)
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / amount.value)))
-const pageList = computed(() => {
-  const max = totalPages.value, cur = pageNum.value, span = 2
-  const from = Math.max(1, cur - span), to = Math.min(max, cur + span)
-  return Array.from({ length: to - from + 1 }, (_, i) => from + i)
-})
-
-const fallbackImage = '/images/defaultimage.png'
-const onImgError = e => (e.target.src = fallbackImage)
-
-// helpers
-const buildMultiParam = (key, arr) => arr.map(v => `${key}=${encodeURIComponent(v)}`).join('&')
-
-const formatDate = iso => {
-  try { const d = new Date(iso); return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}` } catch { return '' }
-}
-const timeAgo = iso => {
-  if (!iso) return ''
-  const ms = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(ms / 60000), h = Math.floor(m/60), d = Math.floor(h/24)
-  if (d > 0) return `${d}일 전`
-  if (h > 0) return `${h}시간 전`
-  if (m > 0) return `${m}분 전`
-  return '방금 전'
-}
-
-const categoryName = num => {
-  if (!num) return '전체'
-  return categories.value.find(c => c.num === num)?.NAME || '분류'
-}
-
-// data loads
-const loadCategories = async () => {
-  const { data } = await J.get('/Review_Category')
-  categories.value = data
-}
-
-const enrichPosts = async (list) => {
-  if (!list?.length) return []
-  const ids = list.map(p => p.num)
-  const memberIds = [...new Set(list.map(p => p.member_num))]
-
-  // 대표 이미지
-  const photoRes = await J.get(`/Photo?photo_category_num=2&${buildMultiParam('post_num', ids)}`)
-  const photoByPost = {}
-  photoRes.data.forEach(ph => { if (!photoByPost[ph.post_num]) photoByPost[ph.post_num] = ph })
-
-  // 작성자
-  const memberRes = await J.get(`/Member?${buildMultiParam('num', memberIds)}`)
-  const memberById = Object.fromEntries(memberRes.data.map(m => [m.num, m]))
-
-  // 댓글 개수
-  const commentRes = await J.get(`/Comment?${ids.map(id=>`review_post_num=${id}`).join('&')}`)
-  const counts = {}
-  commentRes.data.forEach(c => { counts[c.review_post_num] = (counts[c.review_post_num] || 0) + 1 })
-
-  return list.map(p => ({
-    ...p,
-    _thumb: photoByPost[p.num]?.PATH,
-    _author: memberById[p.member_num]?.NAME,
-    _commentCount: counts[p.num] || 0,
-    _views: p.views ?? 0,
-    _rating: p.rating ?? 0,
-    _createdAt: p.created_at || new Date().toISOString()
-  }))
-}
-
-const loadTrending = async () => {
-  // 좋아요 desc 상위 4 → 스샷의 상단 카드
-  const { data } = await J.get('/Review_Post', { params: { _sort: 'good', _order: 'desc', _limit: 4 } })
-  trending.value = await enrichPosts(data)
-}
-
-const loadHotList = async () => {
-  // 최신 순 상위 6
-  const { data } = await J.get('/Review_Post', { params: { _sort: 'created_at', _order: 'desc', _limit: 6 } })
-  hotList.value = await enrichPosts(data)
-}
-
-const fetchPosts = async () => {
-  loading.value = true
-  try {
-    const params = {
-      _page: pageNum.value, _limit: amount.value,
-      _sort: 'created_at', _order: 'desc',
-      ...(activeCat.value ? { review_category_num: activeCat.value } : {}),
-      ...(searchTitle.value ? { [`${searchField.value}_like`]: searchTitle.value } : {})
-    }
-    const res = await J.get('/Review_Post', { params })
-    total.value = Number(res.headers['x-total-count'] || 0)
-    posts.value = await enrichPosts(res.data)
-  } finally { loading.value = false }
-}
-
-// interactions
-const setCategory = (num) => { activeCat.value = num; pageNum.value = 1; fetchPosts() }
-const applySearch = () => { pageNum.value = 1; fetchPosts() }
-const goPage = (p) => { pageNum.value = p; fetchPosts() }
-const goWrite = () => { /* router.push('/review/write') */ }
-const goDetail = (num) => { /* router.push(`/review/${num}`) */ }
+/** 내용 미리보기(선택) */
+const preview = (text, len = 90) =>
+  !text ? '' : text.length > len ? text.slice(0, len) + '…' : text
 
 onMounted(async () => {
-  await loadCategories()
-  await Promise.all([loadTrending(), loadHotList()])
-  await fetchPosts()
+  loading.value = true
+  try {
+    const res = await fetch('/db.json', { cache: 'no-store' })
+    if (!res.ok) throw new Error('db.json 로드 실패')
+    const data = await res.json()
+
+    // 1) 회원 맵: num -> NAME
+    const memberMap = new Map(
+      (data.Member || []).map(m => [m.num, m.NAME])
+    )
+    const categoryMap = new Map((data.Review_Category || []).map(c => [c.num, c.NAME]))
+
+    // 2) 리뷰 글에 작성자 이름 조인
+    reviews.value = (data.Review_Post || []).map(p => ({
+      num: p.num,
+      title: p.title,
+      content: p.content,
+      memberNum: p.member_num,
+      authorName: memberMap.get(p.member_num) ?? '알 수 없음',
+      categoryNum: p.review_category_num ?? null,
+      categoryName: categoryMap.get(p.review_category_num) ?? '기타',
+    }))
+  } catch (e) {
+    console.error(e)
+    errorMsg.value = '데이터를 불러오지 못했습니다.'
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
 <style scoped>
-/* layout */
-.container { max-width: 1160px; margin: 0 auto; padding: 24px 16px; }
-.layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+/* ===== Base ===== */
+.page {
+  --bg: #fff;
+  --text: #0A0A0A;
+  --muted: #6A7282;
+  --line: #E5E7EB;
+  --chip: #F3F3F5;
+  --brand: #000;
+  --accent: #C6A43B;
+  --shadow: 0 2px 4px -2px rgba(0,0,0,.1);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
 
-/* banner */
-.banner { position:relative; height: 260px; background:#999 url('/images/review-hero.jpg') center/cover no-repeat; border-bottom: 1px solid #e5e7eb; }
-.banner-overlay { position:absolute; inset:0; background:rgba(0,0,0,.35); }
-.banner-text { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; color:#fff; padding-left:28px; }
-.banner-text h1 { font-size:42px; font-weight:800; letter-spacing:.5px; margin-bottom:4px; }
-.banner-text p { opacity:.9; }
+.section-title {
+  font-size: 20px;
+  line-height: 24px;
+  margin: 8px 0 16px;
+}
 
-/* trending */
-.section-title { font-weight:700; margin: 18px 0 12px; }
-.trend-row { display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.trend-card { position:relative; height:140px; border-radius:14px; overflow:hidden; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.08); }
-.trend-card img { width:100%; height:100%; object-fit:cover; display:block; }
-.trend-grad { position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.55) 100%); }
-.trend-title { position:absolute; left:10px; right:10px; bottom:10px; color:#fff; font-weight:700; font-size:14px; }
-.muted { color:#6b7280; }
+/* ===== Hero (Banner) ===== */
+.hero {
+  position: relative;
+  height: 280px;           /* 배너 높이 업 */
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,0) 70%),
+    var(--hero-url, url('/images/FMbanner.jpg'));
+  background-size: cover;
+  background-position: center right;
+}
+.hero-content {
+  position: absolute; inset: 0;
+  display: grid; align-content: center; justify-items: start;
+  padding-left: clamp(24px, 8vw, 120px);
+  gap: 8px; text-align: left;
+}
+.hero h1 { color: #fff; font-size: 40px; line-height: 44px; letter-spacing: .2px; }
+.hero p { color: #E5E7EB; font-size: 16px; }
 
-/* tabs */
-.tabs { display:flex; align-items:center; gap:12px; margin: 16px 0; }
-.tab-wrap { display:flex; gap:8px; flex-wrap:wrap; }
-.tab { padding:7px 12px; border-radius:999px; border:1px solid #e5e7eb; background:#fff; font-size:14px; }
-.tab.active { background:#111; color:#fff; border-color:#111; }
-.write-btn { margin-left:auto; padding:8px 14px; border-radius:10px; background:#111; color:#fff; }
+/* ===== Main Layout ===== */
+/* 사이드바를 오른쪽으로 보내기 위해 grid-areas 사용 */
+.main {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  padding: 0 22px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-areas: "content sidebar";
+  gap: 24px;
+}
+.content { grid-area: content; display: grid; gap: 32px; }
+.sidebar { grid-area: sidebar; }
 
-/* grid */
-.cards-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.card { border:1px solid #eee; border-radius:14px; padding:14px; background:#fff; cursor:pointer; transition: box-shadow .2s; }
-.card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); }
-.card-top { display:flex; align-items:center; gap:8px; color:#6b7280; font-size:12px; }
-.pill { background:#111; color:#fff; border-radius:6px; padding:2px 6px; font-size:11px; }
-.dot { color:#d1d5db; }
-.hot { margin-left:auto; background:#fde68a; color:#92400e; padding:2px 6px; border-radius:6px; font-size:11px; }
-.title { font-size:16px; font-weight:700; margin:8px 0; min-height:40px; }
-.line-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.author-row { display:flex; align-items:center; justify-content:space-between; }
-.author { color:#6b7280; font-size:13px; }
-.rating { display:flex; align-items:center; gap:4px; }
-.star { font-size:14px; color:#e5e7eb; }
-.star.on { color:#f59e0b; }
-.rating-num { font-size:12px; color:#6b7280; }
-.thumb { width:100%; height:160px; object-fit:cover; border-radius:10px; margin:10px 0; }
-.stats { display:flex; gap:12px; color:#6b7280; font-size:13px; }
+/* ===== Sidebar (Right) ===== */
+.sidebar {
+  background: #fff;
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+  height: max-content;
+  padding: 24px;
+  position: sticky;       /* 스크롤시 고정 감 */
+  top: 24px;
+}
+.sidebar-header {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.sidebar-icon { width: 36px; height: 36px; border-radius: 8px; background: #000; }
+.sidebar-list { display: grid; gap: 12px; }
+.side-item { list-style: none; }
+.side-link { display: grid; gap: 4px; text-decoration: none; color: inherit; }
+.side-title { font-size: 14px; line-height: 20px; color: #101828; }
+.side-meta { color: var(--muted); font-size: 12px; display: flex; gap: 8px; }
 
-/* search & pagination */
-.search-bar { display:flex; gap:8px; align-items:center; margin:16px 0; }
-.search-bar select, .search-bar input { border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; }
-.search-bar input { flex:1; }
-.search-bar button { padding:8px 12px; border-radius:8px; background:#111; color:#fff; }
-.pagination { display:flex; gap:6px; justify-content:center; margin:16px 0; }
-.pagination button { min-width:32px; height:32px; border:1px solid #e5e7eb; background:#fff; border-radius:8px; }
-.pagination button.active { background:#111; color:#fff; border-color:#111; }
+/* ===== Trending ===== */
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.trend-card {
+  position: relative; height: 200px; border-radius: 10px;
+  overflow: hidden; box-shadow: var(--shadow); background: #fff;
+}
+.trend-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.trend-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.3) 50%, rgba(0,0,0,0) 100%);
+}
+.trend-title {
+  position: absolute; left: 16px; bottom: 12px;
+  color: #fff; font-size: 16px; line-height: 24px; font-weight: 400;
+}
 
-/* sidebar */
-.side-col .side-box { position:sticky; top:20px; border:1px solid #eee; border-radius:12px; padding:14px; background:#fff; }
-.side-title { font-weight:700; margin-bottom:10px; }
-.hot-list { display:flex; flex-direction:column; gap:10px; }
-.hot-title { font-size:14px; font-weight:600; }
-.hot-meta { font-size:12px; color:#6b7280; }
+/* ===== Discover controls ===== */
+.discover { display: grid; gap: 16px; }
+.discover-controls {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.chip-group { display: flex; flex-wrap: wrap; gap: 12px; }
+.chip {
+  background: #fff; border-radius: 8px; border: 1px solid #D1D5DC;
+  padding: 8px 16px; font-size: 14px; color: #364153; cursor: pointer;
+}
+.chip--active { background: #000; color: #fff; border-color: #000; }
+.btn { height: 36px; padding: 0 14px; border-radius: 8px; border: 0; cursor: pointer; }
+.btn-primary { background: #000; color: #fff; }
+.btn-search { display: inline-flex; align-items: center; gap: 8px; }
 
-/* etc */
-.loading { padding:28px 0; text-align:center; color:#6b7280; }
+/* ===== Cards ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.card {
+  background: #fff; border-radius: 10px; box-shadow: var(--shadow);
+  padding: 24px;
+}
+.card-body { display: grid; gap: 12px; }
+.card-top { display: flex; align-items: center; gap: 12px; }
+.pill {
+  background: #000; color: #fff; border-radius: 9999px;
+  padding: 4px 12px; font-size: 12px; line-height: 16px;
+}
+.date { color: var(--muted); font-size: 12px; margin-left: auto; }
+.card-title { font-size: 16px; line-height: 24px; color: #101828; }
+.card-desc { color: #4A5565; font-size: 14px; line-height: 20px; }
 
-@media (max-width: 1024px) {
-  .layout { grid-template-columns: 1fr; }
-  .cards-grid { grid-template-columns: repeat(2, 1fr); }
-  .side-col { order: -1; }
+.card-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}
+.meta-left { display: flex; align-items: center; gap: 12px; }
+.label { font-size: 14px; color: #364153; }
+.rating { display: inline-flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border: 1px solid #D1D5DC; border-radius: 2px; display: inline-block; }
+.dot.is-full { background: #F0B100; border-color: #F0B100; }
+
+.metrics { display: inline-flex; align-items: center; gap: 20px; color: var(--muted); }
+.metric { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.ico { width: 16px; height: 16px; display: inline-block; border: 1px solid #6A7282; border-radius: 2px; }
+.ico-like { border-radius: 3px; }
+.ico-view { border-radius: 0; }
+
+/* ===== Search & Pagination ===== */
+.search-pagination { display: grid; gap: 16px; margin-top: 8px; }
+.search-boxes { display: flex; align-items: center; gap: 8px; }
+.select-like {
+  width: 140px; height: 36px; background: #F3F3F5;
+  border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; font-size: 14px;
+}
+.select-like .chev {
+  width: 8px; height: 8px; border: 1px solid #717182; border-top: 0; border-left: 0;
+  transform: rotate(45deg); opacity: .5;
+}
+.input-like {
+  flex: 1; height: 36px; background: #F3F3F5;
+  border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #717182;
+}
+
+/* 페이지네이션 - 현재 버튼 비정상 보임 수정 */
+/* 버튼 공통 */
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.page, .page-arrow, .pageisCurrent, .isCurrent {
+  height: 32px; min-width: 32px; padding: 0 10px;
+  border-radius: 8px; border: 1px solid transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; color: #0A0A0A; cursor: pointer; font-size: 14px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset;
+}
+.page-arrow { font-size: 18px; line-height: 18px; padding: 0 8px; }
+
+/* 현재 페이지 (두 가지 클래스 네이밍 모두 대응) */
+.page.is-current,
+button.pageisCurrent,
+.page.isCurrent,
+.page--current {
+  background: #000; color: #fff;
+  border-color: #000; box-shadow: none;
+}
+
+/* ===== Footer ===== */
+.footer { margin-top: 48px; background: #000; color: #fff; }
+.footer-inner {
+  max-width: 1200px; margin: 0 auto; padding: 24px 24px 32px;
+  display: grid; justify-items: center; gap: 12px;
+}
+.brand { font-size: 16px; line-height: 24px; opacity: .95; }
+.footer-nav { display: flex; gap: 24px; color: #99A1AF; font-size: 16px; }
+.footer-nav a { color: inherit; text-decoration: none; }
+.copy { color: #6A7282; font-size: 12px; }
+
+/* ===== Responsive ===== */
+@media (max-width: 1200px) {
+  .main { grid-template-columns: 1fr; grid-template-areas: "content" "sidebar"; }
+  .sidebar { position: static; }
+  .trend-grid, .card-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .trend-grid, .card-grid { grid-template-columns: 1fr; }
+  .discover-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+  .search-boxes { flex-direction: column; }
 }
 </style>
