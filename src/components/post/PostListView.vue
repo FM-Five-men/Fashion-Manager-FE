@@ -44,7 +44,7 @@ filter-icon<template>
     </div>
   </div>
 
-
+  <div class="card-container">
   <!-- 게시물 리스트 -->
   <div
     class="post-card"
@@ -53,7 +53,7 @@ filter-icon<template>
   >
     <!-- 썸네일 이미지 -->
     <div class="post-image">
-      <img src="https://placehold.co/120x120" alt="게시물 이미지" />
+      <img :src="getRandomImage()" alt="게시물 이미지" />
     </div>
 
     <!-- 내용 -->
@@ -103,7 +103,7 @@ filter-icon<template>
       </div>
     </div>
   </div>
-
+  </div>
 
   
 </template>
@@ -126,6 +126,11 @@ const selectedPost = ref({});
 // 필터링용 상태값
 const selectedCategory = ref(""); // "" = 전체, 1~4 = 카테고리 번호
 const searchQuery = ref("");
+
+function getRandomImage() {
+  const randomNum = Math.floor(Math.random() * 6) + 1; // 1~9 사이 숫자
+  return `/images/randomimg/sample0${randomNum}.png`;
+}
 
 // onMounted에서 데이터 로드
 onMounted(async () => {
@@ -672,5 +677,10 @@ const moveFashion = (num) => {
   cursor: pointer;
   font-size: 18px;
   color: #888;
+}
+
+.card-container {
+    height: 700px;
+    overflow-y: scroll;
 }
 </style>

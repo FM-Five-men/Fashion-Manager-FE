@@ -32,7 +32,12 @@ import AdminView from '../components/management/AdminView.vue';
 import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
 import PostListView from '../components/post/PostListView.vue';
-import InfluencerListView from '../components/influencer/InfluencerListView.vue';
+import InfluencerListView from '../components/management/InfluencerListView.vue';
+import ReportFashionPostView from '../components/report/ReportFashionPostView.vue';
+import ReportReviewPostView from '../components/report/ReportReviewPostView.vue';
+import ReportMentoringPostView from '../components/report/ReportMentoringPostView.vue';
+import ReportCommentView from '../components/report/ReportCommentView.vue';
+import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
 
 // memmber page
@@ -77,7 +82,7 @@ const routes = [
     component: RegistMentoringPostView
   }, {
     // Kept '/mentoringpost' from HEAD as it has a component linked
-    path: '/mentoringpost',
+    path: '/mentoringpost/1',
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
@@ -90,7 +95,7 @@ const routes = [
     component: RegistReviewPostView
   }, {
     // Using '/reviewpostview' from HEAD
-    path: '/reviewpostview',
+    path: '/reviewpostview/1',
     name: 'reviewpostview',
     component: ReviewPostView
   }, {
@@ -176,10 +181,6 @@ const routes = [
     name: 'message',
     component: MessageView
   },{
-    path: '/influencerlist',
-    name: 'influencerlist',
-    component: InfluencerListView
-  },{
     path: '/admin',
     name: 'admin',
     component: AdminView,
@@ -196,8 +197,33 @@ const routes = [
                   path: 'postlist',
                   name: 'postlist',
                   component: PostListView
+                },{
+                  path: 'influencerlist',
+                  name: 'influencerlist',
+                  component: InfluencerListView
                 }
     ]
+  },{
+    path: '/report/fashionpost/:num',
+    name: 'reportFashionPost',
+    component: ReportFashionPostView
+  },{
+    path: '/report/reviewpost/:num',
+    name: 'reportReviewPost',
+    component: ReportReviewPostView
+  },{
+    path: '/report/mentoringpost/:num',
+    name: 'reportMentoringPost',
+    component: ReportMentoringPostView
+  },{
+    path: '/report/comment/:num',
+    name: 'reportComment',
+    component: ReportCommentView
+  }, {
+    path: '/fashion/posts/:postNum/edit',
+    name: 'modifyfashionpostview',
+    component: ModifyFashionPostView,
+    props: true
   }
 ]
 
