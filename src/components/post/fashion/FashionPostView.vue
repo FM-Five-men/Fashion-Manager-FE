@@ -160,7 +160,7 @@ const isAuthor = computed(() => {
 const reportPost = (postNum) => {
     router.push({
     name: 'reportFashionPost',
-    params: { num: postNum.value }
+    params: { num: postNum }
   });
 };
 
@@ -168,7 +168,7 @@ const reportPost = (postNum) => {
 const reportComment = (commentNum) => {
   router.push({
     name: 'reportComment',
-    params: { num: commentNum.value }
+    params: { num: commentNum }
   });
 };
 
