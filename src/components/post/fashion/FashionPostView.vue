@@ -41,6 +41,7 @@
               <img :src="imgSrc" @error="onImgError" alt="아이템 이미지">
             </div>
             <div class="post-content-text" v-html="postData.content || ' '"></div>
+            <button class="report-button post-report-button" @click="reportPost(postId)">🚨 게시글 신고</button>
           </div>
 
           <div class="post-meta">
@@ -77,7 +78,8 @@
                     </div>
                   </div>
                 </div>
-                <div class="comment-edit-actions" v-if="comment.memberNum === currentMemberNum">
+                <div class="comment-edit-actions">
+                  <button @click="reportComment(comment.num)">🚨 신고</button>
                   <button @click="deleteComment(comment.num)">삭제</button>
                 </div>
               </li>
@@ -153,6 +155,22 @@ const isAuthor = computed(() => {
          Number.isFinite(authorMemberNum.value) &&
          myMemberNum.value === authorMemberNum.value;
 });
+
+// 게시글 신고 페이지 이동
+const reportPost = (postNum) => {
+    router.push({
+    name: 'reportFashionPost',
+    params: { num: postNum.value }
+  });
+};
+
+// 댓글 신고 페이지 이동
+const reportComment = (commentNum) => {
+  router.push({
+    name: 'reportComment',
+    params: { num: commentNum.value }
+  });
+};
 
 // ▼▼▼▼▼ 라우팅 함수 추가 ▼▼▼▼▼
 /**
@@ -457,8 +475,8 @@ const categories = ref(['전체', '코디 조언', '스타일링', '쇼핑 동�
 // DB 데이터(member_num) 기반으로 num 추가
 const popularMentors = ref([
   { num: 2, name: '김패션', field: '코디 멘토링', likes: 234 }, // member_num: 2
-  { num: null, name: '배민', field: '브랜딩', likes: 189 }, // DB에 '배민' 없음
-  { num: 31, name: '트렌드분석이', field: '트렌드 분석', likes: 156 } // '트렌드세터이' (member_num: 31)로 가정
+  { num: 3, name: '박스타일', field: '브랜딩', likes: 189 }, // DB에 '배민' 없음
+  { num: 4, name: '이민준', field: '트렌드 분석', likes: 156 } // '트렌드세터이' (member_num: 31)로 가정
 ]);
 // ▲▲▲▲▲ popularMentors 데이터 수정 ▲▲▲▲▲
 </script>
@@ -508,6 +526,43 @@ const popularMentors = ref([
   --cheer-color: #1976D2;
   --cheer-bg: #e3f2fd;
   --cheer-border: #bbdefb;
+}
+/* 게시글 신고/삭제 버튼 */
+.report-button, .delete-button {
+  display: inline-flex;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px;
+  font-weight: 500;
+  margin-left: 8px; /* 버튼 간 간격 */
+}
+.report-button {
+  background: #fff0f0;
+  color: #d4183d;
+  border: 1px solid #ffcccc;
+}
+.delete-button {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.report-button:hover { background: #ffe0e0; }
+.delete-button:hover { background: #e5e7eb; }
+
+
+/* 댓글 신고/삭제 버튼 */
+.comment-edit-actions button {
+  font-size: 12px; /* 크기 살짝 줄임 */
+  padding: 3px 6px;
+}
+.comment-edit-actions button:first-child { /* 신고 버튼 */
+  color: #d4183d;
+}
+.comment-edit-actions button:first-child:hover {
+  background-color: #fff0f0;
 }
 
 #fashion-community-page {
