@@ -22,21 +22,18 @@ const login = async () => {
     data.append("memberPwd", password.value);
 
     console.log(data)
-    await axios.post("/api/member-service/member/memberlogin", data).then(
-      (response) => {
-        console.log(response);
-
-        if(response.data != "존재하지 않는 회원" && response.data != "비밀번호 불일치"){
-          const token = response.data;
-          sessionStorage.setItem("token", token);
-          if(token){
-            router.push('/main')
-          }
-        }else{
-          showModal.value = true;
-        }
+    const res = await axios.post("/api/member-service/member/memberlogin", data);
+    console.log(res)
+    
+    if(res.data != "존재하지 않는 회원" && res.data != "비밀번호 불일치"){
+      const token = res.data;
+      sessionStorage.setItem("token", token);
+      if(token){
+        router.push('/main')
       }
-    )
+    }else{
+      showModal.value = true;
+    }
   } catch (err) {
     console.error("로그인 에러:", err);
   }
@@ -57,7 +54,6 @@ const findId = () => {
 const closeModal = () => {
   showModal.value = false;
 };
-
 </script>
 
 <template>
@@ -180,6 +176,12 @@ const closeModal = () => {
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  name: "Screen",
+};
+</script>
 
 <style scoped>
 .screen {
@@ -335,7 +337,7 @@ const closeModal = () => {
   gap: 32px;
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  height: 717px;
+  height: 931px;
   justify-self: end;
   padding: 215.33px 122px 0px;
   position: relative;
@@ -769,65 +771,5 @@ const closeModal = () => {
   top: 0;
   width: 56px;
   cursor: pointer;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99;
-}
-
-.modal {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 24px 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  text-align: center;
-  animation: fadeIn 0.25s ease-in-out;
-  width: 320px;
-}
-
-.modal h3 {
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: #000;
-}
-
-.modal p {
-  color: #555;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.close-btn {
-  background-color: #000;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.close-btn:hover {
-  background-color: #333;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 </style>
