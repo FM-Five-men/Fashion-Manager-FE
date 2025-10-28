@@ -53,7 +53,7 @@
   >
     <!-- 썸네일 이미지 -->
     <div class="post-image">
-      <img src="https://placehold.co/120x120" alt="게시물 이미지" />
+      <img :src="getRandomImage()" alt="게시물 이미지" />
     </div>
 
     <!-- 내용 -->
@@ -108,8 +108,6 @@
         <div class="report-detail-container">
           <!-- 상단 -->
           <div class="report-header">
-            <button class="back-btn" @click="closeModal">← 닫기</button>
-
             <div class="report-title">
               <div class="title">부적절한 컨텐츠</div>
               <div class="report-id">신고번호: {{ selectedReport.reportNum }}</div>
@@ -178,6 +176,11 @@ const selectedReport = ref({});
 // 필터링용 상태값
 const selectedCategory = ref(""); // "" = 전체, 1~4 = 카테고리 번호
 const searchQuery = ref("");
+
+function getRandomImage() {
+  const randomNum = Math.floor(Math.random() * 6) + 1; // 1~9 사이 숫자
+  return `/images/randomimg/sample0${randomNum}.png`;
+}
 
 // onMounted에서 데이터 로드
 onMounted(async () => {
@@ -351,7 +354,7 @@ const reportCheck = () => {
 .post-card {
   position: relative;
   width: 800px;
-  height: 150px;
+  height: 120px;
   display: flex;
   padding: 15px;
   gap: 20px;

@@ -1,4 +1,4 @@
-filter-icon<template>
+<template>
   <div class="filter-container">
     <!-- 헤더 -->
     <div class="filter-header">
@@ -34,12 +34,12 @@ filter-icon<template>
     </div>
   </div>
 
-
+    <div class="card-container">
     <!-- 게시물 리스트 -->
-    <div class="post-card" v-for="apply in applies" :key="apply.num">
+    <div class="post-card" v-for="apply in filteredApplies" :key="apply.num">
     <!-- 썸네일 이미지 -->
     <div class="post-image">
-        <img src="https://placehold.co/120x120" alt="게시물 이미지" />
+        <img :src="getRandomImage()" alt="게시물 이미지" />
     </div>
 
     <!-- 내용 -->
@@ -49,8 +49,8 @@ filter-icon<template>
             <div class="writer">{{ apply.memberName }}</div>
             <!-- 상세보기 / 삭제 버튼 -->
             <div class="post-actions">
-                <button class="post-detail-btn" @click="moveFashion(apply.num)">상세보기</button>
-                <button class="delete-btn" @click.stop="fashionDelete(apply.num)"></button>
+                <button class="post-detail-btn" @click="openModal(apply)">상세보기</button>
+                <button class="delete-btn" @click.stop="applyDelete(apply.title,apply.memberNum)"></button>
             </div>
         </div>
 
@@ -61,9 +61,24 @@ filter-icon<template>
 
     </div>
     </div>
+    </div>
 
-
-  
+  <!-- ✅ 모달 -->
+  <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
+    <div class="modal-box">
+      <h2 class="modal-title">{{ selectedApply.title }}</h2>
+      <p class="modal-writer">작성자: {{ selectedApply.memberName }}</p>
+      <div class="modal-content">
+        <p>{{ selectedApply.content }}</p>
+        <p>상태: {{selectedApply.accept}}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="approve-btn" @click="approve">승인</button>
+        <button class="reject-btn" @click="reject">거절</button>
+        <button class="close-btn" @click="closeModal">닫기</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -72,7 +87,6 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const token = sessionStorage.getItem("token");
 
 const memberId = ref("");
 const memberEmail = ref("");
@@ -80,10 +94,28 @@ const memberState = ref("");
 
 const applies = ref([]);
 const selectedApply = ref({});
+const isModalOpen = ref(false);
 
 // 필터링용 상태값
 const selectedCategory = ref(""); // "" = 전체, 1~4 = 카테고리 번호
 const searchQuery = ref("");
+
+// ✅ 상세보기 함수
+const openModal = (apply) => {
+  selectedApply.value = apply;
+  isModalOpen.value = true;
+};
+
+// ✅ 닫기 함수
+const closeModal = () => {
+  isModalOpen.value = false;
+};
+const token = sessionStorage.getItem("token");
+
+function getRandomImage() {
+  const randomNum = Math.floor(Math.random() * 14) + 1; // 1~9 사이 숫자
+  return `/images/influencer_page/influencerImg${randomNum}.png`;
+}
 
 // onMounted에서 데이터 로드
 onMounted(async () => {
@@ -100,7 +132,7 @@ onMounted(async () => {
     }
 
     axios.get('/api/manager-service/influencerApply/selectInfluencerApply',{
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
     }).then(
         (res) => {
             console.log(res)
@@ -114,8 +146,8 @@ onMounted(async () => {
   }
 });
 
-const fashionDelete = (num) => {
-    axios.delete(`/api/manager-service/posts/fashion/${num}`,{
+const applyDelete = (title,num) => {
+    axios.delete(`/api/manager-service/influencerApply/deleteInfluencerApply?title=${title}&memberNum=${num}`,{
         headers: { Authorization: `Bearer ${token}` }
     }).then(
         (res) => {
@@ -146,6 +178,55 @@ const mentoringDelete = (num) => {
 
 const moveFashion = (num) => {
     router.push(`/fashionpost/${num}`);
+}
+
+const filteredApplies = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase(); // 검색어 소문자로 변환
+  if (!query) return applies.value; // 검색어 없으면 전체 목록
+  
+  return applies.value.filter(apply => {
+    return (
+      (apply.title && apply.title.toLowerCase().includes(query)) ||
+      (apply.memberName && apply.memberName.toLowerCase().includes(query)) ||
+      (apply.content && apply.content.toLowerCase().includes(query))
+    );
+  });
+});
+
+const approve = () => {
+    let data = {
+        num: selectedApply.value.num,
+        title: selectedApply.value.title,
+        content: selectedApply.value.content,
+        accept:"승인",
+        memberNum: selectedApply.value.memberNum,
+        memberName: selectedApply.value.memberName
+    }
+    axios.put('/api/manager-service/influencerApply/updateInfluencerApply',data,{
+        headers: { Authorization: `Bearer ${token}` }
+    }).then(
+        (res) => {
+            console.log(res);
+        }
+    )
+}
+
+const reject = () => {
+    let data = {
+        num: selectedApply.value.num,
+        title: selectedApply.value.title,
+        content: selectedApply.value.content,
+        accept:"거절",
+        memberNum: selectedApply.value.memberNum,
+        memberName: selectedApply.value.memberName
+    }
+    axios.put('/api/manager-service/influencerApply/updateInfluencerApply',data,{
+        headers: { Authorization: `Bearer ${token}` }
+    }).then(
+        (res) => {
+            console.log(res);
+        }
+    )
 }
 </script>
 
@@ -246,6 +327,7 @@ const moveFashion = (num) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding-bottom: 40px;
 }
 
 /* 이름 + 제목 */
@@ -296,45 +378,70 @@ const moveFashion = (num) => {
 
 
 
-/* ✅ 모달 배경 (어둡고 블러 효과 추가) */
+/* ✅ 모달 배경 (어두운 반투명 + 블러) */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.5); /* 어두운 반투명 */
-  backdrop-filter: blur(3px); /* 블러 효과 */
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
-  animation: fadeIn 0.3s ease;
 }
 
-/* ✅ 모달 박스 (정중앙 위치) */
+/* ✅ 모달 박스 */
 .modal-box {
   background: white;
   border-radius: 14px;
-  width: 700px;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 32px;
+  width: 600px;
+  max-height: 80vh;
+  padding: 24px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  transform: scale(0.95);
+  overflow-y: auto;
   animation: popup 0.3s ease forwards;
 }
 
-/* ✅ 간단한 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.modal-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
+.modal-writer {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.modal-content {
+  font-size: 15px;
+  color: #222;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-footer {
+  text-align: right;
+}
+
+.close-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background: #1d4ed8;
+}
+
+/* 애니메이션 */
 @keyframes popup {
   from {
     opacity: 0;
@@ -344,21 +451,6 @@ const moveFashion = (num) => {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-/* ✅ 열기 버튼 */
-.open-btn {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-.open-btn:hover {
-  background-color: #1d4ed8;
 }
 
 /* ✅ 신고 상세 내용 */
@@ -573,5 +665,20 @@ const moveFashion = (num) => {
   color: #888;
 }
 
+.approve-btn {
+    background-color: #01cb52;
+}
 
+.reject-btn {
+    background-color: #e43c04;
+}
+
+img {
+  width: 100px;
+}
+
+.card-container {
+  height: 700px;
+  overflow-y: scroll;
+}
 </style>

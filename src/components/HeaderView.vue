@@ -16,13 +16,6 @@
 
       <div style="width: 448px; height: 36px; position: relative; display: flex; align-items: center; justify-content: flex-end;">
 
-        <div style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex" @click="search">
-          <div style="align-self: stretch; height: 20px; position: relative; overflow: hidden">
-            <div style="width: 3.62px; height: 3.62px; left: 13.88px; top: 13.88px; position: absolute; outline: 1.67px black solid; outline-offset: -0.83px"></div>
-            <div style="width: 13.33px; height: 13.33px; left: 2.50px; top: 2.50px; position: absolute; outline: 1.67px black solid; outline-offset: -0.83px"></div>
-          </div>
-        </div>
-
         <router-link to="/message" style="position: relative; margin-right: 15px; display: flex; align-items: center;">
           <img style="width: 28px; height: 28px;" :src="notificationIcon" alt="Notifications" />
           <div v-if="newNotification" style="width: 4px; height: 4px; position: absolute; top: -1px; right: -1px; background: #E17100; border-radius: 50%;"></div>
@@ -55,7 +48,7 @@ const router = useRouter();
 
 // 이미지 경로를 public/images 기준으로 수정
 const logoUrl = ref('/images/logo.jpg'); // 로고 이미지 경로 수정
-const userProfilePic = ref('/images/default_avatar.png'); // 기본 프로필 이미지 (필요시 수정)
+const userProfilePic = ref('/images/influencer_page/influencerImg14.png'); // 기본 프로필 이미지 (필요시 수정)
 const notificationIcon = ref('/images/mail.jpg'); // 알림(메일) 아이콘 경로 수정
 
 // 네비게이션 경로 확인 및 수정 (라우터 설정과 일치해야 함)
