@@ -16,13 +16,13 @@
         </div>
         <article v-else-if="postData" class="post-card">
           <div class="post-header">
-            <div class="avatar poster-avatar">{{ postData.memberName?.charAt(0) || '?' }}</div>
+            <img :src="'/images/mentoringpost' + postId + '.jpg'" alt="작성자 프로필" class="avatar poster-avatar" @error="($event) => ($event.target.src = fallbackImage)" />
             <div class="user-info">
               <div class="user-name">
                 <span>{{ postData.memberName || '작성자 정보 없음' }}</span>
               </div>
             </div>
-            <div class="post-edit-actions" v-if="postData.author_num === currentMemberNum"> 
+            <div class="post-edit-actions" v-if="postData.author_num === currentMemberNum">
               <button @click="editPost">수정</button>
               <button @click="deletePost">삭제</button>
             </div>
@@ -35,6 +35,7 @@
             <h2>{{ postData.title || '제목 없음' }}</h2>
             <img :src="'/images/mentoringpost' + postId + '.jpg'" alt="Mentoring default image" class="post-image" @error="($event) => ($event.target.src = '/images/defaultimage.png')" />
             <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
+            <button class="report-button post-report-button" @click="reportPost(postId)">🚨 게시글 신고</button>
           </div>
 
           <div class="post-meta">
@@ -55,15 +56,15 @@
                   </div>
                   <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
                 </div>
-                <div class="comment-edit-actions" v-if="comment.member_num === currentMemberNum"> 
-                  <button @click="editComment(comment)">수정</button>
-                  <button @click="deleteComment(comment.num)">삭제</button>
+                <div class="comment-edit-actions">
+                  <button @click="reportComment(comment.num)">🚨 신고</button>
+                  <button v-if="comment.member_num === currentMemberNum" @click="deleteComment(comment.num)">삭제</button>
                 </div>
               </li>
             </ul>
             <p v-else>아직 댓글이 없습니다.</p>
             <form class="comment-form" @submit.prevent="handleCommentSubmit">
-              <div class="avatar comment-avatar">{{ currentMemberName?.charAt(0) || '나'}}</div> 
+               <div class="avatar comment-avatar">{{ currentMemberName?.charAt(0) || '나'}}</div>
               <input type="text" placeholder="댓글을 입력해주세요" class="comment-input" v-model="newCommentText" />
               <button type="submit" class="comment-submit-button">등록</button>
             </form>
@@ -78,15 +79,17 @@
          <div class="widget category-widget">
           <h3>카테고리</h3>
           <div class="category-list">
-            <button v-for="category in categories" :key="category" :class="{ active: category === '전체' }">
-              {{ category }}
+            <button v-if="categoriesLoading">로딩중...</button>
+            <button v-else v-for="category in categories" :key="category.num">
+              {{ category.NAME }}
             </button>
+             <button v-if="!categoriesLoading && categories.length === 0">없음</button>
           </div>
         </div>
         <div class="widget mentors-widget">
           <h3><span class="icon">🏆</span> 인기 멘토</h3>
           <ul class="mentor-list">
-            <li v-for="mentor in popularMentors" :key="mentor.name">
+             <li v-for="mentor in popularMentors" :key="mentor.num" @click="goToMentorPage(mentor.num)" style="cursor: pointer;">
               <div class="mentor-info">
                 <strong>{{ mentor.name }}</strong>
                 <span>{{ mentor.field }}</span>
@@ -95,12 +98,13 @@
                 <span class="icon">⭐</span> {{ mentor.likes }}
               </div>
             </li>
+            <li v-if="popularMentors.length === 0">인기 멘토 없음</li>
           </ul>
         </div>
         <div class="widget cta-widget">
           <h3>멘토로 활동하기</h3>
           <p>패션 전문가와 함께하세요</p>
-          <button class="cta-button">신청하기</button>
+          <button class="cta-button" @click="goToApplyPage">신청하기</button>
         </div>
       </aside>
     </main>
@@ -119,16 +123,13 @@ const route = useRoute();
 const router = useRouter();
 
 /* ================== axios 인스턴스 ================== */
-// 댓글 수정/삭제는 json-server 직접 호출
 const jsonServerApi = axios.create({
   baseURL: 'http://localhost:3000',
 });
-// 게시글/댓글 조회/생성은 기존 프록시 사용 가정
 const api = axios.create({
-  baseURL: '/api', // 기존 프록시 경로
+  baseURL: '/api',
    withCredentials: true,
 });
-// 토큰 인터셉터 추가
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token')
   if (token) {
@@ -137,13 +138,12 @@ api.interceptors.request.use((config) => {
   }
   return config
 });
-// 401 에러 인터셉터 추가
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err?.response?.status === 401) {
       alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
-      router.push('/') // 로그인 페이지로 리다이렉트
+      router.push('/')
     }
     return Promise.reject(err)
   }
@@ -157,211 +157,236 @@ const error = ref(null);
 
 const newCommentText = ref('');
 const postId = ref(null);
+const fallbackImage = '/images/default_avatar.png'; // ✅ 프로필 이미지 없을 때 fallback
 
 // --- 임시 로그인 정보 ---
-// ✅ 실제 구현 시 sessionStorage 또는 상태 관리 라이브러리(Pinia/Vuex)에서 가져오도록 수정
 const currentMemberNum = ref(4); // 예: user01 (이민준)
 const currentMemberName = ref('이민준');
 // -----------------------
 
-// const MENTORING_POST_CATEGORY = 3; // 사용되지 않음
+// --- 사이드바 데이터 ---
+const categories = ref([]);
+const categoriesLoading = ref(false);
+const popularMentors = ref([]); // { num, name, field, likes }
+// -----------------------
+
 
 onMounted(async () => {
-  postId.value = route.params.id; // URL 파라미터에서 게시글 ID 가져오기
+  postId.value = route.params.id;
   if (!postId.value) {
     error.value = "게시글 ID가 주소에 포함되지 않았습니다.";
     isLoading.value = false;
     return;
   }
-  await fetchPostAndComments(); // 데이터 로딩 함수 호출
+  // ✅ 병렬 로딩: 게시글/댓글 + 카테고리 + 인기 멘토
+  await Promise.all([
+      fetchPostAndComments(),
+      fetchCategories(),
+      fetchPopularMentors()
+  ]);
 });
 
-// 게시글 및 댓글 데이터 로딩 함수
+// ✅ 카테고리(해시태그) 로딩 함수
+const fetchCategories = async () => {
+  categoriesLoading.value = true;
+  try {
+    const response = await jsonServerApi.get('/Hash_Tag'); // db.json의 Hash_Tag 사용
+    categories.value = Array.isArray(response.data) ? response.data : [];
+  } catch (e) {
+    console.error('카테고리(해시태그) 조회 실패:', e);
+    categories.value = [];
+  } finally {
+    categoriesLoading.value = false;
+  }
+};
+
+// ✅ 인기 멘토 로딩 함수 (임시 구현: 최근 멘토링 작성자 3명)
+const fetchPopularMentors = async () => {
+   try {
+     // 1. 최근 멘토링 게시글 5개 정도 가져오기 (작성자 중복 가능)
+     const recentMentoringRes = await jsonServerApi.get('/Mentoring_Post', {
+       params: { _sort: 'num', _order: 'desc', _limit: 5 }
+     });
+     const recentPosts = Array.isArray(recentMentoringRes.data) ? recentMentoringRes.data : [];
+     if (recentPosts.length === 0) {
+       popularMentors.value = [];
+       return;
+     }
+
+     // 2. 작성자 번호(author_num) 목록 추출 및 중복 제거 (최대 3명)
+     const authorNums = [...new Set(recentPosts.map(p => p.author_num).filter(Boolean))].slice(0, 3);
+     if (authorNums.length === 0) {
+       popularMentors.value = [];
+       return;
+     }
+
+     // 3. 해당 작성자(Member) 정보 조회
+     const memberParams = new URLSearchParams();
+     authorNums.forEach(num => memberParams.append('num', num));
+     const membersRes = await jsonServerApi.get(`/Member?${memberParams.toString()}`);
+     const members = Array.isArray(membersRes.data) ? membersRes.data : [];
+
+     // 4. 사이드바 표시 형식으로 매핑
+     popularMentors.value = members.map(m => ({
+       num: m.num, // ✅ Member.num (인플루언서 페이지 이동 시 사용)
+       name: m.NAME || '알 수 없음',
+       field: '전문 멘토', // 임시 필드
+       likes: m.good_count || 0 // Member 테이블의 good_count 사용 (임시 '인기' 지표)
+     }));
+
+   } catch (e) {
+     console.error('인기 멘토 조회 실패:', e);
+     popularMentors.value = [];
+   }
+};
+
+// 게시글 및 댓글 데이터 로딩 함수 (이전과 거의 동일, 작성자/댓글 이름 가져오는 부분만 jsonServerApi 사용)
 const fetchPostAndComments = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // 1. 게시글 정보 가져오기 (기존 Spring API 사용)
+    // 1. 게시글 정보 가져오기 (Spring API)
     const postResponse = await api.get(`/manager-service/posts/mentoring/${postId.value}`);
     let fetchedPost = postResponse.data;
 
-    // 2. 작성자 정보 가져오기 (json-server 사용)
+    // 2. 작성자 정보 가져오기 (json-server)
     if (fetchedPost && fetchedPost.author_num != null) {
       try {
-        // json-server에서 Member 정보 조회
         const memberResponse = await jsonServerApi.get(`/Member/${fetchedPost.author_num}`);
-        // NAME 필드를 memberName으로 추가
         fetchedPost.memberName = memberResponse.data?.NAME || '작성자 정보 없음';
       } catch (memberError) {
-        // Member 조회 실패 시 처리
         console.error(`작성자(${fetchedPost.author_num}) 정보 조회 실패:`, memberError);
         fetchedPost.memberName = '정보 조회 실패';
       }
     } else {
-      // author_num이 없는 경우
       fetchedPost.memberName = '작성자 정보 없음';
     }
-    postData.value = fetchedPost; // 게시글 데이터 상태 업데이트
+    postData.value = fetchedPost;
 
 
-    // 3. 댓글 정보 가져오기 (기존 Spring API 사용)
+    // 3. 댓글 정보 가져오기 (Spring API)
     const commentsResponse = await api.get(`/manager-service/comments/getcomments`, {
-      params: { postType: 'mentoring', postNum: postId.value } // 백엔드 파라미터 확인 필요
+      params: { postType: 'mentoring', postNum: postId.value }
     });
-    // 기본 댓글 데이터 매핑 (반응 관련 필드 초기화)
     let fetchedComments = commentsResponse.data.map(c => ({ ...c, userReaction: null, isReacting: false }));
 
-    // 4. 댓글 작성자 정보 가져오기 (json-server 사용)
+    // 4. 댓글 작성자 정보 가져오기 (json-server)
     if (fetchedComments.length > 0) {
-       // 댓글 작성자 num 목록 추출 (null 제외)
        const commentAuthorNums = fetchedComments.map(c => c.member_num).filter(num => num != null);
        if (commentAuthorNums.length > 0) {
-         // 중복 제거
          const uniqueCommentAuthorNums = [...new Set(commentAuthorNums)];
-         // json-server에 보낼 파라미터 생성 (예: ?num=4&num=5)
          const commentMemberParams = new URLSearchParams();
          uniqueCommentAuthorNums.forEach(num => commentMemberParams.append('num', num));
           try {
-             // json-server에서 여러 Member 정보 한번에 조회
              const commentMemberResponse = await jsonServerApi.get(`/Member?${commentMemberParams.toString()}`);
              const commentMembers = Array.isArray(commentMemberResponse.data) ? commentMemberResponse.data : [];
-             // num을 키로, NAME을 값으로 하는 Map 생성 (조회 효율성)
              const commentMemberMap = new Map(commentMembers.map(m => [m.num, m.NAME]));
-
-             // 각 댓글에 memberName 추가
              fetchedComments = fetchedComments.map(comment => ({
                 ...comment,
-                memberName: commentMemberMap.get(comment.member_num) || '알 수 없음' // Map에서 이름 찾기
+                memberName: commentMemberMap.get(comment.member_num) || '알 수 없음'
              }));
           } catch (commentMemberError) {
              console.error('댓글 작성자 정보 조회 실패:', commentMemberError);
-             // 조회 실패 시 기본값 설정
              fetchedComments = fetchedComments.map(comment => ({ ...comment, memberName: '정보 조회 실패' }));
           }
        } else {
-          // member_num이 없는 댓글 처리
           fetchedComments = fetchedComments.map(comment => ({ ...comment, memberName: '작성자 정보 없음' }));
        }
     }
-    commentData.value = fetchedComments; // 최종 댓글 목록 상태 업데이트
+    commentData.value = fetchedComments;
 
   } catch (err) {
     console.error("데이터 로딩 에러:", err);
     error.value = "게시글 정보를 불러오는 데 실패했습니다.";
-    // 404 에러 처리
     if (err.response && err.response.status === 404) {
       error.value = "해당 게시글을 찾을 수 없습니다.";
     }
   } finally {
-    isLoading.value = false; // 로딩 상태 해제
+    isLoading.value = false;
   }
 };
 
 
-// 멘토링 댓글 반응 기능 없음 (호출 시 콘솔 로그만 출력)
-const toggleCommentReaction = async (comment, reactionType) => {
+// 댓글 반응 없음
+const toggleCommentReaction = (comment, reactionType) => {
   console.log("멘토링 게시글의 댓글은 반응 기능을 지원하지 않습니다.");
 };
 
-// 댓글 작성 (기존 Spring API 사용)
+// 댓글 작성 (Spring API 사용)
 const handleCommentSubmit = async () => {
   if (!newCommentText.value.trim()) { alert("댓글 내용을 입력해주세요."); return; }
   try {
-    // 백엔드 API 페이로드 형식 확인 필요
     const payload = {
-        memberNum: currentMemberNum.value, // 현재 로그인 사용자 번호
+        memberNum: currentMemberNum.value,
         postType: 'mentoring',
-        postNum: postId.value, // 현재 게시글 번호
-        content: newCommentText.value.trim() // 입력된 댓글 내용
+        postNum: postId.value,
+        content: newCommentText.value.trim()
     };
-    // 기존 백엔드 API 엔드포인트 사용
     const response = await api.post(`/manager-service/comments/createcomment`, payload);
-
     const newComment = response.data;
-    // 새 댓글에 작성자 이름 추가 (현재 로그인 사용자 이름 사용)
     if (!newComment.memberName) {
+        // ✅ 새 댓글에 현재 사용자 이름 설정
         newComment.memberName = currentMemberName.value;
     }
-    // member_num도 현재 사용자 번호로 설정 (백엔드 응답에 없을 경우 대비)
     if (newComment.member_num == null) {
         newComment.member_num = currentMemberNum.value;
     }
-
-    // 댓글 목록에 새 댓글 추가
     commentData.value.push({ ...newComment, userReaction: null, isReacting: false });
-    newCommentText.value = ''; // 입력 필드 초기화
+    newCommentText.value = '';
   } catch (err) { console.error("댓글 등록 에러:", err); alert("댓글 등록 실패"); }
 };
 
-// --- 게시글/댓글 수정 및 삭제 함수 ---
-
-// 게시글 수정 페이지 이동 (라우터 설정 필요)
+// 게시글 수정 페이지 이동 (멘토링용 수정 페이지 라우트 필요)
 const editPost = () => {
-  // TODO: 멘토링 게시글 수정 페이지 라우트 이름('editMentoringPost' 등) 확인 및 설정 필요
-  // 예시: router.push({ name: 'editMentoringPost', params: { id: postId.value } });
-  alert('멘토링 게시글 수정 기능 구현 필요 (라우터 설정 확인)');
+  // router.push({ name: 'editMentoringPost', params: { id: postId.value } });
+  alert('멘토링 게시글 수정 라우터 설정 필요');
 };
 
-// 게시글 삭제 (json-server 직접 호출)
+// 게시글 삭제 (json-server API)
 const deletePost = async () => {
   if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
     try {
-      // ✅ json-server DELETE 요청
       await jsonServerApi.delete(`/Mentoring_Post/${postId.value}`);
       alert('게시글이 삭제되었습니다.');
-      // ✅ 게시판 라우트 이름 확인 ('mentoringboardview')
       router.push({ name: 'mentoringboardview' });
     } catch (err) { console.error("게시글 삭제 에러:", err); alert('게시글 삭제 실패'); }
   }
 };
 
-// 댓글 수정 (json-server 직접 호출)
-const editComment = async (comment) => {
-  const newContent = prompt('댓글 수정:', comment.content);
-  // 사용자가 취소하지 않았고, 내용이 변경되었을 경우에만 실행
-  if (newContent !== null && newContent.trim() !== comment.content) {
-    try {
-      // ✅ json-server PATCH 요청으로 content만 업데이트
-      const response = await jsonServerApi.patch(`/Comment/${comment.num}`, {
-        content: newContent.trim() // 공백 제거 후 전송
-      });
-      // 성공 시 로컬 데이터 업데이트
-      const index = commentData.value.findIndex(c => c.num === comment.num);
-      if (index !== -1) {
-        // 서버 응답값(업데이트된 댓글 객체)으로 교체하는 것이 더 안전
-        commentData.value[index] = {
-            ...commentData.value[index], // 기존 정보 유지 (작성자 등)
-            content: response.data.content // 서버에서 받은 content로 업데이트
-        };
-      }
-      alert('댓글이 수정되었습니다.');
-    } catch (err) {
-      console.error('댓글 수정 실패:', err);
-      alert('댓글 수정에 실패했습니다.');
-    }
-  }
-};
+// 댓글 수정 기능 제거됨 (신고로 대체)
 
-// 댓글 삭제 (json-server 직접 호출)
+// ✅ 댓글 삭제 (json-server API)
 const deleteComment = async (commentNum) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
-      // ✅ json-server DELETE 요청
-      await jsonServerApi.delete(`/Comment/${commentNum}`);
+      await jsonServerApi.delete(`/Comment/${commentNum}`); // db.json의 Comment 테이블 사용
       alert('댓글이 삭제되었습니다.');
-      // 로컬 상태 업데이트 (삭제된 댓글 제거)
       commentData.value = commentData.value.filter(c => c.num !== commentNum);
     } catch (err) { console.error("댓글 삭제 에러:", err); alert('댓글 삭제 실패'); }
   }
 };
 
-// --- 사이드바 데이터 (고정값) ---
-const categories = ref(['전체', '코디 조언', '스타일링', '쇼핑 동행', '브랜드 추천', '트렌드 분석']);
-const popularMentors = ref([
-  { name: '김패션', field: '코디 멘토링', likes: 234 },
-  { name: '배민', field: '브랜딩', likes: 189 },
-  { name: '트렌드분석이', field: '트렌드 분석', likes: 156 },
-]);
+// ✅ 게시글 신고 페이지 이동
+const reportPost = (postNum) => {
+  router.push({ name: 'reportMentoringPost', params: { num: postNum } });
+};
+
+// ✅ 댓글 신고 페이지 이동
+const reportComment = (commentNum) => {
+  router.push({ name: 'reportComment', params: { num: commentNum } });
+};
+
+// ✅ 인플루언서 페이지 이동
+const goToMentorPage = (mentorNum) => {
+  if (!mentorNum) return;
+  router.push({ name: 'influencerpage-profile', params: { num: mentorNum } });
+};
+
+// ✅ 인플루언서 신청 페이지 이동
+const goToApplyPage = () => {
+  router.push({ name: 'influencerapply' });
+};
+
 </script>
 
 <style scoped>
@@ -393,8 +418,23 @@ const popularMentors = ref([
   right: 0;
 }
 
-/* ✅ 멘토링 댓글 반응 관련 스타일 제거됨 */
-/* ✅ 멘토링 게시글 반응 관련 스타일 제거됨 */
+/* ✅ 게시글 신고 버튼 */
+.report-button {
+  display: inline-flex; /* 텍스트 옆에 배치되도록 */
+  background: #fff0f0; /* 연한 빨강 배경 */
+  color: #d4183d; /* 빨강 텍스트 */
+  border: 1px solid #ffcccc; /* 연한 빨강 테두리 */
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px; /* 본문 내용과 간격 */
+  font-weight: 500;
+}
+.report-button:hover {
+  background: #ffe0e0;
+}
+/* 댓글 신고 버튼은 기본 버튼 스타일 사용 */
 
 
 /* 기존 스타일 복사 */
@@ -493,6 +533,7 @@ const popularMentors = ref([
   background: var(--border-color);
   color: var(--text-light);
   flex-shrink: 0;
+  object-fit: cover; /* ✅ 추가: 이미지가 원에 맞게 잘리도록 */
 }
 .poster-avatar {
   background: var(--text-primary);
@@ -509,13 +550,11 @@ const popularMentors = ref([
   font-size: 14px;
   font-weight: bold;
 }
-/* .level-badge, .post-time 제거됨 */
 
 .post-body {
   padding: 0 1.5rem 1.5rem;
   text-align: left;
-  border-bottom: 5px solid var(--separator-color);
-  padding-bottom: 1.5rem;
+  /* border-bottom 제거됨 */
 }
 .post-body h2 {
   font-size: 18px;
@@ -532,14 +571,14 @@ const popularMentors = ref([
 /* 모집중/마감 배지 스타일 */
 .tags span.recruiting-badge {
   font-size: 14px;
-  cursor: default !important; /* 클릭 불가 표시 */
+  cursor: default !important;
   padding: 4px 12px !important;
   border-radius: 4px;
   font-weight: bold !important;
   background-color: var(--recruiting-bg);
   color: var(--recruiting-color);
 }
-.tags span.recruiting-badge.closed { /* FINISH === 1 일 때 */
+.tags span.recruiting-badge.closed {
   background-color: var(--closed-bg);
   color: var(--closed-color);
 }
@@ -550,18 +589,18 @@ const popularMentors = ref([
   border-radius: 4px;
   margin-bottom: 1rem;
   object-fit: cover;
-  max-height: 500px; /* 이미지 최대 높이 제한 */
+  max-height: 500px;
 }
 .post-content-text {
   font-size: 16px;
   color: var(--text-secondary);
   line-height: 1.7;
-  white-space: pre-wrap; /* 줄바꿈 및 공백 유지 */
+  white-space: pre-wrap;
 }
 .post-content-text p {
   margin: 0.5rem 0;
 }
-.post-content-text pre { /* 코드 블록 등 */
+.post-content-text pre {
   background-color: var(--bg-light);
   padding: 1rem;
   border-radius: 4px;
@@ -574,10 +613,8 @@ const popularMentors = ref([
   font-size: 14px;
   color: var(--text-light);
   text-align: left;
-  border-top: 1px solid var(--separator-color); /* 구분선 추가 */
+  border-top: 1px solid var(--separator-color); /* 상단 구분선 추가 */
 }
-
-/* ✅ .post-actions 제거됨 */
 
 .comment-section {
   padding: 1.5rem;
@@ -606,7 +643,7 @@ const popularMentors = ref([
   padding: 1rem 0;
   border-bottom: 1px solid #F3F4F6;
   align-items: flex-start;
-  position: relative; /* 수정/삭제 버튼 위치 기준 */
+  position: relative;
 }
 .comment-item:last-child {
   border-bottom: none;
@@ -634,11 +671,9 @@ const popularMentors = ref([
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0.5rem 0;
-  word-break: break-word; /* 긴 텍스트 줄바꿈 */
-  white-space: pre-wrap; /* 댓글 내 줄바꿈 유지 */
+  word-break: break-word;
+  white-space: pre-wrap;
 }
-
-/* ✅ .comment-actions 제거됨 */
 
 .comment-form {
   display: flex;
@@ -667,7 +702,7 @@ const popularMentors = ref([
     background-color: var(--text-secondary);
 }
 
-/* --- 사이드바 스타일 (기존과 동일) --- */
+/* --- 사이드바 스타일 (기존과 동일, 카테고리 버튼 추가) --- */
 .sidebar-column {
   flex: 1;
   max-width: 390px;
@@ -735,6 +770,11 @@ const popularMentors = ref([
 .mentor-info strong {
   font-size: 14px;
   color: var(--text-primary);
+  font-weight: 600; /* 추가 */
+}
+.mentor-info strong:hover { /* ✅ 추가: 호버 효과 */
+  color: var(--primary-color);
+  text-decoration: underline;
 }
 .mentor-info span {
   font-size: 12px;
@@ -773,6 +813,10 @@ const popularMentors = ref([
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s; /* ✅ 추가: 호버 효과 */
+}
+.cta-button:hover { /* ✅ 추가: 호버 효과 */
+  background-color: #f0f5ff;
 }
 
 .state {
