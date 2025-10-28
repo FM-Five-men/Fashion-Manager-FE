@@ -89,16 +89,34 @@
 
               <!-- 인플루언서 버튼 (위치 그대로) -->
               <button
-                type="button"
-                @click="onOpenInfluencer"
-                style="
-                  width:110px;height:32px;left:162.50px;top:-8px;position:absolute;background:#D33AE0;border-radius:8px;border:none;cursor:pointer;
-                "
-              >
-                <div style="left:5px;top:6px;position:absolute;color:white;font-size:12px;font-family:Arimo;line-height:20px;">
-                  인플루언서 페이지
-                </div>
-              </button>
+            type="button"
+            @click="onOpenInfluencer"
+            style="
+              width: 95px;        /* 🔹 가로폭 살짝 줄임 (110 → 95) */
+              height: 28px;       /* 🔹 세로폭도 조금 줄임 (32 → 28) */
+              left: 190px;        /* 🔹 오른쪽으로 이동 (162.5 → 190) */
+              top: -6px;          /* 🔹 위아래도 살짝 정렬 맞춤 */
+              position: absolute;
+              background: #D33AE0;
+              border-radius: 8px;
+              border: none;
+              cursor: pointer;
+            "
+          >
+            <div
+              style="
+                left: 5px;
+                top: 5px;
+                position: absolute;
+                color: white;
+                font-size: 10px;   /* 🔹 글씨 크기도 약간 줄임 (12 → 11) */
+                font-family: Arimo;
+                line-height: 18px;
+              "
+            >
+              인플루언서 페이지
+            </div>
+          </button>
             </div>
 
             <div style="width:96px;height:96px;left:0px;top:10px;position:absolute;">
@@ -158,7 +176,7 @@
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
-                    <div style="width:78.96px;height:18.67px;display:flex;">
+                    <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
                         <div style="width:141px;color:#717182;font-size:14px;font-family:Arial;">
                           {{ user.memberId }}
@@ -180,8 +198,8 @@
               <!-- 비밀번호 -->
               <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
                 <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:56px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">비밀번호</div>
+                  <div style="width:100px;height:20px;position:relative;">
+                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">비밀번호 변경</div>
                   </div>
                 </div>
 
@@ -192,16 +210,16 @@
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
-                    <div style="width:197.16px;height:18.67px;display:flex;">
+                    <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
                         <div style="color:#717182;font-size:14px;font-family:Arial;">
-                          {{ user.memberPwd }}
+                          ---- 보안처리 ----
                         </div>
                       </template>
                       <template v-else>
                         <input
                           v-model="editUser.memberPwd"
-                          type="password"
+                          type="text"
                           autocomplete="new-password"
                           style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
                         />
@@ -227,7 +245,7 @@
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
-                    <div style="width:39.90px;height:18.67px;display:flex;width:200px;">
+                    <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
                         <div style="color:#717182;font-size:14px;font-family:Arial;">
                           {{ user.memberName }}
@@ -246,39 +264,39 @@
                 </div>
               </div>
 
-              <!-- 이메일 -->
-              <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:42px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">이메일</div>
-                  </div>
-                </div>
-
-                <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
-                  <div
-                    style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
-                      display:inline-flex;align-items:center;z-index:1;
-                    "
-                  >
-                    <div style="width:107.84px;height:18.67px;display:flex;">
-                      <template v-if="!editMode">
-                        <div style="width:147px;color:#717182;font-size:14px;font-family:Arial;">
-                          {{ user.memberEmail }}
-                        </div>
-                      </template>
-                      <template v-else>
-                        <input
-                          v-model="editUser.memberEmail"
-                          type="email"
-                          style="width:200px;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
-                        />
-                      </template>
-                    </div>
-                  </div>
-                  <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+                        <!-- 이메일 -->
+            <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
+              <div style="display:inline-flex;align-items:center;height:20px;">
+                <div style="width:42px;height:20px;position:relative;">
+                  <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">이메일</div>
                 </div>
               </div>
+
+              <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
+                <div
+                  style="
+                    width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
+                    display:inline-flex;align-items:center;z-index:1;
+                  "
+                >
+                  <div style="width:107.84px;height:36px;display:flex;align-items:center;width:400px;">
+                    <template v-if="!editMode">
+                      <div style="color:#717182;font-size:14px;font-family:Arial;">
+                        {{ user.memberEmail }}
+                      </div>
+                    </template>
+                    <template v-else>
+                      <input
+                        v-model="editUser.memberEmail"
+                        type="email"
+                        style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+                      />
+                    </template>
+                  </div>
+                </div>
+                <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+              </div>
+            </div>
 
               <!-- 전화번호 -->
               <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
@@ -295,7 +313,7 @@
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
-                    <div style="width:200px;height:18.67px;display:flex;">
+                    <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
                         <div style="color:#717182;font-size:14px;font-family:Arial;">
                           {{ user.memberPhone }}
@@ -305,7 +323,7 @@
                         <input
                           v-model="editUser.memberPhone"
                           type="text"
-                          style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+                          style="width:100%;height:20px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
                         />
                       </template>
                     </div>
@@ -329,7 +347,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="color:#717182;font-size:14px;font-family:Arial;">
+                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberGender }}
                       </div>
                     </template>
@@ -363,7 +381,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="color:#717182;font-size:14px;font-family:Arial;">
+                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberAge }}
                       </div>
                     </template>
@@ -397,7 +415,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="color:#717182;font-size:14px;font-family:Arial;">
+                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberHeight }}
                       </div>
                     </template>
@@ -432,7 +450,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="color:#717182;font-size:14px;font-family:Arial;">
+                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberWeight }}
                       </div>
                     </template>
@@ -474,7 +492,7 @@
                     display:inline-flex;align-items:center;z-index:1;
                   "
                 >
-                  <div style="width:87.49px;height:18.67px;display:flex;width:300px;">
+                  <div style="width:107.84px;height:36px;display:flex;align-items:center;width:300px;">
                     <template v-if="!editMode">
                       <div style="color:#717182;font-size:14px;font-family:Arial;">
                         {{ user.memberAddress }}
@@ -531,12 +549,21 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { useRouter } from 'vue-router';
+import { watch } from 'vue';
 
 import FooterView from "./FooterView.vue";
 import HeaderView from "./HeaderView.vue";
 
 const user = ref({});
 const editMode = ref(false);
+const router = useRouter()
+
+const token = sessionStorage.getItem('token');
+let memberNum = ref("");
+let memberId = ref("");
+let memberEmail = ref("");
+let memberState = ref("");
 
 // 편집 버퍼 (닉네임 제거, 성별/나이/키/몸무게 추가)
 const editUser = ref({
@@ -553,15 +580,38 @@ const editUser = ref({
 });
 
 onMounted(async () => {
-  try {
-    const res = await axios.get("/api/member-service/member/membernum/13");
-    user.value = res.data;
-    console.log("조회된 회원:", res.data);
+   try {
+    
+
+
+
+    axios.get('/api/member-service/member/auth',{
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+    }).then((res) => {
+      console.log(res)
+      if(res.data.memberId == null){
+        router.push('/')
+      }else{
+        memberNum.value = res.data.memberNum
+        memberId.value = res.data.memberId
+        memberEmail.value = res.data.memberEmail
+        memberState.value = res.data.memberState
+      }
+    })
+
+    watch(memberNum, async (current,old) => {
+      const res = await axios.get(`/api/member-service/member/membernum/${memberNum.value}`);
+      user.value = res.data;
+    })
   } catch (error) {
-    console.error("회원 정보 불러오기 실패:", error);
-    alert("회원 정보를 불러오지 못했습니다.");
+    console.error('회원 정보 불러오기 실패:', error);
   }
 });
+
+
+
 
 function onOpenInfluencer() {
   alert("인플루언서 페이지로 이동합니다.");
@@ -569,7 +619,7 @@ function onOpenInfluencer() {
 
 function fillEditBufferFromUser() {
   editUser.value.memberId    = user.value.memberId    || "";
-  editUser.value.memberPwd   = user.value.memberPwd   || "";
+  editUser.value.memberPwd = "";
   editUser.value.memberName  = user.value.memberName  || "";
   editUser.value.memberEmail = user.value.memberEmail || "";
   editUser.value.memberPhone = user.value.memberPhone|| "";
