@@ -16,35 +16,32 @@
         </div>
         <article v-else-if="postData" class="post-card">
           <div class="post-header">
-            <div class="avatar poster-avatar">{{ postData.memberName?.charAt(0) || '?' }}</div>
+            <img :src="'/images/mentoringpost' + postId + '.jpg'" alt="작성자 프로필" class="avatar poster-avatar" @error="($event) => ($event.target.src = fallbackImage)" />
             <div class="user-info">
               <div class="user-name">
-                <span>{{ postData.memberName || 'Unknown User' }}</span>
+                <span>{{ postData.memberName || '작성자 정보 없음' }}</span>
               </div>
             </div>
-            <div class="post-edit-actions" v-if="postData.memberNum === currentMemberNum">
+            <div class="post-edit-actions" v-if="postData.author_num === currentMemberNum">
               <button @click="editPost">수정</button>
-              <button @click="deletePost">삭제</button>
             </div>
           </div>
 
           <div class="post-body">
             <div class="tags">
-              <span class="recruiting-badge">{{ postData.status === 'RECRUITING' ? '모집중' : '모집완료' }}</span>
+              <span class="recruiting-badge" :class="{ closed: postData.FINISH === 1 }">{{ postData.FINISH === 0 ? '모집중' : '마감' }}</span>
             </div>
             <h2>{{ postData.title || '제목 없음' }}</h2>
-            <img v-if="postData.imageUrl" :src="postData.imageUrl" alt="Post image" class="post-image" />
-            <img v-else :src="`/images/mentoringpost${postId}.jpg`" alt="Mentoring default image" class="post-image" />
+            <img :src="'/images/mentoringpost' + postId + '.jpg'" alt="Mentoring default image" class="post-image" @error="($event) => ($event.target.src = '/images/defaultimage.png')" />
             <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
+            <button class="report-button post-report-button" @click="reportPost(postId)">🚨 게시글 신고</button>
+            <button class="delete-button post-delete-button">🗑️ 게시글 삭제</button>
           </div>
 
           <div class="post-meta">
             <span>조회 {{ postData.views || 0 }}</span> <span>·</span>
             <span>댓글 {{ commentData?.length || 0 }}</span>
           </div>
-
-          <div class="post-actions">
-            </div>
 
           <section class="comment-section">
             <div class="comment-header">
@@ -58,16 +55,16 @@
                     <strong>{{ comment.memberName || 'Unknown User' }}</strong>
                   </div>
                   <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
-                  </div>
-                <div class="comment-edit-actions" v-if="comment.memberNum === currentMemberNum">
-                  <button @click="editComment(comment)">수정</button>
-                  <button @click="deleteComment(comment.num)">삭제</button>
+                </div>
+                <div class="comment-edit-actions">
+                  <button @click="reportComment(comment.num)">🚨 신고</button>
+                  <button>🗑️ 삭제</button>
                 </div>
               </li>
             </ul>
             <p v-else>아직 댓글이 없습니다.</p>
             <form class="comment-form" @submit.prevent="handleCommentSubmit">
-              <div class="avatar comment-avatar">나</div>
+              <div class="avatar comment-avatar">{{ currentMemberName?.charAt(0) || '?'}}</div>
               <input type="text" placeholder="댓글을 입력해주세요" class="comment-input" v-model="newCommentText" />
               <button type="submit" class="comment-submit-button">등록</button>
             </form>
@@ -79,32 +76,35 @@
       </div>
 
       <aside class="sidebar-column">
-        <div class="widget category-widget">
-          <h3>카테고리</h3>
-          <div class="category-list">
-            <button v-for="category in categories" :key="category" :class="{ active: category === '전체' }">
-              {{ category }}
-            </button>
-          </div>
-        </div>
+       <div class="widget category-widget">
+         <h3>카테고리</h3>
+         <div class="category-list">
+           <button>#겨울코디</button>
+           <button>#OOTD</button>
+           <button>#데일리룩</button>
+         </div>
+       </div>
         <div class="widget mentors-widget">
           <h3><span class="icon">🏆</span> 인기 멘토</h3>
           <ul class="mentor-list">
-            <li v-for="mentor in popularMentors" :key="mentor.name">
-              <div class="mentor-info">
-                <strong>{{ mentor.name }}</strong>
-                <span>{{ mentor.field }}</span>
-              </div>
-              <div class="mentor-likes">
-                <span class="icon">⭐</span> {{ mentor.likes }}
-              </div>
-            </li>
+            <template v-if="popularMentors.length > 0">
+              <li v-for="mentor in popularMentors" :key="mentor.num" @click="goToMentorPage(mentor.num)" :style="{ cursor: mentor.num ? 'pointer' : 'default' }">
+                <div class="mentor-info">
+                  <strong>{{ mentor.name }}</strong>
+                  <span>{{ mentor.field }}</span>
+                </div>
+                <div class="mentor-likes">
+                  <span class="icon">⭐</span> {{ mentor.likes }}
+                </div>
+              </li>
+            </template>
+            <li v-else>인기 멘토 없음</li>
           </ul>
         </div>
         <div class="widget cta-widget">
           <h3>멘토로 활동하기</h3>
           <p>패션 전문가와 함께하세요</p>
-          <button class="cta-button">신청하기</button>
+          <button class="cta-button" @click="goToApplyPage">신청하기</button>
         </div>
       </aside>
     </main>
@@ -113,14 +113,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
-import { useRoute, useRouter } from 'vue-router'; // useRouter 추가
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import HeaderView from '../../HeaderView.vue';
 import FooterView from '../../FooterView.vue';
 
 const route = useRoute();
-const router = useRouter(); // router 인스턴스 가져오기
+const router = useRouter();
+
+/* ================== axios 인스턴스 ================== */
+const jsonServerApi = axios.create({
+  baseURL: 'http://localhost:3000',
+});
+// Spring API용 (인증 필요 시)
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+});
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+});
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
+      router.push('/')
+    }
+    return Promise.reject(err)
+  }
+);
+
 
 const postData = ref(null);
 const commentData = ref([]);
@@ -128,160 +157,301 @@ const isLoading = ref(true);
 const error = ref(null);
 
 const newCommentText = ref('');
-const postId = ref(null);
+const postId = ref(null); // 템플릿에서 사용
+const fallbackImage = '/images/default_avatar.png';
 
-// --- [수정] 실제 로그인 구현 후 이 부분은 수정되어야 합니다 ---
-const currentMemberNum = ref(4); 
-const currentMemberName = ref('이민준');
-// ----------------------------------------------------
+// --- 현재 로그인 사용자 정보 ---
+const currentMemberNum = ref(null);
+const currentMemberName = ref(null);
+// ----------------------------
 
-const MENTORING_POST_CATEGORY = 3; // 멘토링 카테고리 번호 (백엔드 확인 필요)
+// --- 사이드바 데이터 ---
+// 카테고리 하드코딩
+const categories = ref([
+    { num: 1, NAME: '#겨울코디' },
+    { num: 2, NAME: '#OOTD' },
+    { num: 5, NAME: '#데일리룩' }
+]);
+const categoriesLoading = ref(false);
 
-// [수정] postReaction 관련 코드 제거
-// const postReaction = reactive({ ... });
+// 인기 멘토 하드코딩
+const popularMentors = ref([
+    { num: 2, name: '김패션', field: '전문 멘토', likes: 1520 },
+    { num: 3, name: '배민', field: '전문 멘토', likes: 2800 },
+    { num: 14, name: '오은호', field: '전문 멘토', likes: 75 }
+]);
+const popularMentorsLoading = ref(false);
+// -----------------------
+
 
 onMounted(async () => {
-  postId.value = route.params.id;
+  // --- 사용자 인증 정보 가져오기 ---
+  const token = sessionStorage.getItem('token');
+  if (!token) {
+    alert('로그인이 필요합니다.');
+    router.push('/');
+    return;
+  }
+
+  try {
+    const authRes = await axios.get('/api/member-service/member/auth', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log('Auth response:', authRes.data);
+    if (authRes.data.memberNum == null && authRes.data.num == null) {
+      alert('사용자 정보를 가져올 수 없습니다. 다시 로그인해주세요.');
+      router.push('/');
+      return;
+    } else {
+      currentMemberName.value = authRes.data.memberName || authRes.data.name || authRes.data.memberId;
+      currentMemberNum.value = authRes.data.memberNum || authRes.data.num;
+      console.log('Logged in user:', currentMemberNum.value, currentMemberName.value);
+    }
+  } catch (authErr) {
+    console.error('인증 정보 조회 실패:', authErr);
+    alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+    router.push('/');
+    return;
+  }
+  // -----------------------------
+
+  // --- 게시글 ID 처리 (URL 파라미터 무시하고 1로 고정) ---
+  // const idFromRoute = route.params.id; // URL의 :id를 읽는 대신
+  postId.value = 1; // 무조건 1로 강제 고정
+  // --------------------
+
   if (!postId.value) {
-    error.value = "게시글 ID가 주소에 포함되지 않았습니다.";
+    // 이 코드는 postId.value = 1 로 인해 실행될 일 없지만 방어용으로 둠
+    error.value = "유효하지 않은 게시글 ID입니다.";
     isLoading.value = false;
     return;
   }
+
+  // --- 데이터 로딩 ---
   await fetchPostAndComments();
-  // TODO: Fetch user's reaction status for comments
+  // ----------------------
 });
 
+// 게시글 및 댓글 데이터 로딩 함수 (1번 게시물 및 관련 데이터만 로드)
+// 게시글 및 댓글 데이터 로딩 함수 (num=1인 게시물만 로드)
 const fetchPostAndComments = async () => {
   isLoading.value = true;
   error.value = null;
+
   try {
-    const postResponse = await axios.get(`/api/manager-service/posts/mentoring/${postId.value}`);
-    postData.value = postResponse.data;
-
-    const commentsResponse = await axios.get(`/api/manager-service/comments/getcomments`, {
-      params: { postType: 'mentoring', postNum: postId.value }
+    // 1️⃣ 게시글 정보 (json-server: /Mentoring_Post?num=1)
+    const postResponse = await jsonServerApi.get(`/Mentoring_Post`, {
+      params: { num: 1 }
     });
-    commentData.value = commentsResponse.data.map(c => ({ ...c, userReaction: null, isReacting: false }));
 
-  } catch (err) {
-    console.error("데이터 로딩 에러:", err);
-    error.value = "게시글 정보를 불러오는 데 실패했습니다.";
-    if (err.response && err.response.status === 404) {
-      error.value = "해당 게시글을 찾을 수 없습니다.";
+    // json-server는 배열로 반환 → 첫 번째 게시글만 사용
+    const fetchedPost = Array.isArray(postResponse.data) ? postResponse.data[0] : null;
+
+    if (!fetchedPost) {
+      throw new Error('num=1인 게시글을 찾을 수 없습니다.');
     }
+
+    // 2️⃣ 작성자 정보
+    const authorNum = fetchedPost.author_num;
+    let authorName = '작성자 정보 없음';
+    if (authorNum) {
+      try {
+        const authorResponse = await jsonServerApi.get(`/Member`, {
+          params: { num: authorNum }
+        });
+        authorName = authorResponse.data[0]?.NAME || '정보 없음';
+      } catch (authorErr) {
+        console.error('게시글 작성자 정보 조회 실패:', authorErr);
+      }
+    }
+
+    postData.value = { ...fetchedPost, memberName: authorName };
+
+    // 3️⃣ 댓글 불러오기 (mentoring_post_num=1 기준)
+    const commentsResponse = await jsonServerApi.get(`/Comment`, {
+      params: { mentoring_post_num: 1 }
+    });
+
+    let fetchedComments = Array.isArray(commentsResponse.data)
+      ? commentsResponse.data
+      : [];
+
+    // 4️⃣ 댓글 작성자 이름 매핑
+    if (fetchedComments.length > 0) {
+      const memberNums = [...new Set(fetchedComments.map(c => c.member_num))];
+      if (memberNums.length > 0) {
+        const memberParams = new URLSearchParams();
+        memberNums.forEach(num => memberParams.append('num', num));
+        try {
+          const memberRes = await jsonServerApi.get(`/Member?${memberParams.toString()}`);
+          const memberMap = new Map(memberRes.data.map(m => [m.num, m.NAME]));
+          fetchedComments = fetchedComments.map(c => ({
+            ...c,
+            memberName: memberMap.get(c.member_num) || '정보 조회 실패'
+          }));
+        } catch (err) {
+          console.error('댓글 작성자 조회 실패:', err);
+        }
+      }
+    }
+
+    commentData.value = fetchedComments;
+  } catch (err) {
+    console.error('데이터 로딩 에러:', err);
+    error.value = err.message || '데이터를 불러오는 데 실패했습니다.';
   } finally {
     isLoading.value = false;
   }
 };
 
-// [수정] togglePostReaction 함수 전체 제거
-// const togglePostReaction = async (reactionType) => { ... };
 
-// [수정] 멘토링 댓글 반응 기능 제거
-const toggleCommentReaction = async (comment, reactionType) => {
-  console.log("Mentoring comments do not support reactions.");
-  // 멘토링 댓글에 반응 기능이 필요하다면 여기에 Fashion/Review와 동일한 로직 구현
-};
-
+// 댓글 작성 (json-server API)
 const handleCommentSubmit = async () => {
   if (!newCommentText.value.trim()) { alert("댓글 내용을 입력해주세요."); return; }
+  if (!currentMemberNum.value) { alert("로그인이 필요합니다."); return; }
+
   try {
-    const payload = { content: newCommentText.value, memberNum: currentMemberNum.value, postType: 'mentoring', postNum: postId.value };
-    const response = await axios.post(`/api/manager-service/comments/createcomment`, payload);
-    const newComment = response.data;
-    if (!newComment.memberName) { newComment.memberName = currentMemberName.value; }
-    commentData.value.push({ ...newComment, userReaction: null, isReacting: false });
+    const payload = {
+      content: newCommentText.value.trim(),
+      member_num: currentMemberNum.value,
+      mentoring_post_num: Number(postId.value) // postId.value는 1
+    };
+    const response = await jsonServerApi.post(`/Comment`, payload);
+
+    const newCommentData = {
+      ...response.data,
+      memberName: currentMemberName.value, // 현재 로그인 사용자 이름 사용
+      userReaction: null,
+      isReacting: false
+    };
+    commentData.value.push(newCommentData);
     newCommentText.value = '';
+
   } catch (err) { console.error("댓글 등록 에러:", err); alert("댓글 등록 실패"); }
 };
 
-// --- [수정] 수정/삭제 함수 추가 ---
+
+// 게시글 수정 페이지 이동 (라우터 설정 필요)
 const editPost = () => {
-  // 수정 페이지로 이동
-  router.push({ name: 'editmentoringpost', params: { id: postId.value } });
+  alert('멘토링 게시글 수정 라우터 설정 필요');
+  // router.push({ name: 'editMentoringPost', params: { id: postId.value } });
 };
 
-const deletePost = async () => {
-  if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
-    try {
-      await axios.delete(`/api/manager-service/posts/mentoring/${postId.value}`);
-      alert('게시글이 삭제되었습니다.');
-      router.push({ name: 'mentoringboard' });
-    } catch (err) { console.error("게시글 삭제 에러:", err); alert('게시글 삭제 실패'); }
-  }
+// 게시글 삭제 (기능 없음)
+const deletePost = () => {
+  alert('게시글 삭제 기능은 구현되지 않았습니다.');
 };
 
-const editComment = (comment) => {
-  const newContent = prompt('댓글 수정:', comment.content);
-  if (newContent !== null && newContent.trim() !== comment.content) {
-    // TODO: 댓글 수정 API 호출
-    alert(`댓글 수정 API 호출: ${comment.num}, 내용: ${newContent}`);
-    // 성공 시
-    // const index = commentData.value.findIndex(c => c.num === comment.num);
-    // if (index !== -1) { commentData.value[index].content = newContent; }
-  }
+// 댓글 삭제 (기능 없음)
+const deleteComment = (commentNum) => {
+    alert(`댓글(${commentNum}) 삭제 기능은 구현되지 않았습니다.`);
 };
 
-const deleteComment = async (commentNum) => {
-  if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
-    try {
-      await axios.delete(`/api/manager-service/comments/deletecomment`, { params: { commentNum: commentNum } });
-      alert('댓글이 삭제되었습니다.');
-      commentData.value = commentData.value.filter(c => c.num !== commentNum);
-    } catch (err) { console.error("댓글 삭제 에러:", err); alert('댓글 삭제 실패'); }
-  }
+// 게시글 신고 페이지 이동
+const reportPost = (postNum) => {
+  if (!postNum) return;
+  alert(`게시글(${postNum}) 신고 라우터 미설정`);
 };
-// ----------------------------
 
-const categories = ref(['전체', '코디 조언', '스타일링', '쇼핑 동행', '브랜드 추천', '트렌드 분석']);
-const popularMentors = ref([
-  { name: '김패션', field: '코디 멘토링', likes: 234 },
-  { name: '배민', field: '브랜딩', likes: 189 },
-  { name: '트렌드분석이', field: '트렌드 분석', likes: 156 },
-]);
+// 댓글 신고 페이지 이동
+const reportComment = (commentNum) => {
+  if (!commentNum) return;
+  alert(`댓글(${commentNum}) 신고 라우터 미설정`);
+};
+
+// 인플루언서 페이지 이동 (라우터 이름 사용)
+const goToMentorPage = (mentorNum) => {
+  if (!mentorNum) return;
+  router.push({ name: 'influencerpage-profile', params: { num: mentorNum.toString() } });
+};
+
+// 인플루언서 신청 페이지 이동
+const goToApplyPage = () => {
+  router.push({ name: 'influencerapply' });
+};
+
 </script>
 
 <style scoped>
-/* [수정] 수정/삭제 버튼 스타일 추가 */
-.post-edit-actions, .comment-edit-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto; /* 헤더에서 오른쪽 정렬 */
+/* 프로필 이미지 fallback 스타일 */
+.avatar {
+  background-color: #eee; /* 기본 배경색 */
+  background-size: cover;
+  background-position: center;
+  color: #555; /* 글자 색 */
+  display: flex; /* 내부 텍스트 중앙 정렬 */
+  align-items: center;
+  justify-content: center;
 }
-.post-edit-actions button, .comment-edit-actions button {
-  background: none;
-  border: none;
-  color: var(--text-light);
-  font-size: 13px;
+.avatar img { /* img 태그에 직접 적용 */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%; /* 이미지가 원형으로 보이도록 */
+}
+
+
+/* 게시글 신고/삭제 버튼 */
+.report-button, .delete-button {
+  display: inline-flex;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
+  margin-top: 16px;
+  font-weight: 500;
+  margin-left: 8px; /* 버튼 간 간격 */
 }
-.post-edit-actions button:hover, .comment-edit-actions button:hover {
-  background-color: var(--bg-light);
-  color: var(--text-primary);
+.report-button {
+  background: #fff0f0;
+  color: #d4183d;
+  border: 1px solid #ffcccc;
 }
-.comment-item {
-  position: relative; 
+.delete-button {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
 }
-.comment-edit-actions {
-  position: absolute; /* 댓글 우측 상단 배치 */
-  top: 1rem;
-  right: 0;
-}
-
-/* [수정] 멘토링 댓글 반응 관련 스타일 제거 */
-/* .comment-likes, .comment-cheers { ... } */
-/* .comment-likes:hover, .comment-cheers:hover { ... } */
-/* .comment-likes.active-like { ... } */
-/* .comment-cheers.active-cheer { ... } */
-
-/* [수정] 멘토링 게시글 반응 관련 스타일 제거 */
-/* .action-button.active-like { ... } */
-/* .action-button.active-cheer { ... } */
+.report-button:hover { background: #ffe0e0; }
+.delete-button:hover { background: #e5e7eb; }
 
 
-/* 기존 스타일 복사 */
+/* 댓글 신고/삭제 버튼 */
+.comment-edit-actions button {
+  font-size: 12px; /* 크기 살짝 줄임 */
+  padding: 3px 6px;
+}
+.comment-edit-actions button:first-child { /* 신고 버튼 */
+  color: #d4183d;
+}
+.comment-edit-actions button:first-child:hover {
+  background-color: #fff0f0;
+}
+.comment-edit-actions button:last-child { /* 삭제 버튼 */
+  color: #4b5563;
+}
+.comment-edit-actions button:last-child:hover {
+  background-color: #f3f4f6;
+}
+
+/* 카테고리 로딩/없음 상태 */
+.category-list button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #e5e7eb;
+  color: #6b7280;
+}
+
+/* 인기 멘토 로딩/없음 상태 */
+.mentor-list li {
+  cursor: default;
+  transition: background-color 0.15s ease;
+}
+.mentor-list li[style*="cursor: pointer"]:hover {
+  background-color: #f9fafb;
+}
+
+/* 나머지 스타일은 이전과 동일하게 유지 */
 :root {
   --primary-color: #155DFC;
   --text-primary: #101828;
@@ -293,6 +463,8 @@ const popularMentors = ref([
   --separator-color: #E5E7EB;
   --recruiting-color: #008236;
   --recruiting-bg: #DCFCE7;
+  --closed-color: #4B5563;
+  --closed-bg: #F3F4F6;
 }
 
 #mentoring-post-page {
@@ -375,6 +547,7 @@ const popularMentors = ref([
   background: var(--border-color);
   color: var(--text-light);
   flex-shrink: 0;
+  object-fit: cover;
 }
 .poster-avatar {
   background: var(--text-primary);
@@ -391,24 +564,10 @@ const popularMentors = ref([
   font-size: 14px;
   font-weight: bold;
 }
-.level-badge {
-  background: #ECEEF2;
-  color: #030213;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-.post-time {
-  font-size: 12px;
-  color: var(--text-light);
-  margin-top: 2px;
-}
 
 .post-body {
   padding: 0 1.5rem 1.5rem;
   text-align: left;
-  border-bottom: 5px solid var(--separator-color);
-  padding-bottom: 1.5rem;
 }
 .post-body h2 {
   font-size: 18px;
@@ -422,20 +581,20 @@ const popularMentors = ref([
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
-.tags span {
-  font-size: 14px;
-  color: var(--primary-color);
-  cursor: pointer;
-  background: #EFF6FF;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
 .tags span.recruiting-badge {
+  font-size: 14px;
+  cursor: default !important;
+  padding: 4px 12px !important;
+  border-radius: 4px;
+  font-weight: bold !important;
   background-color: var(--recruiting-bg);
   color: var(--recruiting-color);
-  font-weight: bold;
-  padding: 4px 12px;
 }
+.tags span.recruiting-badge.closed {
+  background-color: var(--closed-bg);
+  color: var(--closed-color);
+}
+
 .post-image {
   width: 100%;
   height: auto;
@@ -448,6 +607,7 @@ const popularMentors = ref([
   font-size: 16px;
   color: var(--text-secondary);
   line-height: 1.7;
+  white-space: pre-wrap;
 }
 .post-content-text p {
   margin: 0.5rem 0;
@@ -465,35 +625,9 @@ const popularMentors = ref([
   font-size: 14px;
   color: var(--text-light);
   text-align: left;
+  border-top: 1px solid var(--separator-color);
 }
-.post-actions {
-  display: flex;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem 1.5rem;
-  border-top: 5px solid var(--separator-color);
-}
-/* [수정] 공유 버튼 외 다른 버튼 스타일 제거 */
-.action-button {
-  flex: 1;
-  padding: 0.75rem;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-white);
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-}
-.action-button:hover {
-  background-color: var(--bg-light);
-}
-.action-button .icon {
-  font-size: 1.2em;
-}
+
 
 .comment-section {
   padding: 1.5rem;
@@ -522,7 +656,7 @@ const popularMentors = ref([
   padding: 1rem 0;
   border-bottom: 1px solid #F3F4F6;
   align-items: flex-start;
-  position: relative; /* 수정/삭제 버튼 위치 기준 */
+  position: relative;
 }
 .comment-item:last-child {
   border-bottom: none;
@@ -551,9 +685,8 @@ const popularMentors = ref([
   color: var(--text-secondary);
   margin: 0.5rem 0;
   word-break: break-word;
+  white-space: pre-wrap;
 }
-/* [수정] 멘토링 댓글 반응 관련 스타일 제거 */
-/* .comment-actions { ... } */
 
 .comment-form {
   display: flex;
@@ -582,6 +715,7 @@ const popularMentors = ref([
     background-color: var(--text-secondary);
 }
 
+/* --- 사이드바 스타일 --- */
 .sidebar-column {
   flex: 1;
   max-width: 390px;
@@ -649,6 +783,11 @@ const popularMentors = ref([
 .mentor-info strong {
   font-size: 14px;
   color: var(--text-primary);
+  font-weight: 600;
+}
+.mentor-info strong:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
 }
 .mentor-info span {
   font-size: 12px;
@@ -661,6 +800,7 @@ const popularMentors = ref([
   display: flex;
   align-items: center;
   gap: 2px;
+  white-space: nowrap;
 }
 
 .cta-widget {
@@ -687,6 +827,10 @@ const popularMentors = ref([
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+.cta-button:hover {
+  background-color: #f0f5ff;
 }
 
 .state {
@@ -696,5 +840,32 @@ const popularMentors = ref([
 }
 .state.error {
   color: #e53935;
+}
+
+.post-edit-actions, .comment-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.post-edit-actions button, .comment-edit-actions button {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.post-edit-actions button:hover, .comment-edit-actions button:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+.comment-item {
+  position: relative;
+}
+.comment-edit-actions {
+  position: absolute;
+  top: 1rem;
+  right: 0;
 }
 </style>
