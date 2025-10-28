@@ -114,8 +114,8 @@ const closeModal = () => {
         <div class="form-group">
           <label>성별</label>
           <div class="gender-box">
-            <label><input type="radio" name="gender" value="남" v-model="signupGender" /> 남성</label>
-            <label><input type="radio" name="gender" value="여" v-model="signupGender" /> 여성</label>
+            <label><input type="radio" name="gender" value="남성" v-model="signupGender" /> 남성</label>
+            <label><input type="radio" name="gender" value="여성" v-model="signupGender" /> 여성</label>
           </div>
         </div>
 

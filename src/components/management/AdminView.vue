@@ -16,7 +16,7 @@
                 <div class="title">게시물 조회</div>
             </div>
         </div>
-        <div class="container-4">
+        <div class="container-4" @click="goTo('/admin/influencerlist')">
             <div class="title-wrapper">
                 <div class="title">인플루언서 신청</div>
             </div>

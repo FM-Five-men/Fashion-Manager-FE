@@ -1,4 +1,4 @@
-filter-icon<template>
+<template>
   <div class="filter-container">
     <!-- 헤더 -->
     <div class="filter-header">
@@ -34,12 +34,12 @@ filter-icon<template>
     </div>
   </div>
 
-
+    <div class="card-container">
     <!-- 게시물 리스트 -->
     <div class="post-card" v-for="apply in filteredApplies" :key="apply.num">
     <!-- 썸네일 이미지 -->
     <div class="post-image">
-        <img src="https://placehold.co/120x120" alt="게시물 이미지" />
+        <img :src="getRandomImage()" alt="게시물 이미지" />
     </div>
 
     <!-- 내용 -->
@@ -61,8 +61,12 @@ filter-icon<template>
 
     </div>
     </div>
+    </div>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> features
   <!-- ✅ 모달 -->
   <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
     <div class="modal-box">
@@ -112,6 +116,14 @@ const closeModal = () => {
 };
 const token = sessionStorage.getItem("token");
 
+<<<<<<< HEAD
+=======
+function getRandomImage() {
+  const randomNum = Math.floor(Math.random() * 14) + 1; // 1~9 사이 숫자
+  return `/images/influencer_page/influencerImg${randomNum}.png`;
+}
+
+>>>>>>> features
 // onMounted에서 데이터 로드
 onMounted(async () => {
   try {
@@ -663,9 +675,24 @@ const reject = () => {
 .approve-btn {
     background-color: #01cb52;
 }
+<<<<<<< HEAD
+
+.reject-btn {
+    background-color: #e43c04;
+}
+=======
+>>>>>>> features
 
 .reject-btn {
     background-color: #e43c04;
 }
 
+img {
+  width: 100px;
+}
+
+.card-container {
+  height: 700px;
+  overflow-y: scroll;
+}
 </style>
