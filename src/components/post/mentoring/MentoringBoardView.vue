@@ -3,7 +3,7 @@
     <HeaderView/>
 
     <div class="main-content-area">
-      
+
       <div class="banner">
         <div class="banner-overlay">
           <h1>FASHION MENTORING</h1>
@@ -12,13 +12,18 @@
       </div>
 
       <div class="content-container">
-        
+
         <main class="main-column">
-          
+
           <div class="main-header">
             <div class="category-filter">
-              <span>▼ 카테고리</span>
-              </div>
+              <select v-model="selectedCategoryFilter" @change="applyCategoryFilter">
+                <option value="">▼ 카테고리 전체</option>
+                <option v-for="tag in categories" :key="tag.num" :value="tag.NAME">
+                  {{ tag.NAME }}
+                </option>
+              </select>
+            </div>
             <button class="write-post-button" @click="goWrite">
               글 작성
             </button>
@@ -26,23 +31,24 @@
 
           <div class="cards-grid">
             <template v-if="!loading && posts.length">
-              
+
               <div
                 v-for="(post) in posts"
                 :key="post.num"
                 class="mentor-card"
+                @click="goDetail(post.num)"
+                style="cursor:pointer;"
               >
                 <div class="card-header">
                   <img
-                    :src="post.authorProfilePicUrl"
+                    :src="'/images/mentoringpost' + post.num + '.jpg'"
                     alt="멘토 프로필"
                     class="profile-pic"
                     @error="($event) => ($event.target.src = fallbackImage)"
                   />
                   <div class="author-info">
                     <span class="author-name">{{ post.memberName || '멘토 이름' }}</span>
-                    <span class="author-title">{{ post.memberName || '멘토 스타일' }}</span>
-                  </div>
+                    </div>
                 </div>
 
                 <div class="card-body">
@@ -59,7 +65,7 @@
                   <span class="status-chip" :class="{ finished: post.FINISH === 1 }">
                     {{ post.FINISH === 1 ? '마감' : '가능' }}
                   </span>
-                  <button class="apply-button" @click.stop="goDetail(post.num)">
+                  <button class="apply-button" @click.stop="goApply(post.num)">
                     신청하기
                   </button>
                 </div>
@@ -68,25 +74,7 @@
 
             <template v-else-if="loading">
               <div v-for="s in 12" :key="s" class="mentor-card skeleton">
-                <div class="card-header">
-                  <div class="profile-pic sk"></div>
-                  <div class="author-info">
-                    <div class="sk sk-title" style="width: 80px;"></div>
-                    <div class="sk sk-line" style="width: 100px;"></div>
-                  </div>
                 </div>
-                <div class="card-body">
-                  <div class="tags">
-                    <div class="sk sk-tag"></div>
-                    <div class="sk sk-tag"></div>
-                  </div>
-                  <div class="sk sk-line" style="margin-top: 10px;"></div>
-                </div>
-                <div class="card-footer">
-                  <div class="sk sk-chip"></div>
-                  <div class="sk sk-button"></div>
-                </div>
-              </div>
             </template>
 
             <template v-else>
@@ -108,51 +96,38 @@
             </div>
 
             <div class="page-row" v-if="totalPages > 1">
-              <button
-                class="arrow-btn"
-                :disabled="pageNum === 1"
-                @click="goPage(pageNum - 1)"
-                aria-label="이전"
-              >‹</button>
+              </div>
 
-              <button
-                v-for="p in totalPages"
-                :key="p"
-                class="page-num-btn"
-                :class="{ active: pageNum === p }"
-                @click="goPage(p)"
-              >{{ p }}</button>
-
-              <button
-                class="arrow-btn"
-                :disabled="pageNum === totalPages"
-                @click="goPage(pageNum + 1)"
-                aria-label="다음"
-              >›</button>
-            </div>
-            
             <div class="search-bar-placeholder"></div>
           </div>
-        
+
         </main>
-        
+
         <aside class="sidebar-column">
           <div class="sidebar-widget">
-            <div class="widget-title">멘토링</div>
+            <div class="widget-title">최근 멘토링</div>
             <div class="widget-content">
               <ul class="recent-post-list">
-                <li>패션 브랜드 취업 실전 경험... <span>5시간 전</span></li>
-                <li>패션 업계 취업 노하우와 커... <span>6시간 전</span></li>
-                <li>처음 참가하는 패션위크, 준... <span>9시간 전</span></li>
-                <li>톱 스타일리스트 인터뷰 - 펀... <span>11시간 전</span></li>
-                <li>패션 포토그래퍼의 지망생을... <span>1일 전</span></li>
+                <li v-if="sidebarLoading">로딩 중...</li>
+                <li v-else-if="sidebarError">{{ sidebarError }}</li>
+                <li
+                  v-else
+                  v-for="sidePost in sidebarPosts"
+                  :key="sidePost.num"
+                  @click="goDetail(sidePost.num)"
+                  style="cursor:pointer;"
+                >
+                  {{ sidePost.titleSnippet }}...
+                  <span>{{ sidePost.relativeTime || '방금 전' }}</span>
+                </li>
+                 <li v-if="!sidebarLoading && !sidebarError && sidebarPosts.length === 0">최근 글 없음</li>
               </ul>
             </div>
           </div>
         </aside>
 
       </div>
-    </div> 
+    </div>
 
     <FooterView/>
   </div>
@@ -175,39 +150,88 @@ const api = axios.create({
 const loading = ref(false);
 const posts = ref([]);
 const pageNum = ref(1);
-const amount = ref(12); // 4x3 그리드
+const amount = ref(12);
 const totalPages = ref(1);
 const totalCount = ref(0);
 const searchQuery = ref('');
 const searchType = ref('title');
+const categories = ref([]); // ✅ 카테고리 상태
+const selectedCategoryFilter = ref(""); // ✅ 선택된 카테고리 필터
+const sidebarPosts = ref([]); // ✅ 사이드바 게시글 상태
+const sidebarLoading = ref(false);
+const sidebarError = ref(null);
 
-/* ===== 기본 이미지 ===== */
-// ✅ 프로필용 fallback 이미지
-const fallbackImage = '/images/default_avatar.png'; 
+
+const fallbackImage = '/images/default_avatar.png';
 
 /* ===== 라우팅 ===== */
 const goWrite = () => router.push({ name: 'registmentoringpost' });
+// ✅ 상세 페이지 이동 함수 (기존과 동일)
 const goDetail = (num) => {
   if (!num) return;
   router.push({ name: 'mentoringpost', params: { id: num } });
 };
-
-/* ===== 유틸리티 함수 (스니펫 생성) ===== */
-// "🎨 패션 스타일리스트의 1:1 맞춤 코디..." -> "1:1 맞춤 코디"
-const extractSnippet = (title) => {
-  if (!title) return '멘토링';
-  // 이모지 및 앞부분 제거
-  const cleanedTitle = title.replace(/^[🎨👟💼🌟]*/, '').trim();
-  // "의" 또는 " " 기준으로 첫 번째 조각 가져오기
-  const parts = cleanedTitle.split(/ |의/);
-  if (parts.length > 2) {
-    return parts.slice(1, 3).join(' '); // 예: "1:1 맞춤"
-  }
-  return cleanedTitle.substring(0, 20); // 기본 스니펫
+// ✅ 신청 페이지 이동 함수 (추가)
+const goApply = (postNum) => {
+  // postNum이 필요하다면 query나 params로 전달할 수 있습니다.
+  router.push({ name: 'menteeapply', query: { postId: postNum } });
 };
 
 
-/* ============ ✅ 데이터 불러오기 (카드 디자인에 맞게 수정) ============ */
+const extractSnippet = (title, length = 15) => {
+  if (!title) return '';
+  const cleanedTitle = title.replace(/^[🎨👟💼🌟]*/, '').trim();
+  return cleanedTitle.length > length ? cleanedTitle.substring(0, length) : cleanedTitle;
+};
+
+// ✅ 카테고리 필터 적용 함수
+const applyCategoryFilter = () => {
+  pageNum.value = 1; // 필터 변경 시 1페이지로
+  // TODO: fetchMentoringPosts 함수에 카테고리 필터링 로직 추가 필요
+  // 현재는 카테고리 필터링 API가 없으므로 fetch만 다시 호출
+  fetchMentoringPosts();
+}
+
+// ✅ 카테고리 데이터 로딩 (Hash_Tag 사용)
+const fetchCategories = async () => {
+  try {
+    const response = await api.get('/Hash_Tag'); //
+    categories.value = Array.isArray(response.data) ? response.data : [];
+  } catch (e) {
+    console.error('카테고리(해시태그) 조회 실패:', e);
+    categories.value = [];
+  }
+};
+
+// ✅ 사이드바 데이터 로딩
+const fetchSidebarPosts = async () => {
+  sidebarLoading.value = true;
+  sidebarError.value = null;
+  try {
+    const params = {
+      _limit: 5, // 최근 5개
+      _sort: 'num',
+      _order: 'desc',
+    };
+    const response = await api.get('/Mentoring_Post', { params }); //
+    sidebarPosts.value = Array.isArray(response.data)
+        ? response.data.map(post => ({
+            ...post,
+            titleSnippet: extractSnippet(post.title, 18), // 사이드바용 짧은 스니펫
+            // relativeTime: calculateRelativeTime(post.date) // 날짜 필드가 있다면 상대 시간 계산
+          }))
+        : [];
+  } catch (e) {
+    console.error('사이드바 게시글 조회 실패:', e);
+    sidebarError.value = '목록 로딩 실패';
+    sidebarPosts.value = [];
+  } finally {
+    sidebarLoading.value = false;
+  }
+};
+
+
+/* ============ ✅ 데이터 불러오기 수정 ============ */
 const fetchMentoringPosts = async () => {
   loading.value = true;
   try {
@@ -217,84 +241,66 @@ const fetchMentoringPosts = async () => {
       _sort: 'num',
       _order: 'desc',
     };
-    
-    // ✅ 검색 쿼리 추가
+
+    // 검색 쿼리
     if (searchQuery.value) {
       if (searchType.value === 'author') {
-        // 작성자 검색은 2단계로 처리해야 함 (여기서는 Member 이름으로 검색)
-        // 1. 멤버 검색
-        const memberRes = await api.get('/Member', { params: { NAME_like: searchQuery.value } });
+        const memberRes = await api.get('/Member', { params: { NAME_like: searchQuery.value } }); //
         const memberIds = memberRes.data.map(m => m.num);
         if (memberIds.length > 0) {
-          // 2. 해당 ID로 포스트 검색 (여러 ID 지원을 위해 _like 대신 반복)
-          // json-server는 author_num_in=[1,2,3] 같은걸 지원 안하므로
-          // 여기서는 간단히 첫번째 ID만 사용 (한계)
-          // 또는 params에 author_num_like 대신 q=를 사용해야 할 수도 있음
-          params.author_num = memberIds[0]; // 단순화된 구현
+           params.author_num = memberIds; // 여러 ID 지원 (json-server 확장 기능 필요 없을 수 있음)
         } else {
-          posts.value = []; // 검색 결과 없음
-          totalPages.value = 1;
-          totalCount.value = 0;
-          loading.value = false;
-          return;
+          posts.value = []; totalPages.value = 1; totalCount.value = 0; loading.value = false; return;
         }
       } else {
-        // 제목, 내용 검색
         params[`${searchType.value}_like`] = searchQuery.value;
       }
     }
 
+    // 카테고리 필터 (임시: 해시태그 이름으로 제목 필터링)
+    // TODO: 백엔드에서 Fashion_Hashtag 테이블 조인 후 필터링 지원 필요
+    if (selectedCategoryFilter.value) {
+       params.title_like = selectedCategoryFilter.value; // 임시 방편
+    }
 
-    // 1. 멘토링 게시글 목록 조회
-    const response = await api.get('/Mentoring_Post', { params });
+
+    const response = await api.get('/Mentoring_Post', { params }); //
     let fetchedPosts = Array.isArray(response.data) ? response.data : [];
 
-    // ✅ 2. 작성자 이름 + 프로필 사진 가져오기
     if (fetchedPosts.length > 0) {
-      const postDetailPromises = fetchedPosts.map(async (post) => {
-        try {
-          // 2-1. 작성자 정보 (이름)
-          const memberPromise = api.get(`/Member/${post.author_num}`);
-          
-          // 2-2. 작성자 프로필 사진 (db.json: Photo_Category 7번)
-          // (Photo 테이블의 post_num이 실제로는 member_num를 저장하는 것으로 가정)
-          const photoPromise = api.get('/Photo', {
-            params: {
-              post_num: post.author_num, // Member.num
-              photo_category_num: 7,     // 7: 회원 페이지 (프로필)
-              _limit: 1
-            }
-          });
+      const authorNums = fetchedPosts.map(p => p.author_num).filter(Boolean);
+      const uniqueAuthorNums = [...new Set(authorNums)];
+      let memberMap = new Map();
 
-          const [memberResponse, photoResponse] = await Promise.all([memberPromise, photoPromise]);
+      if (uniqueAuthorNums.length > 0) {
+          // 작성자 정보를 한 번에 가져오기
+          const memberParams = new URLSearchParams();
+          uniqueAuthorNums.forEach(num => memberParams.append('num', num));
+          const memberResponse = await api.get(`/Member?${memberParams.toString()}`); //
+          const members = Array.isArray(memberResponse.data) ? memberResponse.data : [];
+          memberMap = new Map(members.map(m => [m.num, m.NAME]));
+      }
 
-          const memberName = memberResponse?.data?.NAME || '작성자 정보 없음';
-          const authorProfilePicUrl = photoResponse.data?.[0]?.PATH || fallbackImage;
-          const titleSnippet = extractSnippet(post.title); // 스니펫 생성
 
-          return { ...post, memberName, authorProfilePicUrl, titleSnippet };
-
-        } catch (error) {
-          console.error(`게시글(${post.num}) 추가 정보 조회 실패:`, error);
+      fetchedPosts = fetchedPosts.map(post => {
+          // ✅ 이미지 경로 직접 설정
+          const imageUrl = `/images/mentoringpost${post.num}.jpg`;
+          const memberName = memberMap.get(post.author_num) || '작성자 정보 없음';
           const titleSnippet = extractSnippet(post.title);
-          return { ...post, memberName: '정보 조회 실패', authorProfilePicUrl: fallbackImage, titleSnippet };
-        }
+
+          // authorProfilePicUrl 대신 imageUrl 사용 또는 유지
+          return { ...post, memberName, authorProfilePicUrl: imageUrl, titleSnippet };
       });
-      
-      fetchedPosts = await Promise.all(postDetailPromises);
     }
 
     posts.value = fetchedPosts;
 
-    // 총 개수 및 페이지 계산
     totalCount.value = Number(response.headers['x-total-count'] || 0);
     totalPages.value = Math.max(1, Math.ceil(totalCount.value / amount.value));
 
   } catch (e) {
     console.error('멘토링 게시글 조회 실패:', e);
-    posts.value = [];
-    totalPages.value = 1;
-    totalCount.value = 0;
+    posts.value = []; totalPages.value = 1; totalCount.value = 0;
   } finally {
     loading.value = false;
   }
@@ -310,17 +316,63 @@ const goPage = (p) => {
 
 /* ===== 검색 실행 ===== */
 const performSearch = () => {
-  pageNum.value = 1; // 검색 시 1페이지로 리셋
+  pageNum.value = 1;
   fetchMentoringPosts();
 };
 
 /* ===== onMounted ===== */
 onMounted(async () => {
-  await fetchMentoringPosts();
+  await fetchCategories(); // ✅ 카테고리 로드
+  await fetchMentoringPosts(); // 메인 게시글 로드
+  await fetchSidebarPosts(); // ✅ 사이드바 게시글 로드
 });
 </script>
 
 <style scoped>
+/* 이전과 동일한 스타일 유지 ... */
+
+/* 카테고리 필터 드롭다운 스타일 */
+.category-filter select {
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  min-width: 150px; /* 드롭다운 최소 너비 */
+  appearance: none; /* 기본 화살표 숨김 */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='black' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px 6px;
+}
+.category-filter select:focus {
+  outline: none;
+  border-color: #a0a0a0;
+}
+
+/* 사이드바 리스트 아이템 */
+.recent-post-list li {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.4;
+  cursor: pointer;
+  padding: 8px 4px; /* 클릭 영역 확보 */
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+.recent-post-list li:hover {
+  background-color: #f3f4f6; /* 호버 효과 */
+  color: #111827;
+}
+.recent-post-list li span {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
 /* ===== 레이아웃 기본 ===== */
 .page-container {
   width: 1440px;
@@ -341,7 +393,7 @@ onMounted(async () => {
 /* ===== 1. 배너 ===== */
 .banner {
   width: calc(100% + 114px); /* 양쪽 패딩만큼 확장 */
-  height: 200px; 
+  height: 200px;
   margin: 0 -57px 24px -57px;
   background: url('/images/MentoringBoardBanner.png') center/cover no-repeat; /* 기존 배너 이미지 사용 */
   position: relative;
@@ -394,14 +446,7 @@ onMounted(async () => {
   margin-bottom: 16px;
   padding: 0 8px; /* 그리드와 정렬 맞춤 */
 }
-.category-filter {
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-}
+/* .category-filter 스타일은 위에서 정의됨 */
 .write-post-button {
   background: #111827;
   color: #fff;
@@ -421,7 +466,7 @@ onMounted(async () => {
   gap: 16px;
 }
 .empty-state {
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
   text-align: center;
   padding: 48px 24px;
   color: #6b7280;
@@ -464,7 +509,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: 2px;
   /* 이름/타이틀 말줄임 */
-  overflow: hidden; 
+  overflow: hidden;
 }
 .author-name {
   font-size: 15px;
@@ -474,12 +519,8 @@ onMounted(async () => {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.author-title {
-  font-size: 13px;
-  color: #6b7280;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+.author-title { /* 사용하지 않음 */
+  display: none;
 }
 
 .card-body {
@@ -504,17 +545,16 @@ onMounted(async () => {
   font-weight: 500;
   color: #374151;
   margin: 0;
-  /* 두 줄 말줄임 */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   line-height: 1.4;
-  height: 39.2px; /* 14px * 1.4 * 2줄 */
+  height: 39.2px;
 }
 
 .card-footer {
-  margin-top: auto; /* 푸터를 카d- 하단에 고정 */
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -591,9 +631,8 @@ onMounted(async () => {
   border-radius: 6px;
   cursor: pointer;
 }
-/* pagination-container의 space-between 정렬을 위해 반대쪽에 빈 공간 */
 .search-bar-placeholder {
-  width: 350px; /* .search-bar 너비와 비슷하게 */
+  width: 350px;
   flex-shrink: 0;
 }
 
@@ -626,27 +665,6 @@ onMounted(async () => {
 .widget-content {
   padding: 16px;
 }
-.recent-post-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.recent-post-list li {
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.4;
-  cursor: pointer;
-}
-.recent-post-list li:hover {
-  color: #111827;
-}
-.recent-post-list li span {
-  display: block;
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 4px;
-}
+/* .recent-post-list 스타일은 위에서 정의됨 */
+
 </style>
