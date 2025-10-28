@@ -16,15 +16,13 @@
         </div>
         <article v-else-if="postData" class="post-card">
           <div class="post-header">
-            {/* ✅ 작성자 이름 표시 */}
             <div class="avatar poster-avatar">{{ postData.memberName?.charAt(0) || '?' }}</div>
             <div class="user-info">
               <div class="user-name">
                 <span>{{ postData.memberName || '작성자 정보 없음' }}</span>
               </div>
             </div>
-            {/* 수정/삭제 버튼 (현재 로그인 사용자와 작성자가 같을 때만 표시) */}
-            <div class="post-edit-actions" v-if="postData.author_num === currentMemberNum"> {/* ✅ author_num으로 변경 */}
+            <div class="post-edit-actions" v-if="postData.author_num === currentMemberNum"> 
               <button @click="editPost">수정</button>
               <button @click="deletePost">삭제</button>
             </div>
@@ -32,22 +30,17 @@
 
           <div class="post-body">
             <div class="tags">
-               {/* ✅ FINISH 값에 따라 표시 (0: 모집중, 1: 마감) */}
               <span class="recruiting-badge" :class="{ closed: postData.FINISH === 1 }">{{ postData.FINISH === 0 ? '모집중' : '마감' }}</span>
             </div>
             <h2>{{ postData.title || '제목 없음' }}</h2>
-            {/* 이미지 로딩 (게시글 번호 기반) */}
             <img :src="'/images/mentoringpost' + postId + '.jpg'" alt="Mentoring default image" class="post-image" @error="($event) => ($event.target.src = '/images/defaultimage.png')" />
             <div class="post-content-text" v-html="postData.content || '내용 없음'"></div>
           </div>
 
           <div class="post-meta">
-            {/* 조회수 (API에 없으므로 일단 0으로 표시) */}
             <span>조회 {{ postData.views || 0 }}</span> <span>·</span>
             <span>댓글 {{ commentData?.length || 0 }}</span>
           </div>
-
-          {/* ✅ 멘토링 게시글 좋아요/힘내요 버튼 영역 제거됨 */}
 
           <section class="comment-section">
             <div class="comment-header">
@@ -61,19 +54,16 @@
                     <strong>{{ comment.memberName || 'Unknown User' }}</strong>
                   </div>
                   <p class="comment-text">{{ comment.content || '댓글 내용 없음' }}</p>
-                  {/* ✅ 멘토링 댓글 좋아요/힘내요 영역 제거됨 */}
                 </div>
-                 {/* 댓글 수정/삭제 버튼 (현재 로그인 사용자와 댓글 작성자가 같을 때만 표시) */}
-                <div class="comment-edit-actions" v-if="comment.member_num === currentMemberNum"> {/* ✅ member_num으로 변경 */}
+                <div class="comment-edit-actions" v-if="comment.member_num === currentMemberNum"> 
                   <button @click="editComment(comment)">수정</button>
                   <button @click="deleteComment(comment.num)">삭제</button>
                 </div>
               </li>
             </ul>
             <p v-else>아직 댓글이 없습니다.</p>
-            {/* 댓글 작성 폼 */}
             <form class="comment-form" @submit.prevent="handleCommentSubmit">
-              <div class="avatar comment-avatar">{{ currentMemberName?.charAt(0) || '나'}}</div> {/* 현재 사용자 이니셜 */}
+              <div class="avatar comment-avatar">{{ currentMemberName?.charAt(0) || '나'}}</div> 
               <input type="text" placeholder="댓글을 입력해주세요" class="comment-input" v-model="newCommentText" />
               <button type="submit" class="comment-submit-button">등록</button>
             </form>
@@ -84,7 +74,6 @@
         </div>
       </div>
 
-      {/* 사이드바 */}
       <aside class="sidebar-column">
          <div class="widget category-widget">
           <h3>카테고리</h3>
