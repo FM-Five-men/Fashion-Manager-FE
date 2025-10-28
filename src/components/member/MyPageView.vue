@@ -951,10 +951,34 @@ import HeaderView from './HeaderView.vue';
 
 const user = ref({});
 
+const token = sessionStorage.getItem('token');
+let memberNum = ref("");
+let memberId = ref("");
+let memberEmail = ref("");
+let memberState = ref("");
+
 onMounted(async () => {
   try {
-    const res = await axios.get('/api/member-service/member/membernum/13');
+    const res = await axios.get('/api/member-service/member/membernum/{memberNum.value}');
     user.value = res.data;
+
+
+
+    axios.get('/api/member-service/member/auth',{
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+    }).then((res) => {
+      console.log(res)
+      if(res.data.memberId == null){
+        router.push('/')
+      }else{
+        memberNum.value = res.data.memberNum
+        memberId.value = res.data.memberId
+        memberEmail.value = res.data.memberEmail
+        memberState.value = res.data.memberState
+      }
+    })
   } catch (error) {
     console.error('회원 정보 불러오기 실패:', error);
   }
