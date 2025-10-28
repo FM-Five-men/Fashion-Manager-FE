@@ -162,7 +162,7 @@ const sidebarLoading = ref(false);
 const sidebarError = ref(null);
 
 
-const fallbackImage = '/images/default_avatar.png';
+const fallbackImage = '/images/defaultimage.png';
 
 /* ===== 라우팅 ===== */
 const goWrite = () => router.push({ name: 'registmentoringpost' });
