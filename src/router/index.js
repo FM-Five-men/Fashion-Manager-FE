@@ -36,15 +36,12 @@ import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
 import PostListView from '../components/post/PostListView.vue';
 import InfluencerListView from '../components/management/InfluencerListView.vue';
-<<<<<<< HEAD
-=======
 import ReportFashionPostView from '../components/report/ReportFashionPostView.vue';
 import ReportReviewPostView from '../components/report/ReportReviewPostView.vue';
 import ReportMentoringPostView from '../components/report/ReportMentoringPostView.vue';
 import ReportCommentView from '../components/report/ReportCommentView.vue';
 import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
->>>>>>> features
 
 // memmber page
 import LoginView from '../components/member/LoginView.vue';

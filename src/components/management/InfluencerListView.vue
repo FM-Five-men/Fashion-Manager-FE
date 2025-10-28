@@ -63,10 +63,7 @@
     </div>
     </div>
 
-<<<<<<< HEAD
 
-=======
->>>>>>> features
   <!-- ✅ 모달 -->
   <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
     <div class="modal-box">
@@ -116,14 +113,11 @@ const closeModal = () => {
 };
 const token = sessionStorage.getItem("token");
 
-<<<<<<< HEAD
-=======
 function getRandomImage() {
   const randomNum = Math.floor(Math.random() * 14) + 1; // 1~9 사이 숫자
   return `/images/influencer_page/influencerImg${randomNum}.png`;
 }
 
->>>>>>> features
 // onMounted에서 데이터 로드
 onMounted(async () => {
   try {
@@ -675,13 +669,10 @@ const reject = () => {
 .approve-btn {
     background-color: #01cb52;
 }
-<<<<<<< HEAD
 
 .reject-btn {
     background-color: #e43c04;
 }
-=======
->>>>>>> features
 
 .reject-btn {
     background-color: #e43c04;

@@ -552,8 +552,8 @@ import axios from "axios";
 import { useRouter } from 'vue-router';
 import { watch } from 'vue';
 
-import FooterView from "./FooterView.vue";
-import HeaderView from "./HeaderView.vue";
+import FooterView from "../FooterView.vue";
+import HeaderView from "../HeaderView.vue";
 
 const user = ref({});
 const editMode = ref(false);
