@@ -126,7 +126,7 @@ const submitReport = async () => {
     )
 
     alert("신고가 정상적으로 접수되었습니다!");
-    router.push('/admin');
+    router.go(-1)
   } catch (err) {
     console.error("신고 등록 오류:", err);
     alert("신고 접수 중 오류가 발생했습니다.");

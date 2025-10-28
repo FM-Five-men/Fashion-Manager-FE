@@ -6,12 +6,6 @@
       <!-- 배너 -->
       <div class="banner">
         <div class="banner-overlay"></div>
-        <div class="banner-title-wrapper">
-          <div class="banner-title">FASHION COMMUNITY</div>
-        </div>
-        <div class="banner-subtitle-wrapper">
-          <div class="banner-subtitle">당신의 스타일을 공유하세요</div>
-        </div>
       </div>
 
       <div class="content-wrapper">
@@ -23,6 +17,8 @@
               v-for="(post, idx) in posts"
               :key="post.num"
               class="community-card"
+              @click="goDetail(post.num)"
+              style="cursor:pointer"
             >
               <!-- 상단 컬러 스트립 -->
               <div class="card-topbar" :style="{ background: colorByTemp(temperature(post.good, post.cheer)) }"></div>
@@ -31,9 +27,10 @@
               <div v-if="temperature(post.good, post.cheer) >= 60" class="badge-hot">인기</div>
 
               <img
-                :src="fallbackImage"
+                :src="post._thumb || fallbackImage"
                 alt="게시글 이미지"
                 class="card-image"
+                @error="($event) => ($event.target.src = fallbackImage)"
               />
 
               <div class="card-content">
@@ -131,7 +128,7 @@
 
       <!-- 검색 + 페이지네이션 -->
       <div class="pagination-container">
-        <!-- 🔍 검색 -->
+        <!-- 검색 -->
         <div class="search-row">
           <div class="search-bar">
             <!-- 드롭다운 -->
@@ -155,7 +152,7 @@
           </button>
         </div>
 
-        <!-- 📄 페이지네이션 -->
+        <!-- 페이지네이션 -->
         <div class="page-row" v-if="totalPages > 1">
           <button
             class="arrow-btn"
@@ -187,39 +184,122 @@
 </template>
 
 <script setup>
-import HeaderView from '../../HeaderView.vue';
-import FooterView from '../../FooterView.vue';
-import { ref, onMounted } from 'vue'; // ref import 추가
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import HeaderView from '../../HeaderView.vue'
+import FooterView from '../../FooterView.vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
+
+
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+})
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      alert('세션이 만료되었거나 권한이 없습니다. 다시 로그인해 주세요.')
+      router.push('/')
+    }
+    return Promise.reject(err)
+  }
+)
+
+/* ===== 상태 ===== */
 const loading = ref(false)
 const posts = ref([])
 const sidebarPosts = ref([])
-const pageNum  = ref(1) // 1-base
-const amount   = ref(8) // 페이지당 8개 (그리드 4x2)
+const pageNum  = ref(1)
+const amount   = ref(8)
 const totalPages = ref(1)
-const pageMaker  = ref(null) // 서버 제공 값 전체 보관(선택)
+const pageMaker  = ref(null)
+
+const keyword = ref('')
+const searchType = ref('TW')   // '전체'
+
+/* ===== (NEW) 사용자 인증 정보 ===== */
+const memberId = ref(null)
+const memberEmail = ref(null)
+const memberState = ref(null)
 
 
+/* ===== 이미지 유틸: DB의 로컬 파일 경로 → 브라우저 경로로 변환 =====
+   예) path: C:/3rdProjectFE/public/images/fashion
+       name: 334296f6-...-a0.png
+   → /images/fashion/334296f6-...-a0.png
+*/
+const toPublicImageSrc = (path, name) => {
+  if (!name) return null
 
-const goWrite = () => {
-  router.push({name: 'registfashionpost'})
+  // 이미 절대 URL이면 그대로 사용
+  if (/^https?:\/\//i.test(name)) return name
+
+  // path에 'public' 구간이 있으면 그 뒤만 취해 웹 루트로 매핑
+  if (path && /public[\\/]/i.test(path)) {
+    const afterPublic = path.split(/public[\\/]/i).pop() || ''
+    // 윈도우 백슬래시 → 슬래시
+    const base = afterPublic.replaceAll('\\', '/').replace(/^\/+/, '')
+    // 최종 브라우저 경로(중복 슬래시 정리)
+    return (`/${base}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // path가 이미 '/images/...' 형태면 그대로 결합
+  if (path?.startsWith('/')) {
+    return (`${path}/${name}`).replace(/\/+/g, '/')
+  }
+
+  // 그 외에는 기본 폴더를 가정
+  return (`/images/fashion/${name}`).replace(/\/+/g, '/')
 }
 
-const props = defineProps({
-  currentPage: { type: Number, default: 1 },
-  totalPages: { type: Number, default: 10 },
-});
+// photos에서 대표 썸네일 고르기: 게시글(카테고리 1) 우선, num 오름차순
+const pickThumbFromPhotos = (photos = []) => {
+  const byPost = photos
+    .filter((p) => Number(p?.photoCategoryNum) === 1)
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const byItem = photos
+    .filter((p) => Number(p?.photoCategoryNum) !== 1)
+    .sort((a, b) => (a?.num ?? 0) - (b?.num ?? 0))
+  const chosen = byPost[0] || byItem[0]
 
-const keyword = ref("");
-const searchType = ref("TW");
+  // ⬇️ 백엔드 파일서버를 거치지 않고 정적 경로로 변환
+  return chosen ? toPublicImageSrc(chosen.path, chosen.name) : null
+}
 
-// 이미지 폴백(현재 백엔드에 이미지 필드가 없으므로 플레이스홀더 사용)
-const fallbackImage = 'https://placehold.co/236x242'
+// 썸네일 캐시
+const thumbCache = new Map()
 
-// 온도 계산: good/(good+cheer) * 100 (소수 첫째 자리 반올림)
+// 단일 글의 썸네일 로드 (상세 API에서 photos 메타만 받아와 로컬 정적 경로로 변환)
+const loadThumbForPost = async (post) => {
+  const key = Number(post?.num);
+  if (!key) return null;
+  if (thumbCache.has(key)) return thumbCache.get(key);
+
+  try {
+    const { data } = await api.get(`/manager-service/posts/fashion/${key}`)
+    const thumb = pickThumbFromPhotos(data?.photos)
+    thumbCache.set(key, thumb)
+    return thumb
+  } catch (e) {
+    console.warn('썸네일 로딩 실패:', key, e)
+    thumbCache.set(key, null)
+    return null
+  }
+}
+
+/* ===== 표시값 계산 ===== */
+const fallbackImage = '/images/defaultimage.png' // public/images/fallback.png 있으면 사용, 없으면 바꿔주세요.
 const temperature = (good = 0, cheer = 0) => {
   const g = Number(good) || 0
   const c = Number(cheer) || 0
@@ -227,38 +307,37 @@ const temperature = (good = 0, cheer = 0) => {
   if (!sum) return 0
   return Math.round((g / sum) * 100)
 }
+const isPopular = (post) => temperature(post.good, post.cheer) >= 60
+const colorByTemp = (t) => (t <= 25 ? '#6A5BFF' : t <= 50 ? '#2E9BFF' : t <= 75 ? '#FF7A1A' : '#FF5F5F')
 
-const isPopular = (post) => temperature(post.good, post.cheer) >= 60;
-
-const colorByTemp = (t) => {
-  if (t <= 25) return '#6A5BFF' // 보라
-  if (t <= 50) return '#2E9BFF' // 블루
-  if (t <= 75) return '#FF7A1A' // 오렌지
-  return '#FF5F5F'              // 빨강
+/* ===== 라우팅 ===== */
+const goWrite = () => router.push({ name: 'registfashionpost' })
+const goDetail = (num) => {
+  if (!num) return
+  router.push(`/fashionpost/${num}`)
 }
 
-// 데이터 가져오기 (목록 8개, 사이드바 5개)
+/* ===== 데이터 로딩 ===== */
 const fetchPosts = async () => {
   loading.value = true
   try {
-    const params = {
-      pageNum: pageNum.value,
-      amount : amount.value,
-    }
-
-    // keyword가 있으면 type/keyword 전달 (백엔드 동적쿼리 매칭)
+    const params = { pageNum: pageNum.value, amount: amount.value }
     if (keyword.value) {
-      params.type = searchType.value   // 'TW' | 'T' | 'W'
+      params.type = searchType.value
       params.keyword = keyword.value
     }
 
-    const { data } = await axios.get('/api/manager-service/posts/fashion', { params })
-      
-    posts.value = Array.isArray(data?.list) ? data.list : []
-    
-    
+    const { data } = await api.get('/manager-service/posts/fashion', { params })
+    const list = Array.isArray(data?.list) ? data.list : []
 
-    // 페이지 메타
+    // 목록 세팅
+    posts.value = list.map((p) => ({ ...p, _thumb: null }))
+
+    // 썸네일 병렬 로딩 (정적 경로로 변환됨)
+    const thumbs = await Promise.all(posts.value.map((p) => loadThumbForPost(p)))
+    posts.value.forEach((p, i) => { p._thumb = thumbs[i] || null })
+
+    // 페이지 정보
     pageMaker.value = data?.pageMaker ?? null
     const total = Number(pageMaker.value?.total ?? 0)
     totalPages.value = Math.max(1, Math.ceil(total / amount.value))
@@ -271,47 +350,66 @@ const fetchPosts = async () => {
   }
 }
 
-// ✅ 드롭다운 변경/엔터/버튼 → 1페이지부터 검색
-const applySearch = () => {
-  pageNum.value = 1
-  fetchPosts()
-}
-
-// ✅ 페이지 이동
-const goPage = (p) => {
-  if (p < 1 || p > totalPages.value || p === pageNum.value) return
-  pageNum.value = p
-  fetchPosts()
-}
-
 const fetchSidebarPopular = async () => {
   try {
-    // 최신 글을 넉넉히 가져와서 클라이언트 필터 (필요시 amount 조정)
-    const { data } = await axios.get('/api/manager-service/posts/fashion', {
+    const { data } = await api.get('/manager-service/posts/fashion', {
       params: { pageNum: 1, amount: 30 },
-    });
-    const list = Array.isArray(data?.list) ? data.list : [];
-    sidebarPosts.value = list.filter(isPopular).slice(0, 5);
+    })
+    const list = Array.isArray(data?.list) ? data.list : []
+    sidebarPosts.value = list.filter(isPopular).slice(0, 5)
   } catch (e) {
-    console.error('사이드바 인기글 조회 실패:', e);
-    sidebarPosts.value = [];
+    console.error('사이드바 인기글 조회 실패:', e)
+    sidebarPosts.value = []
   }
-};
-
-const goDetail = (num) => {
-  // 라우팅 이름/경로는 프로젝트에 맞게 교체
-  // 예: router.push({ name: 'fashionPostDetail', params: { id: num } })
-  console.log('go detail:', num)
-}
-const goBoard = () => {
-  // 전체 목록 페이지 이동
-  console.log('go board')
 }
 
+/* ===== 검색/페이지네이션 ===== */
+const applySearch = () => { pageNum.value = 1; fetchPosts() }
+const goPage = (p) => {
+  if (p >= 1 && p <= totalPages.value && p !== pageNum.value) {
+    pageNum.value = p
+    fetchPosts()
+  }
+}
+
+/* ===== onMounted ===== */
 onMounted(async () => {
+  const token = sessionStorage.getItem('token')
+  if (!token) {
+    alert('로그인 후 이용해 주세요.')
+    router.push('/')
+    return
+  }
+
+  // (1) 예시대로: 인증 정보 확인 + 콘솔 출력
+  try {
+    const authRes = await axios.get('/api/member-service/member/auth', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    console.log('[member auth]', authRes)
+
+    if (authRes?.data?.memberId == null) {
+      router.push('/')
+      return
+    }
+
+    memberId.value = authRes.data.memberId
+    memberEmail.value = authRes.data.memberEmail
+    memberState.value = authRes.data.memberState
+
+    // 디버그 로그
+    console.log('memberId:', memberId.value)
+    console.log('memberEmail:', memberEmail.value)
+    console.log('memberState:', memberState.value)
+  } catch (e) {
+    console.error('인증 정보 조회 실패:', e)
+    router.push('/')
+    return
+  }
+
+  // (2) 데이터 로딩
   await Promise.all([fetchPosts(), fetchSidebarPopular()])
 })
-
 </script>
 
 <style scoped>
@@ -337,7 +435,7 @@ onMounted(async () => {
   width: calc(100% + 114px);
   height: 200px;
   margin: 0 -57px 24px -57px;
-  background-image: url('https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1440&auto=format&fit=crop');
+  background-image: url('/public/images/FashionBoardBanner.png');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -349,10 +447,6 @@ onMounted(async () => {
   inset: 0;
   background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,0) 100%);
 }
-.banner-title-wrapper { position: absolute; left: 64px; bottom: 64px; }
-.banner-title { color:#fff; font-size:28px; font-weight:800; letter-spacing:.5px; }
-.banner-subtitle-wrapper { position:absolute; left:64px; bottom:36px; }
-.banner-subtitle { color:#e5e7eb; font-size:14px; }
 
 /* ===== 본문 ===== */
 .content-wrapper {

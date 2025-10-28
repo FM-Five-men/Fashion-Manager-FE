@@ -39,6 +39,7 @@ import ReportFashionPostView from '../components/report/ReportFashionPostView.vu
 import ReportReviewPostView from '../components/report/ReportReviewPostView.vue';
 import ReportMentoringPostView from '../components/report/ReportMentoringPostView.vue';
 import ReportCommentView from '../components/report/ReportCommentView.vue';
+import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
 
 const routes = [
@@ -61,7 +62,7 @@ const routes = [
     component: RegistMentoringPostView
   }, {
     // Kept '/mentoringpost' from HEAD as it has a component linked
-    path: '/mentoringpost',
+    path: '/mentoringpost/1',
     name: 'mentoringpost',
     component: MentoringPostView
   }, {
@@ -74,7 +75,7 @@ const routes = [
     component: RegistReviewPostView
   }, {
     // Using '/reviewpostview' from HEAD
-    path: '/reviewpostview',
+    path: '/reviewpostview/1',
     name: 'reviewpostview',
     component: ReviewPostView
   }, {
@@ -198,6 +199,11 @@ const routes = [
     path: '/report/comment/:num',
     name: 'reportComment',
     component: ReportCommentView
+  }, {
+    path: '/fashion/posts/:postNum/edit',
+    name: 'modifyfashionpostview',
+    component: ModifyFashionPostView,
+    props: true
   }
 ]
 
