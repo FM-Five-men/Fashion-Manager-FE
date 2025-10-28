@@ -19,8 +19,11 @@ import RegistFashionPostView from '../components/post/fashion/RegistFashionPostV
 // influencerPage
 import InfluencerPageView from '../components/influencer/01_Page/InfluencerPageView.vue';  // 인플루언서 리스트 페이지
 import InfluencerProfileView from '../components/influencer/01_Page/InfluencerProfileView.vue';  // 인플루언서 상세 페이지
-import InfluencerApplyView from '../components/influencer/01_Page/InfluencerApplyView.vue'; // 인플루언서 신청 페이지
-import MenteeApplyView from '../components/influencer/01_Page/MenteeApplyView.vue'; // 멘토링 신청 페이지
+// import InfluencerApplyView from '../components/influencer/01_Page/InfluencerApplyView.vue'; // 인플루언서 신청 페이지
+// import MenteeApplyView from '../components/influencer/01_Page/MenteeApplyView.vue'; // 멘토링 신청 페이지
+// import InfluencerRegistPageView from '../components/influencer/01_Page/InfluencerRegistPageView.vue';
+// import InfluencerPageEditView from '../components/influencer/01_Page/InfluencerPageEditView.vue';
+
 
 // Placeholders/Imports from features branch (Uncomment and complete as needed)
 // import FashionPostView from '../components/FashionPostView.vue'; // Likely replaced by FashionBoardView or similar
@@ -33,12 +36,15 @@ import ReportListView from '../components/report/ReportListView.vue';
 import MemberListView from '../components/management/MemberListView.vue';
 import PostListView from '../components/post/PostListView.vue';
 import InfluencerListView from '../components/management/InfluencerListView.vue';
+<<<<<<< HEAD
+=======
 import ReportFashionPostView from '../components/report/ReportFashionPostView.vue';
 import ReportReviewPostView from '../components/report/ReportReviewPostView.vue';
 import ReportMentoringPostView from '../components/report/ReportMentoringPostView.vue';
 import ReportCommentView from '../components/report/ReportCommentView.vue';
 import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
+>>>>>>> features
 
 // memmber page
 import LoginView from '../components/member/LoginView.vue';
@@ -115,17 +121,30 @@ const routes = [
     name: 'influencerpage-profile',
     component: InfluencerProfileView,
     props: true
-  }, { 
-    path: '/influencerapply',
-    name: 'influencerapply',
-    component: InfluencerApplyView,
-    props: true
-  }, { 
-    path: '/menteeapply',
-    name: 'menteeapply',
-    component: MenteeApplyView,
-    props: true
-  },
+  }, 
+//   { 
+//     path: '/influencerapply',
+//     name: 'influencerapply',
+//     component: InfluencerApplyView,
+//     props: true
+//   }, { 
+//     path: '/influencerregistpage',
+//     name: 'influencerregistpage',
+//     component: InfluencerRegistPageView,
+//     props: true
+//   }, {
+//   path: "/influencer/edit/:pageNum",
+//   name: "InfluencerPageEdit",
+//   component: InfluencerPageEditView,
+//   props: true,
+// },
+
+  // { 
+  //   path: '/menteeapply',
+  //   name: 'menteeapply',
+  //   component: MenteeApplyView,
+  //   props: true
+  // },
   
   
   {

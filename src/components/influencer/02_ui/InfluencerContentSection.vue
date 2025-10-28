@@ -220,7 +220,7 @@ const fetchMentoringForMember = async (memberNum) => {
   const bodyText =
     rawBody !== ""
       ? rawBody
-      : "멘토링 신청 내용을 추가로 불러와주세요.";
+      : "";
 
       return {
         // 상단 영역
@@ -317,7 +317,6 @@ watch(
       newVal === undefined ||
       newVal === ""
     ) {
-      console.warn("⏸ memberNum 아직 없음, fetch 안 함");
       return;
     }
 
@@ -342,20 +341,28 @@ onMounted(() => {
   padding-top: 16px;
   background: transparent;
 }
-
-.gradient-bg {
+gradient-bg {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 553px;
-  background: linear-gradient(
-    to bottom,
-    rgba(115, 115, 115, .15) 0%,
-    rgba(217, 217, 217, 0.6) 30%,
-    rgba(255, 255, 255, 0.1) 60%
-  );
+  left: 50%;
+  transform: translateX(-50%); /* 화면 가운데 정렬 */
+  width: 100vw;                /* 화면 전체 가로로 꽉 */
+  height: 720px;               /* 카드 밑부분까지 충분히 덮음 */
   pointer-events: none;
+
+  background: linear-gradient(
+     to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(245, 245, 245, 0.9) 40%,
+    rgba(200, 200, 200, 0.3) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  z-index: 0;
+}
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  background: transparent; /* <- 이게 혹시 white로 돼 있으면 transparent로 바꿔야 함 */
 }
 
 .tabs-row {
