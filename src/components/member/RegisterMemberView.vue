@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import axios from "axios";
 
 const router = useRouter()
@@ -9,56 +9,102 @@ const signupId = ref("");
 const signupPassword = ref("");
 const signupEmail = ref("");
 const signupName = ref("");
-const signupGender = ref("");
-const signupAge = ref("");
+const signupGender = ref("");     // '남' | '여'
+const signupAge = ref(null);      // ✅ 숫자형
+const signupPhone = ref("");
+const signupAddress = ref("");
+const signupHeight = ref(null);   // ✅ 숫자형(선택)
+const signupWeight = ref(null);   // ✅ 숫자형(선택)
 
 const showModal = ref(false);
-
 const check = ref(false);
+const message = ref("");          // ✅ 서버/클라 메시지 표시
+const loading = ref(false);
+
+function normalize() {
+  // 공백 제거
+  const id = signupId.value?.trim();
+  const email = signupEmail.value?.trim();
+  const name = signupName.value?.trim();
+  const gender = signupGender.value?.trim();
+  const phone = signupPhone.value?.trim();
+  const address = signupAddress.value?.trim();
+
+  // 숫자 캐스팅 (null 허용인 항목은 null → undefined로 빼도 됨)
+  const age = typeof signupAge.value === 'number'
+    ? signupAge.value
+    : Number(signupAge.value);
+
+  const height = signupHeight.value === null || signupHeight.value === ""
+    ? 0  // ← 정책: 미입력 시 0으로 보낼지(null로 둘지 결정하세요)
+    : Number(signupHeight.value);
+
+  const weight = signupWeight.value === null || signupWeight.value === ""
+    ? 0
+    : Number(signupWeight.value);
+
+      return {
+      memberId: id,
+      memberPwd: signupPassword.value,
+      memberEmail: email,
+      memberName: name,
+      memberAge: age,
+      memberGender: gender,      // '남성'/'여성'
+      memberPhone: phone,
+      memberAddress: address,
+      memberHeight: height,
+      memberWeight: weight,
+    };
+}
 
 const registerMember = async () => {
-    try{
-        var data = {
-            memberId: signupId.value,
-            memberPwd: signupPassword.value,
-            memberEmail: signupEmail.value,
-            memberName: signupName.value,
-            memberAge: signupAge.value,
-            memberGender: signupGender.value,
-            memberMessageAllow: 1,
-            ReportCount: 0,
-            DailyReportCount: 0
-        }
+  try {
+    message.value = "";
+    check.value = false;
+    loading.value = true;
 
-        const res = await axios.post("/api/member-service/member/insertmember",data);
-        console.log(res.status)
-        if(res.status == 200){
-            check.value = true;
-            showModal.value = true;
-        }else{
-            showModal.value = true;
-        }
-        
-        console.log(res);
-    }catch (err){
-        console.log("회원가입 에러: ",err);
-        showModal.value = true;
-    }
-    
-}
+    const data = normalize();
 
+    // 클라이언트 측 기초 검증(서버 검증과 별개로 UX 개선)
+    if (!data.memberId)  throw new Error("아이디를 입력하세요.");
+    if (!data.memberEmail) throw new Error("이메일을 입력하세요.");
+    if (!data.memberPwd) throw new Error("비밀번호를 입력하세요.");
+    if (!data.memberName) throw new Error("이름을 입력하세요.");
+    if (!data.memberGender) throw new Error("성별을 선택하세요.");
+    if (!Number.isFinite(data.memberAge) || data.memberAge <= 0)
+      throw new Error("나이는 1 이상 숫자여야 합니다.");
 
-const login = () => {
-    router.push('/')
-}
+    const res = await axios.post(
+      "/api/member-service/member/insertmember",
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-const closeModal = () => {
-  showModal.value = false;
+    check.value = true;
+    message.value = "회원가입에 성공하였습니다.";
+    showModal.value = true;
+  } catch (err) {
+    // 서버에서 내려준 메시지 우선 표시
+    const serverMsg = err?.response?.data?.message
+      || err?.response?.data?.error
+      || err?.message
+      || "회원가입에 실패했습니다.";
+    message.value = serverMsg;
+    check.value = false;
+    showModal.value = true;
+    console.error("회원가입 에러:", err);
+  } finally {
+    loading.value = false;
+  }
 };
 
+const login = () => router.push('/');
+
+const closeModal = () => { showModal.value = false; };
 </script>
 
 <template>
+<div class="page">
   <div class="container">
     <!-- 왼쪽 패널 -->
     <div class="left-panel">
@@ -119,44 +165,100 @@ const closeModal = () => {
           </div>
         </div>
 
-        <div class="form-group">
-          <label>나이</label>
-          <div class="input-box">
-            <input type="number" placeholder="28" v-model="signupAge" />
-          </div>
-        </div>
-
-
-        <button class="submit-btn" @click="registerMember">회원가입</button>
-
-        <p class="login-link">
-          이미 계정이 있으신가요?
-          <span class="link" @click="login">로그인</span>
-        </p>
-      </div>
+    <div class="form-group">
+    <label>나이</label>
+    <div class="input-box">
+      <!-- ✅ 숫자 보장 -->
+      <input type="number" placeholder="28" v-model.number="signupAge" min="1" />
     </div>
+  </div>
 
-    <!-- ✅ 모달 창 -->
+  <!-- 전화번호 -->
+  <div class="form-group">
+    <label>전화번호</label>
+    <div class="input-box">
+      <input type="tel" placeholder="010-1234-5678" v-model="signupPhone" />
+    </div>
+  </div>
+
+  <!-- 주소 -->
+  <div class="form-group">
+    <label>주소</label>
+    <div class="input-box">
+      <input type="text" placeholder="서울특별시 ○○구 ○○로 123" v-model="signupAddress" />
+    </div>
+  </div>
+
+  <!-- 키 -->
+  <div class="form-group">
+    <label>키</label>
+    <div class="input-box">
+      <!-- ✅ 숫자 보장 (미입력 허용이면 빈값 가능) -->
+      <input type="number" min="0" placeholder="175 (cm)" v-model.number="signupHeight" />
+    </div>
+  </div>
+
+  <!-- 몸무게 -->
+  <div class="form-group">
+    <label>몸무게</label>
+    <div class="input-box">
+      <input type="number" min="0" placeholder="70 (kg)" v-model.number="signupWeight" />
+    </div>
+  </div>
+
+  <button
+    type="button"
+    class="submit-btn"
+    :disabled="loading"
+    @click="registerMember">
+    {{ loading ? '처리 중...' : '회원가입' }}
+  </button>
+
+  </div>
+
+    <!-- 모달 -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal">
         <h3>메시지</h3>
-        <p v-if="!check">회원가입에 실패했습니다.</p>
-        <p v-else>회원가입에 성공하였습니다.</p>
+        <p :style="{ color: check ? '#0a0' : '#c00' }">{{ message }}</p>
         <button @click="closeModal" class="close-btn">확인</button>
       </div>
     </div>
   </div>
+</div>  
+</div>
+
 </template>
 
 <style scoped>
+/* 전역 여백 제거 (scoped여도 global로 적용) */
+:global(html, body, #app) {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* 🧱 화면 전체를 덮는 부모 박스 */
+.page {
+  width: 100%;
+  height: 100vh;                /* 브라우저 높이 전체 */
+  display: flex;                /* 자식(.container) 중앙 배치용 */
+  justify-content: center;      /* 가로 가운데 */
+  align-items: center;          /* 세로 가운데 */
+  background: #f5f5f5;          /* (선택) 확인용 배경색 */
+}
+
+/* 🎯 실제 회원가입 컨테이너 */
 .container {
   width: 1440px;
   height: 931px;
   background: white;
-  display: flex; /* 가로 배치 */
+  display: flex;                /* 기존 가로 배치 유지 */
   justify-content: space-between;
   align-items: stretch;
   overflow: hidden;
+  border-radius: 8px;           /* (선택) 예쁘게 */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1); /* (선택) 그림자 */
 }
 
 /* 왼쪽 검은 배경 패널 */

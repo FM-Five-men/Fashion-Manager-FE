@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../components/management/LoginView.vue';
 import MainView from '../components/MainView.vue';
-import RegisterMemberView from '../components/management/RegisterMemberView.vue';
 import FindIdView from '../components/management/FindIdView.vue';
 import FindPasswordView from '../components/management/FindPasswordView.vue';
 import AdminLoginView from '../components/management/AdminLoginView.vue';
@@ -42,6 +40,13 @@ import ReportCommentView from '../components/report/ReportCommentView.vue';
 import ModifyFashionPostView from '../components/post/fashion/ModifyFashionPostView.vue';
 
 
+// memmber page
+import LoginView from '../components/member/LoginView.vue';
+import MyPageView from '../components/member/MyPageView.vue';
+import MyPageViewRegist from '../components/member/MyPageViewRegist.vue';
+import RegisterMemberView from '../components/member/RegisterMemberView.vue';
+
+
 const routes = [
   { path: '/', name: 'login', component: LoginView },
   { path: '/main', name: 'main', component: MainView },
@@ -50,6 +55,21 @@ const routes = [
   { path: '/findpassword', name: 'findpassword', component: FindPasswordView },
   { path: '/adminlogin', name: 'adminlogin', component: AdminLoginView },
   { path: '/changepassword', name: 'changepassword', component: ChangePasswordView }, // Corrected typo from features
+
+
+      {
+        path: '/mypage',
+        name: 'mypage',
+        component: MyPageView
+    },
+
+    {
+        path: '/regist',
+        name: 'regist',
+        component: MyPageViewRegist
+    },
+
+
 
   // Routes primarily from HEAD branch (more specific)
   {
