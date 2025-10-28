@@ -1,25 +1,37 @@
 <template>
-  <!-- 전체를 감싸는 section: 아래쪽에 padding으로 간격 확보 -->
+  <!--
+    인플루언서 상세 상단 헤더
+    부모(InfluencerProfileView.vue)에서 받은 influencer 객체를 그대로 렌더링함.
+    => 즉 여기서 보이는 이름은 부모 쪽 fetchInfluencerDetail()에서
+    member-service/member/list 결과로 덮어쓴 최종 이름이다.
+  -->
   <section class="header-section-wrapper">
     <div class="profile-wrapper">
       <div class="profile-card">
-        <!-- 왼쪽 텍스트 영역 -->
+        <!-- ===== 왼쪽 텍스트 영역 ===== -->
         <div class="left-col">
-          <!-- 이름 / 지원가능 -->
+          <!-- 이름 / 팔로우 버튼 -->
           <div class="name-line">
             <span class="name">{{ influencer.name }}</span>
+
+            <button
+              class="follow-btn-header"
+              :class="{ followed: isFollowed }"
+              @click="$emit('toggle-follow')"
+            >
+              {{ isFollowed ? "언팔로우" : "팔로우" }}
+            </button>
           </div>
 
-          <!-- 핸들 -->
+          <!-- 인스타 핸들 -->
           <div class="handle">{{ influencer.handle }}</div>
 
-          <!-- 구분 라인 -->
           <div class="divider"></div>
 
-          <!-- 제목 -->
+          <!-- 페이지 제목 -->
           <div class="subtitle">{{ influencer.subtitle }}</div>
 
-          <!-- 소개 -->
+          <!-- 자기소개 (부모에서 줄바꿈 <br> 로 변환된 HTML) -->
           <div class="bio" v-html="formattedBio"></div>
 
           <!-- 뱃지 -->
@@ -56,30 +68,9 @@
               <span class="contact-text">{{ instaDisplay }}</span>
             </div>
           </div>
-
-          <!-- 버튼들 -->
-         <div class="actions-row">
-          <!-- 팔로우 / 언팔로우 버튼 -->
-          <button
-            class="follow-btn-header"
-            :class="{ followed: isFollowed }"
-            @click="$emit('toggle-follow')"
-          >
-            {{ isFollowed ? "언팔로우" : "팔로우" }}
-          </button>
-
-          <!-- 신청하기 버튼 -->
-          <button
-            v-if="influencer.canApply"
-            class="apply-btn-header"
-            @click="$emit('apply')"
-          >
-            신청하기
-          </button>
-</div>
         </div>
 
-        <!-- 오른쪽 이미지 영역 -->
+        <!-- ===== 오른쪽 이미지 영역 ===== -->
         <div class="right-col">
           <template v-if="influencer.mainImageUrl">
             <img
@@ -115,15 +106,17 @@ const props = defineProps({
   },
 });
 
+// 부모로 이벤트 돌려보내는 용도 (팔로우 토글 등)
 defineEmits(["toggle-follow", "apply"]);
 
-// ✅ 숫자 포맷 그대로
+// 숫자 포맷 (1,234 식)
 const formatNumber = (n) => {
   if (n === null || n === undefined) return "0";
   return Number(n).toLocaleString();
 };
 
-// ✅ 뱃지 로직: 이제 백엔드에서 받은 거 우선 사용
+// 뱃지들 안전 처리
+// - 부모(InfluencerProfileView)가 matchedUser.badges에서 badgeName 배열로 만들어 줌
 const safeBadges = computed(() => {
   if (props.influencer.badges && props.influencer.badges.length > 0) {
     return props.influencer.badges;
@@ -131,31 +124,41 @@ const safeBadges = computed(() => {
   return [];
 });
 
-// ✅ 연락처 등 fallback은 그대로 유지해도 돼
+// 연락처 표시용. 없으면 임시 텍스트
 const phoneDisplay = computed(() => {
-  return props.influencer.phone || "010-1111-1111";
+  return props.influencer.phone || "010-0000-0000";
 });
 
 const instaDisplay = computed(() => {
-  return props.influencer.instagram || "@insta_kimfashion";
+  return props.influencer.instagram || "@insta_kimfashion"; // fallback 텍스트
 });
 </script>
 
+
 <style scoped>
-/* ✅ 이 padding-bottom 덕분에 아래 섹션과 간격 벌어짐 */
+/* 전체 헤더 섹션과 아래 컨텐츠 사이 간격 확보 */
 .header-section-wrapper {
   padding-bottom: 120px;
 }
 
-/* 카드 전체 사이즈 및 위치 (피그마 기준 851 x 544 고정) */
+/*
+  profile-wrapper
+  - 카드 전체(왼쪽+오른쪽)를 감싸는 고정 프레임
+  - 피그마 기준 width/height 유지
+*/
 .profile-wrapper {
   width: 851px;
   height: 544px;
   position: relative;
-  left: calc(50% - 425.5px);
+  left: calc(50% - 425.5px); /* 가운데 정렬 */
   top: 128px;
 }
 
+/*
+  profile-card
+  - 실제 카드 UI
+  - 좌: 텍스트 / 우: 대표 이미지
+*/
 .profile-card {
   width: 100%;
   height: 544px;
@@ -168,47 +171,42 @@ const instaDisplay = computed(() => {
   column-gap: 0;
 
   box-sizing: border-box;
-
-  /* 🔥 이게 핵심: 카드 밖으로 어떤 것도 못 나가게 */
-  overflow: hidden;
-  
-  
+  overflow: hidden; /* 카드 밖으로 내용이 나가지 않도록 */
 }
 
-
-
-/* 왼쪽 텍스트 영역은 그대로 */
+/* 왼쪽 텍스트 영역 */
 .left-col {
   box-sizing: border-box;
   padding: 40px;
+  
+  /* 🔥 세로 중앙 정렬 핵심 */
   display: flex;
   flex-direction: column;
+  justify-content: center; /* <-- 세로 중앙 정렬 */
+  gap: 10px;               /* 각 블록 사이 여백 일정하게 */
+  
   text-align: left;
   color: #000;
   font-family: "Noto Sans KR", sans-serif;
-  border-right: 1px solid rgba(0,0,0,0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* 오른쪽 이미지 영역 */
-.right-col {
-  position: relative;
-  width: 100%;
-  height: 100%;           /* 🔥 카드 높이(544px) 전체를 그대로 가져와 */
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
-  overflow: auto;       /* 넘치는 부분 잘라 */
-  padding: 0;             /* 🔥 혹시 남아있다면 확실히 제거 */
-  margin: 0;              /* 🔥 혹시 남아있다면 확실히 제거 */
-  display: block;         /* flex로 가운데 맞춤 필요없음, 그냥 꽉 채울 거니까 */
-}
-
-/* 이름 줄 */
+/*
+  name-line
+  - 상단: 이름과 팔로우 버튼 가로 배치
+  - 여기의 margin-bottom으로 아래 요소(핸들)와 간격을 준다
+*/
 .name-line {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  /* 🔥 위에서 너무 몰려보이지 않게 아래로 여백 */
+  margin-bottom: 16px;
 }
+
+/* 인플루언서 이름 */
 .name {
   font-size: 20px;
   line-height: 28px;
@@ -216,49 +214,105 @@ const instaDisplay = computed(() => {
   color: #000;
 }
 
+/*
+  follow-btn-header
+  - 팔로우 / 언팔로우 버튼
+*/
+.follow-btn-header {
+  min-width: 88px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-/* 핸들 (회색 아이디 텍스트) */
+  color: #fff;
+  background: #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.follow-btn-header.followed {
+  background: #777;
+  color: #fff;
+}
+.follow-btn-header:hover {
+  opacity: 0.9;
+}
+
+/*
+  handle (@insta_....)
+  - 이름/팔로우 영역과 구분되는 서브 텍스트
+*/
 .handle {
-  margin-top: 8px;
   color: #8a8a8a;
   font-size: 14px;
   line-height: 20px;
   font-weight: 400;
+
+  /* 🔥 이름 영역과 간격 */
+  margin-bottom: 16px;
 }
 
-/* 얇은 구분선 */
+/*
+  divider (얇은 라인)
+  - handle 아래, 본문 위 사이의 시각적 구획
+*/
 .divider {
   width: 100%;
   height: 1px;
   background: #cfcfcf;
-  margin: 16px 0;
+
+  /* 🔥 라인 자체와 아래 콘텐츠(제목) 사이 간격 */
+  margin-bottom: 20px;
 }
 
-/* 부제목 (ex. "김패션의 스타일링 공간") */
+/*
+  subtitle
+  - 큰 소제목 (예: "김패션의 스타일링 공간")
+*/
 .subtitle {
   font-size: 18px;
   line-height: 26px;
   color: #000;
   font-weight: 500;
-  margin-bottom: 16px;
+
+  /* 🔥 소개문단과 텍스트 간격 */
+  margin-bottom: 12px;
 }
 
-/* 자기소개 본문 */
+/*
+  bio
+  - 자기소개/설명 문단
+*/
 .bio {
   font-size: 14px;
   line-height: 22px;
   color: #4a4a4a;
   white-space: normal;
-  margin-bottom: 20px;
+
+  /* 🔥 아래(뱃지들)와의 간격을 넉넉하게 */
+  margin-bottom: 24px;
 }
 
-/* 뱃지 영역 */
+/*
+  badges
+  - 칭호/역할/전문분야 태그들
+*/
 .badges {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 24px;
+
+  /* 🔥 지표(stats-row)랑 너무 붙어 보이지 않도록 */
+  margin-bottom: 28px;
 }
+
 .badge-chip {
   background: rgba(217, 217, 217, 0.8);
   border-radius: 14px;
@@ -269,21 +323,29 @@ const instaDisplay = computed(() => {
   font-weight: 500;
 }
 
-/* 좋아요 / 힘내요 */
+/*
+  stats-row
+  - 좋아요 / 힘내요 수치
+*/
 .stats-row {
   display: flex;
   gap: 48px;
+
+  /* 🔥 연락처와 간격 */
   margin-bottom: 24px;
 }
+
 .stat-block {
   text-align: left;
 }
+
 .stat-value {
   font-size: 28px;
   line-height: 32px;
   color: #000;
   font-weight: 500;
 }
+
 .stat-label {
   font-size: 14px;
   line-height: 20px;
@@ -291,99 +353,55 @@ const instaDisplay = computed(() => {
   margin-top: 4px;
 }
 
-/* 연락처 */
+/*
+  contact-block
+  - 전화 / 인스타
+*/
 .contact-block {
   font-size: 14px;
   line-height: 20px;
   color: #0a0a0a;
+
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 24px;
 }
+
 .contact-line {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .contact-icon {
   font-size: 14px;
   line-height: 20px;
   color: #000;
 }
+
 .contact-text {
   font-size: 14px;
   line-height: 20px;
   color: #0a0a0a;
 }
 
-/* 버튼 2개 영역 */
-.actions-row {
-  display: flex;
-  justify-content: center; /* ✅ 가로 가운데 정렬 */
-  gap: 16px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-}
-/* 팔로우 버튼 / 언팔로우 버튼 */
-.follow-btn-header {
-  min-width: 120px;
-  height: 40px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  color: #fff;
-  background: #000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  box-sizing: border-box;
-}
-.follow-btn-header.followed {
-  background: #777;
-  color: #fff;
-}
-
-/* 신청하기 버튼 - 같은 사이즈 */
-.apply-btn-header {
-  min-width: 120px;
-  height: 40px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  color: #fff;
-  background: #000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  box-sizing: border-box;
-}
-.follow-btn-header:hover,
-.apply-btn-header:hover {
-  opacity: 0.9;
-}
-
-/* 오른쪽 이미지 영역 */
+/*
+  right-col
+  - 우측 이미지 영역
+*/
 .right-col {
-  /* 오른쪽 컬럼 자체는 padding이 없어야 피그마처럼 이미지가 위/오른쪽/아래에 딱 붙는다 */
-  width: 470px;
+  position: relative;
+  width: 100%;
   height: 100%;
-  border-radius: 0;          /* 별도의 둥근 모서리 X, 카드랑 한 덩어리처럼 */
-  overflow: hidden;
-  background: transparent;  /* 배경 따로 안 보이게 */
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+  display: block;
 
+  /* 오른쪽 컬럼은 별도 라운드 처리 (카드와 자연스럽게) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -392,6 +410,10 @@ const instaDisplay = computed(() => {
   border-bottom-right-radius: 4px;
 }
 
+/*
+  main-image
+  - 대표 이미지 풀커버
+*/
 .main-image {
   position: absolute;
   inset: 0;
@@ -400,7 +422,6 @@ const instaDisplay = computed(() => {
   object-fit: cover;
   object-position: center 0%;
   display: block;
-  
 }
 
 .no-img {
@@ -414,5 +435,4 @@ const instaDisplay = computed(() => {
   font-size: 16px;
   font-family: "Arial", sans-serif;
 }
-
 </style>
