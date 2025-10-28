@@ -6,14 +6,14 @@
     <!-- 본문 영역은 남은 공간을 차지 -->
     <div style="flex:1;display:flex;flex-direction:column;">
       <!-- 본문 -->
-      <div
+        <div
         style="
           width: 686px;
           height: auto; /* 고정값 → 자동 높이로 */
           padding-top: 80px;
           padding-bottom: 13px;
-          padding-left: 155px;
-          margin: 103px 0 0 604px;
+          padding-left: 270px;
+          margin: 50px auto 0;
           display: inline-flex;
           flex-direction: column;
           align-items: flex-start;
@@ -172,13 +172,13 @@
                 <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
                   <div
                     style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
+                     width:404.67px;height:36px;padding-left:0;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
                     <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
-                        <div style="width:141px;color:#717182;font-size:14px;font-family:Arial;">
+                        <div style="width:141px;color:#717182;font-size:14px;font-family:Arial;margin-left:-26px;">
                           {{ user.memberId }}
                         </div>
                       </template>
@@ -186,7 +186,7 @@
                         <input
                           v-model="editUser.memberId"
                           type="text"
-                          style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+                          style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;margin-left:10px;"
                         />
                       </template>
                     </div>
@@ -347,7 +347,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+                      <div style="color:#717182; width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberGender }}
                       </div>
                     </template>
@@ -381,7 +381,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+                      <div style="color:#717182; width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberAge }}
                       </div>
                     </template>
@@ -415,7 +415,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+                      <div style="color:#717182; width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberHeight }}
                       </div>
                     </template>
@@ -450,7 +450,7 @@
                     "
                   >
                     <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+                      <div style="color:#717182; width:107.84px;height:36px;display:flex;align-items:center;">
                         {{ user.memberWeight }}
                       </div>
                     </template>

@@ -12,8 +12,8 @@
           height: auto; /* 고정값 → 자동 높이로 */
           padding-top: 80px;
           padding-bottom: 13px;
-          padding-left: 155px;
-          margin: 103px 0 0 604px;
+          padding-left: 270px;
+          margin: 50px auto 0;
           display: inline-flex;
           flex-direction: column;
           align-items: flex-start;
@@ -158,27 +158,26 @@
 
               <!-- 회원 ID -->
               <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;justify-content:space-between;align-items:center;height:20px;">
-                  <div style="width:41.82px;height:20px;position:relative;">
-                    <div
-                      style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;line-height:20px;width:200px;"
-                    >
-                      회원 ID
-                    </div>
-                  </div>
-                  <div style="width:144.93px;height:20px;position:relative;"></div>
-                </div>
+              <div style="display:inline-flex;align-items:center;height:20px;justify-content:flex-start;gap:8px;">
+  <div style="height:20px;display:flex;align-items:center;">
+    <div style="color:#0A0A0A;font-size:14px;font-family:Arial;line-height:20px;">
+      회원 ID
+    </div>
+  </div>
+  <!-- 필요하면 오른쪽 여백 유지용: flex 공간 차지 안 하게 폭만 둠 -->
+  <div style="width:144.93px;height:20px;"></div>
+</div>
 
                 <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
                   <div
                     style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
+                      width:404.67px;height:36px;padding-left:0;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
                       display:inline-flex;align-items:center;z-index:1;
                     "
                   >
                     <div style="width:107.84px;height:36px;display:flex;align-items:center;">
                       <template v-if="!editMode">
-                        <div style="width:141px;color:#717182;font-size:14px;font-family:Arial;">
+                        <div style="width:141px;color:#717182;font-size:14px;font-family:Arial;margin-left:-28px;">
                           {{ user.memberId }}
                         </div>
                       </template>
@@ -186,7 +185,7 @@
                         <input
                           v-model="editUser.memberId"
                           type="text"
-                          style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+                          style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827; margin-left:10px;"
                         />
                       </template>
                     </div>
@@ -333,142 +332,153 @@
               </div>
 
               <!-- 성별 -->
-              <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:42px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">성별</div>
-                  </div>
-                </div>
-                <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
-                  <div
-                    style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
-                      display:inline-flex;align-items:center;z-index:1;
-                    "
-                  >
-                    <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
-                        {{ user.memberGender }}
-                      </div>
-                    </template>
-                    <template v-else>
-                      <select
-                        v-model="editUser.memberGender"
-                        style="width:60px; height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
-                      >
-                        <option value="">선택</option>
-                        <option value="남성">남성</option>
-                        <option value="여성">여성</option>
-                      </select>
-                    </template>
-                  </div>
-                  <div style="width:404.67px;height:36px;left:0;top:0;position:absolute;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
-                </div>
-              </div>
+<div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
+  <div style="display:inline-flex;align-items:center;height:20px;">
+    <div style="width:56px;height:20px;position:relative;">
+      <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">성별</div>
+    </div>
+  </div>
 
-              <!-- 나이 -->
-              <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:28px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">나이</div>
-                  </div>
-                </div>
-                <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
-                  <div
-                    style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
-                      display:inline-flex;align-items:center;z-index:1;
-                    "
-                  >
-                    <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
-                        {{ user.memberAge }}
-                      </div>
-                    </template>
-                    <template v-else>
-                      <input
-                        v-model.number="editUser.memberAge"
-                        type="number"
-                        min="0"
-                        max="120"
-                        inputmode="numeric"
-                        style="width:100px;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
-                      />
-                    </template>
-                  </div>
-                  <div style="width:404.67px;height:36px;left:0;top:0;position:absolute;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
-                </div>
-              </div>
+  <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
+    <div
+      style="
+        width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;
+        overflow:visible;border-radius:8px;display:inline-flex;align-items:center;z-index:1;
+      "
+    >
+      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+        <template v-if="!editMode">
+          <div style="color:#717182;font-size:14px;font-family:Arial;">
+            {{ user.memberGender }}
+          </div>
+        </template>
+        <template v-else>
+          <select
+            v-model="editUser.memberGender"
+            style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+          >
+            <option value="">선택</option>
+            <option value="남성">남성</option>
+            <option value="여성">여성</option>
+          </select>
+        </template>
+      </div>
+    </div>
+    <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+  </div>
+</div>
+<!-- 나이 -->
+<div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
+  <div style="display:inline-flex;align-items:center;height:20px;">
+    <div style="width:56px;height:20px;position:relative;">
+      <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">나이</div>
+    </div>
+  </div>
 
-              <!-- 키 -->
-              <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:28px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">키</div>
-                  </div>
-                </div>
-                <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
-                  <div
-                    style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
-                      display:inline-flex;align-items:center;z-index:1;
-                    "
-                  >
-                    <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
-                        {{ user.memberHeight }}
-                      </div>
-                    </template>
-                    <template v-else>
-                      <input
-                        v-model.number="editUser.memberHeight"
-                        type="number"
-                        min="0"
-                        max="300"
-                        step="0.1"
-                        inputmode="decimal"
-                        style="width:120px;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
-                      />
-                    </template>
-                  </div>
-                  <div style="width:404.67px;height:36px;left:0;top:0;position:absolute;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
-                </div>
-              </div>
+  <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
+    <div
+      style="
+        width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;
+        overflow:visible;border-radius:8px;display:inline-flex;align-items:center;z-index:1;
+      "
+    >
+      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+        <template v-if="!editMode">
+          <div style="color:#717182;font-size:14px;font-family:Arial;">
+            {{ user.memberAge }}
+          </div>
+        </template>
+        <template v-else>
+          <input
+            v-model.number="editUser.memberAge"
+            type="number"
+            min="0"
+            max="120"
+            inputmode="numeric"
+            style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+          />
+        </template>
+      </div>
+    </div>
+    <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+  </div>
+</div>
 
-              <!-- 몸무게 -->
-              <div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
-                <div style="display:inline-flex;align-items:center;height:20px;">
-                  <div style="width:56px;height:20px;position:relative;">
-                    <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">몸무게</div>
-                  </div>
-                </div>
-                <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
-                  <div
-                    style="
-                      width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;overflow:visible;border-radius:8px;
-                      display:inline-flex;align-items:center;z-index:1;
-                    "
-                  >
-                    <template v-if="!editMode">
-                      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
-                        {{ user.memberWeight }}
-                      </div>
-                    </template>
-                    <template v-else>
-                      <input
-                        v-model.number="editUser.memberWeight"
-                        type="number"
-                        min="0"
-                        max="500"
-                        step="0.1"
-                        inputmode="decimal"
-                        style="width:120px;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
-                      />
-                    </template>
-                  </div>
-                  <div style="width:404.67px;height:36px;left:0;top:0;position:absolute;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
-                </div>
-              </div>
+             <!-- 키 -->
+<div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
+  <div style="display:inline-flex;align-items:center;height:20px;">
+    <div style="width:56px;height:20px;position:relative;">
+      <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">키</div>
+    </div>
+  </div>
+
+  <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
+    <div
+      style="
+        width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;
+        overflow:visible;border-radius:8px;display:inline-flex;align-items:center;z-index:1;
+      "
+    >
+      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+        <template v-if="!editMode">
+          <div style="color:#717182;font-size:14px;font-family:Arial;">
+            {{ user.memberHeight }}
+          </div>
+        </template>
+        <template v-else>
+          <input
+            v-model.number="editUser.memberHeight"
+            type="number"
+            min="0"
+            max="300"
+            step="0.1"
+            inputmode="decimal"
+            style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+          />
+        </template>
+      </div>
+    </div>
+    <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+  </div>
+</div>
+
+             <!-- 몸무게 -->
+<div style="display:flex;flex-direction:column;gap:8px;align-self:stretch;height:64px;">
+  <div style="display:inline-flex;align-items:center;height:20px;">
+    <div style="width:56px;height:20px;position:relative;">
+      <div style="left:0;top:-1.33px;position:absolute;color:#0A0A0A;font-size:14px;font-family:Arial;">몸무게</div>
+    </div>
+  </div>
+
+  <div style="align-self:stretch;height:36px;position:relative;background:#F3F3F5;border-radius:8px;">
+    <div
+      style="
+        width:404.67px;height:36px;padding-left:12px;position:absolute;left:0;top:0;
+        overflow:visible;border-radius:8px;display:inline-flex;align-items:center;z-index:1;
+      "
+    >
+      <div style="width:107.84px;height:36px;display:flex;align-items:center;">
+        <template v-if="!editMode">
+          <div style="color:#717182;font-size:14px;font-family:Arial;">
+            {{ user.memberWeight }}
+          </div>
+        </template>
+        <template v-else>
+          <input
+            v-model.number="editUser.memberWeight"
+            type="number"
+            min="0"
+            max="500"
+            step="0.1"
+            inputmode="decimal"
+            style="width:100%;height:28px;border:none;outline:none;background:transparent;font-size:14px;color:#111827;"
+          />
+        </template>
+      </div>
+    </div>
+    <div style="width:404.67px;height:36px;position:absolute;left:0;top:0;border-radius:8px;border:.67px #D1D5DC solid;pointer-events:none;"></div>
+  </div>
+</div>
 
             </div> <!-- /필드들 -->
 

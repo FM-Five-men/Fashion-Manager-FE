@@ -149,10 +149,6 @@ const routes = [
     name: 'message',
     // component: MessageView // 실제 컴포넌트로 연결 필요
   },{
-    path: '/mypage',
-    name: 'mypage',
-    // component: MyPageView // 실제 컴포넌트로 연결 필요
-  },{
     path: '/fashionpost/:id',
     name: 'fashionpost',
     component: FashionPostView
