@@ -29,12 +29,6 @@ const login = async () => {
         if(response.data != "존재하지 않는 회원" && response.data != "비밀번호 불일치"){
           const token = response.data;
           sessionStorage.setItem("token", token);
-
-            // ✅ 이 부분만 추가
-          const payload = JSON.parse(atob(token.split('.')[1])); // JWT payload 디코드
-          localStorage.setItem("userNum", payload.num);          // 회원번호 저장
-          localStorage.setItem("userName", payload.name);        // 이름도 저장하면 편함
-
           if(token){
             router.push('/main')
           }
