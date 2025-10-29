@@ -183,37 +183,14 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 ## 3. 스토리보드
 
 <details>
-    <summary>회원 관리</summary>
+    <summary>회원 정보</summary>
   
-  #### 랜딩 화면
-<img width="1150" alt="스크린샷 2025-04-19 22 19 40" src="https://github.com/user-attachments/assets/d6b9defb-9893-40b9-b1a3-ded0585fe556" />
-
-</details>
+  #### 마이페이지
+<img src = "./image/마이페이지.jpg" width = "1000"> </img>
+<details>
 
 <details>
-  <summary>회원가입</summary>
-
-  #### 회원가입 화면
-  <img width="1150" alt="스크린샷 2025-04-16 07 45 10" src="https://github.com/user-attachments/assets/2557597b-f386-492f-aca0-44c384a8f13b" >
-
-
-  #### 회원가입 성공 화면
-  <img width="1150" alt="스크린샷 2025-04-19 21 56 40" src="https://github.com/user-attachments/assets/7e9e7bf7-2cae-4c88-890d-6adfb7458667" />
-</details>
-
-<details>
-  <summary>로그인</summary>
-  
-  #### 로그인 화면
-<img width="1150" alt="스크린샷 2025-04-19 22 21 12" src="https://github.com/user-attachments/assets/2ed2f059-6230-456e-b6c6-54e01dd98718" />
-
-  #### 로그인 실패 화면
-  <img width="1151" alt="스크린샷 2025-04-19 21 57 56" src="https://github.com/user-attachments/assets/e7d6e588-e83a-4481-a168-557797b07a66" />
-
-</details>
-
-<details>
-  <summary>관리자 기능</summary>
+  <summary>관리자</summary>
   
   #### 관리자 페이지
 <img src = "./image/관리자페이지.png" width = "1000"> </img>  
@@ -222,17 +199,26 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 <details>
   <summary>게시물</summary>
   
-  #### 스타일 쉐어 게시판 화면
-<img width="1146" alt="스크린샷 2025-04-19 22 04 16" src="https://github.com/user-attachments/assets/454eae00-12f5-4698-93f7-b0eec96d2a20" />
+  #### 패션 게시판 페이지
+<img src = "./image/스토리보드_패션게시판페이지.png" width = "1000"> </img> 
 
-  #### 스타일 쉐어 게시물 화면
-<img width="1145" alt="스크린샷 2025-04-19 22 05 47" src="https://github.com/user-attachments/assets/9a8eca29-4ee4-44f3-88bb-02873c9c0975" />
+  #### 패션 게시물 페이지
+<img src = "./image/스토리보드_패션게시글상세페이지.png" width = "1000"> </img> 
 
-  #### 멘토링 게시물
+  #### 패션 게시물 등록 페이지
+<img src = "./image/스토리보드_패션게시글등록페이지.png" width = "1000"> </img> 
+
+  #### 후기 게시판 페이지
+<img src = "./image/후기게시판.png" width = "1000"> </img> 
+
+  #### 후기 게시물 페이지
+<img src = "./image/후기게시물.png" width = "1000"> </img> 
+
+  #### 멘토링 게시판 페이지
+<img src = "./image/멘토링게시판.png" width = "1000"> </img> 
+
+  #### 멘토링 게시물 페이지
 <img src = "./image/멘토링게시물.png" width = "1000"> </img>
-
-  #### 스타일 쉐어 게시물 등록 화면
-<img width="1146" alt="스크린샷 2025-04-19 22 22 40" src="https://github.com/user-attachments/assets/ffec02ca-3129-4f84-9751-1ee5e3711bef" />
 
 </details>
 
@@ -247,38 +233,15 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 </details>
 
 <details>
-  <summary>마이페이지</summary>
-  
-  #### 마이페이지 화면
-<img width="1152" alt="스크린샷 2025-04-19 22 00 18" src="https://github.com/user-attachments/assets/ec8e04af-46bf-4eba-be47-ac00e8372cf9" />
-
-  #### 회원정보 수정 화면
-<img width="1149" alt="스크린샷 2025-04-19 22 01 10" src="https://github.com/user-attachments/assets/dd910f46-2ccf-4ec7-870e-0dc97d62dadb" />
-
-  #### 회원정보 수정 성공 화면
-<img width="1150" alt="스크린샷 2025-04-19 22 01 27" src="https://github.com/user-attachments/assets/80fe1850-2a3e-4d5b-a7ac-a21af59681f2" />
-
-  #### 나의 활동 기록
-<img width="1147" alt="스크린샷 2025-04-19 22 02 39" src="https://github.com/user-attachments/assets/c8ffa48a-48ed-41ae-bd53-44e3dc6e2930" />
-
-  #### 로그아웃
-<img width="1150" alt="스크린샷 2025-04-19 22 24 01" src="https://github.com/user-attachments/assets/a1440732-fe53-4db6-b6ac-5f857129f3e4" />
-
-</details>
-
-<details>
   <summary>공통 레이아웃</summary>
   
   #### 헤더
-<img width="1150" alt="스크린샷 2025-04-19 22 16 09" src="https://github.com/user-attachments/assets/5816c181-b548-4e0c-ae50-58fd4cb6e31a" />
+<img src = "./image/해더.jpg" width = "1000"> </img>
 
-  #### 푸터
-<img width="1150" alt="스크린샷 2025-04-19 22 16 30" src="https://github.com/user-attachments/assets/9e496558-c5e5-4546-a992-91be6914d73c" />
-
-</details>
+ </details>
 
 
-<br><br>
+<br>
 
 ---
 
@@ -300,62 +263,30 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 
 ## 5. 테스트 결과 보고서
 
-<details>
-  <summary> 👤 회원 관리 도메인 테스트 </summary>
-  <br>
-  
+## 👤 회원 관리 테스트
+
   <details>
-    <summary>회원 기본 CRUD</summary>
+    <summary>회원</summary>
     <br>
     <details>
       <summary>회원 가입</summary>
-      <img src="./images/member/회원가입.png" width="800" />
+      <img src="./images/회원가입 시연.gif" width="800" />
     </details>
     <details>
-      <summary>회원 전체 조회</summary>
-      <img src="./images/member/회원_전체조회.png" width="800" />
+      <summary>로그인</summary>
+      <img src="./images/로그인 시연.gif" width="800" />
     </details>
     <details>
-      <summary>특정 회원 조회</summary>
-      <img src="./images/member/특정_회원조회.png" width="800" />
+      <summary>아이디 찾기</summary>
+      <img src="./images/아이디 찾기 시연.gif" width="800" />
     </details>
     <details>
-      <summary>회원 정보 수정</summary>
-      <img src="./images/member/회원정보수정.png" width="800" />
+      <summary>비밀번호 찾기</summary>
+      <img src="./images/비밀번호 찾기 시연.gif" width="800" />
     </details>
     <details>
-      <summary>회원 정보 삭제</summary>
-      <img src="./images/member/회원정보삭제.png" width="800" />
-    </details>
-  </details>
-  
-  ---
-  
-  <details>
-    <summary>회원 관리 기능</summary>
-    <br>
-    <details>
-      <summary>회원 메시지 수신 여부 설정</summary>
-      <img src="./images/member/회원메시지수신여부설정.png" width="800" />
-    </details>
-    <details>
-      <summary>회원 신고 누적 수 & 하루 신고 가능 횟수 수정</summary>
-      <img src="./images/member/회원신고누적수_하루신고가능횟수수정.png" width="800" />
-    </details>
-  </details>
-  
-  ---
-  
-  <details>
-    <summary>회원 칭호 관리</summary>
-    <br>
-    <details>
-      <summary>회원 칭호 부여</summary>
-      <img src="./images/member/회원칭호부여.png" width="800" />
-    </details>
-    <details>
-      <summary>회원 칭호 삭제</summary>
-      <img src="./images/member/회원칭호삭제.png" width="800" />
+      <summary>마이페이지 수정</summary>
+      <img src="./images/마이페이지 수정.gif" width="800" />
     </details>
   </details>
 
@@ -363,556 +294,119 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 
 <br>
 
-## 🧑‍💼 관리자 및 카테고리, 블랙리스트 관련 도메인 테스트
+## 🧑‍💼 인플루언서 페이지 테스트
 
 <details>
-<summary> 🔑 회원 관리 API </summary>
+<summary>인플루언서 페이지 검색</summary>
+  <img src="./images/인플루언서 페이지 - 검색기능.png" width="800" />
+</details>
+
+<details>
+<summary>팔로우, 언팔로우</summary>
+  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우.png" width="800" />
+</details>
+
+<details>
+<summary>개인 게시물 조회</summary>
+  <img src="./images/인플루언서 페이지 - 개인 게시물 조회.png" width="800" />
+</details>
+
+<details>
+<summary>개별 조회</summary>
+  <img src="./images/인플루언서 페이지 - 개별 조회.png" width="800" />
+</details>
+
+<details>
+<summary>페이지네이션</summary>
+  <img src="./images/인플루언서 페이지 조회 - 페이지네이션.png" width="800" />
+</details>
+
+<details>
+<summary>팔로우, 언팔로우</summary>
+  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
+</details>
+
+<details>
+<summary>팔로우, 언팔로우</summary>
+  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
+</details>
+
 <br>
 
-<details>
-<summary>관리자 회원가입</summary>
-  <img src="./images/manager/관리자_회원가입.png" width="800" />
-</details>
-<details>
-<summary>로그인</summary>
-  <img src="./images/manager/로그인.png" width="800" />
-</details>
-</details>
-
----
+## 게시물 테스트
 
 <details>
-<summary> 🚫 블랙리스트 관리 API </summary>
-<br>
-
-<details>
-<summary>블랙리스트 조회</summary>
-  <img src="./images/manager/블랙리스트_조회.png" width="800" />
+<summary>패션 아이템 추가</summary>
+  <img src="./images/패션 아이템 추가.png" width="800" />
 </details>
 <details>
-<summary>블랙리스트 추가</summary>
-  <img src="./images/manager/블랙리스트_추가.png" width="800" />
+<summary>게시글 작성 성공</summary>
+  <img src="./images/게시글 작성 성공.png" width="800" />
 </details>
 <details>
-<summary>블랙리스트 삭제</summary>
-  <img src="./images/manager/블랙리스트_삭제.png" width="800" />
+<summary>게시글 삭제</summary>
+  <img src="./images/게시글 삭제.png" width="800" />
 </details>
-</details>
-
----
-
 <details>
-<summary> 🏷️ 카테고리 및 해시태그 관리 API </summary>
-<br>
-
+<summary>게시글 이미지 추가</summary>
+  <img src="./images/게시글 이미지 추가.png" width="800" />
+</details>
 <details>
-<summary>사진 카테고리 관리</summary>
-  <br>
-  <details>
-  <summary>사진 카테고리 조회</summary>
-    <img src="./images/manager/사진_카테고리_조회.png" width="800" />
-  </details>
-  <details>
-  <summary>사진 카테고리 추가</summary>
-    <img src="./images/manager/사진_카테고리_추가.png" width="800" />
-  </details>
-  <details>
-  <summary>사진 카테고리 수정</summary>
-    <img src="./images/manager/사진_카테고리_수정.png" width="800" />
-  </details>
-  <details>
-  <summary>사진 카테고리 삭제</summary>
-    <img src="./images/manager/사진_카테고리_삭제.png" width="800" />
-  </details>
+<summary>게시글 좋아요/힘내요 추가</summary>
+  <img src="./images/게시글 좋아요_힘내요 추가.png" width="800" />
+</details>
+<details>
+<summary>게시글 내용 추가</summary>
+  <img src="./images/게시글 내용 추가.png" width="800" />
+</details>
+<details>
+<summary>게시글 온도 수정</summary>
+  <img src="./images/게시글 온도 수정.png" width="800" />
+</details>
+<details>
+<summary>해시태그 추가</summary>
+  <img src="./images/해시태그 추가.png" width="800" />
+</details>
+<details>
+<summary>멘토링 게시물</summary>
+  <img src="./images/멘토링게시물시연.jpg" width="800" />
+</details>
+<details>
+<summary>후기 게시물 시연</summary>
+  <img src="./images/후기게시물시연.jpg" width="800" />
 </details>
 
-<details>
-<summary>신고 카테고리 관리</summary>
-  <br>
-  <details>
-  <summary>신고 카테고리 조회</summary>
-    <img src="./images/manager/신고_카테고리_조회.png" width="800" />
-  </details>
-  <details>
-  <summary>신고 카테고리 추가</summary>
-    <img src="./images/manager/신고_카테고리_수정.png" width="800" />
-  </details>
-  <details>
-  <summary>신고 카테고리 삭제</summary>
-    <img src="./images/manager/신고_카테고리_삭제.png" width="800" />
-  </details>
-</details>
-
-<details>
-<summary>쪽지 카테고리 관리</summary>
-  <br>
-  <details>
-  <summary>쪽지 카테고리 조회</summary>
-    <img src="./images/manager/쪽지_카테고리_조회.png" width="800" />
-  </details>
-  <details>
-  <summary>쪽지 카테고리 추가</summary>
-    <img src="./images/manager/쪽지_카테고리_추가.png" width="800" />
-  </details>
-  <details>
-  <summary>쪽지 카테고리 수정</summary>
-    <img src="./images/manager/쪽지_카테고리_수정.png" width="800" />
-  </details>
-  <details>
-  <summary>쪽지 카테고리 삭제</summary>
-    <img src="./images/manager/쪽지_카테고리_삭제.png" width="800" />
-  </details>
-</details>
-
-<details>
-<summary>후기 카테고리 관리</summary>
-  <br>
-  <details>
-  <summary>후기 카테고리 조회</summary>
-    <img src="./images/manager/후기_카테고리_조회.png" width="800" />
-  </details>
-  <details>
-  <summary>후기 카테고리 추가</summary>
-    <img src="./images/manager/후기_카테고리_추가.png" width="800" />
-  </details>
-  <details>
-  <summary>후기 카테고리 수정</summary>
-    <img src="./images/manager/후기_카테고리_수정.png" width="800" />
-  </details>
-  <details>
-  <summary>후기 카테고리 삭제</summary>
-    <img src="./images/manager/후기_카테고리_삭제.png" width="800" />
-  </details>
-</details>
-
-<details>
-<summary>해시태그 관리</summary>
-  <br>
-  <details>
-  <summary>해시태그 조회</summary>
-    <img src="./images/manager/해시태그_조회.png" width="800" />
-  </details>
-  <details>
-  <summary>해시태그 추가</summary>
-    <img src="./images/manager/해시태그_추가.png" width="800" />
-  </details>
-  <details>
-  <summary>해시태그 수정</summary>
-    <img src="./images/manager/해시태그_수정.png" width="800" />
-  </details>
-  <details>
-  <summary>해시태그 삭제</summary>
-    <img src="./images/manager/해시태그_삭제.png" width="800" />
-  </details>
-</details>
-</details>
-
----
-
-<details>
-<summary> 🚩 신고 관리 API </summary>
-<br>
-
-<details>
-<summary>신고 조회</summary>
-  <img src="./images/manager/신고_조회.png" width="800" />
-</details>
+## 🚩 신고 관리
 <details>
 <summary>신고 추가</summary>
-  <img src="./images/manager/신고_추가.png" width="800" />
+  <img src="./images/신고 추가.jpg" width="800" />
 </details>
 <details>
 <summary>신고 상태 변경</summary>
-  <img src="./images/manager/신고_상태_변경.png" width="800" />
+  <img src="./images/신고 상태 변경.jpg" width="800" />
 </details>
 <details>
 <summary>신고 삭제</summary>
-  <img src="./images/manager/신고_삭제.png" width="800" />
-</details>
-</details>
-
----
-
-<details>
-<summary> ✉️ 쪽지 관리 API </summary>
-<br>
-
-<details>
-<summary>쪽지 조회</summary>
-  <img src="./images/manager/쪽지_조회.png" width="800" />
-</details>
-<details>
-<summary>쪽지 송신</summary>
-  <img src="./images/manager/쪽지_송신.png" width="800" />
-</details>
-<details>
-<summary>쪽지 삭제</summary>
-  <img src="./images/manager/쪽지_삭제.png" width="800" />
-</details>
+  <img src="./images/신고 삭제.jpg" width="800" />
 </details>
 
-<br>
-
-## 📝 게시글 관리 도메인 테스트
-
+## ✉️ 쪽지 관리
 <details>
-<summary> 🧑‍💼 패션 게시글 API </summary>
-<br>
-
-<details>
-<summary>패션 게시글 전체 조회 (페이지 O)</summary>
-  <img src="./images/posts/패션_게시글_조회(페이지).png" width="800" />
+<summary>일반 쪽지 송신</summary>
+  <img src="./images/일반 쪽지 송신.jpg" width="800" />
 </details>
 <details>
-<summary>패션 게시글 전체 조회 (페이지 X)</summary>
-  <img src="./images/posts/패션_게시글_전체_조회(페이지X).png" width="800" />
+<summary>일반 쪽지 조회</summary>
+  <img src="./images/일반 쪽지 조회.jpg" width="800" />
 </details>
 <details>
-<summary>패션 게시글 상세 조회</summary>
-  <img src="./images/posts/패션_게시글_상세조회_1.png" width="800" />
-  <img src="./images/posts/패션_게시글_상세조회_2.png" width="800" />
+<summary>멘토링 쪽지 송신</summary>
+  <img src="./images/멘토링 쪽지 송신.jpg" width="800" />
 </details>
 <details>
-<summary>패션 게시글 검색</summary>
-  <img src="./images/posts/패션_게시글_검색.png" width="800" />
+<summary>멘토링 쪽지 조회</summary>
+  <img src="./images/멘토링 쪽지 조회.jpg" width="800" />
 </details>
-<details>
-<summary>패션 게시글 작성</summary>
-  <img src="./images/posts/패션_게시글_작성.png" width="800" />
-</details>
-<details>
-<summary>패션 게시글 수정</summary>
-  <img src="./images/posts/패션_게시글_수정.png" width="800" />
-</details>
-<details>
-<summary>패션 게시글 삭제</summary>
-  <img src="./images/posts/패션_게시글_삭제.png" width="800" />
-</details>
-<details>
-<summary>패션 게시글 좋아요/반응 추가</summary>
-  <img src="./images/posts/패션_게시글_좋아요_추가.png" width="800" />
-</details>
-</details>
-
----
-
-<details>
-<summary> 🧑‍🏫 멘토링 게시글 API </summary>
-<br>
-
-<details>
-<summary>멘토링 게시글 전체 조회 (페이지 O)</summary>
-  <img src="./images/posts/멘토링_게시글_전체_조회(페이지O).png" width="800" />
-</details>
-<details>
-<summary>멘토링 게시글 전체 조회 (페이지 X)</summary>
-  <img src="./images/posts/멘토링_게시글_전체_조회(페이지X).png" width="800" />
-</details>
-<details>
-<summary>멘토링 게시글 검색</summary>
-  <img src="./images/posts/멘토링_게시글_검색.png" width="800" />
-</details>
-<details>
-<summary>멘토링 게시글 작성</summary>
-  <img src="./images/posts/멘토링_게시글_작성.png" width="800" />
-</details>
-<details>
-<summary>멘토링 게시글 수정</summary>
-  <img src="./images/posts/멘토링_게시글_수정.png" width="800" />
-</details>
-<details>
-<summary>멘토링 게시글 삭제</summary>
-  <img src="./images/posts/멘토링_게시글_삭제.png" width="800" />
-</details>
-</details>
-                                        
----
-
-<details>
-<summary> 🧑‍🎓 후기 게시글 API </summary>
-<br>
-
-<details>
-<summary>후기 게시글 전체 조회 (페이지 O)</summary>
-  <img src="./images/posts/후기_게시글_전체_조회(페이지O).png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 전체 조회 (페이지 X)</summary>
-  <img src="./images/posts/후기_게시글_전체_조회(페이지X).png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 상세 조회</summary>
-  <img src="./images/posts/후기_게시글_상세조회.png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 검색</summary>
-  <img src="./images/posts/후기_게시글_검색.png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 작성</summary>
-  <img src="./images/posts/후기_게시글_작성.png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 수정</summary>
-  <img src="./images/posts/후기_게시글_수정.png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 삭제</summary>
-  <img src="./images/posts/후기_게시글_삭제.png" width="800" />
-</details>
-<details>
-<summary>후기 게시글 힘내요/반응 추가</summary>
-  <img src="./images/posts/후기_게시글_힘내요_추가.png" width="800" />
-</details>
-</details>
-
----
-
-<details>
-<summary> 🖼️ 게시글 사진 조회 API </summary>
-<br>
-
-<details>
-<summary>게시글 사진 조회</summary>
-  <img src="./images/posts/게시글_사진_조회.png" width="800" />
-</details>
-</details>
-
-<br>
-
-## 🧑‍💼/🧑‍🎓 인플루언서, 멘티 관리 도메인 테스트
-
-<details>
-<summary> 🧑‍💼 인플루언서 관련 API </summary>
-<br>
-
-<details>
-<summary>인플루언서 신청/관리</summary>
-<br>
-
-<details>
-<summary>인플루언서 신청</summary>
-  <img src="./images/influencer_mentee/인플루언서 신청.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 신청 조회</summary>
-  <img src="./images/influencer_mentee/인플루언서 신청 조회.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 신청 내용 수정</summary>
-  <img src="./images/influencer_mentee/인플루언서 신청 내용 수정.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 신청 취소</summary>
-  <img src="./images/influencer_mentee/인플루언서 신청 취소.png" width="800" />
-</details>
-</details>
-
-<details>
-<summary>인플루언서 페이지 관리</summary>
-<br>
-
-<details>
-<summary>인플루언서 페이지 생성</summary>
-  <img src="./images/influencer_mentee/인플루언서 페이지 생성.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 페이지 조회</summary>
-  <img src="./images/influencer_mentee/인플루언서 페이지 조회.png" width="800" />
-</details>
-  <details>
-<summary>인플루언서 페이지네이션</summary>
-  <img src="./images/influencer_mentee/인플루언서 페이지네이션.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 페이지 수정</summary>
-  <img src="./images/influencer_mentee/인플루언서 페이지 수정.png" width="800" />
-</details>
-<details>
-<summary>인플루언서 페이지 삭제</summary>
-  <img src="./images/influencer_mentee/인플루언서 페이지 삭제.png" width="800" />
-</details>
-</details>
-</details>
-
----
-
-<details>
-<summary> 🧑‍🎓 멘티 관련 API </summary>
-<br>
-
-<details>
-<summary>멘티 신청</summary>
-  <img src="./images/influencer_mentee/멘티 신청.png" width="800" />
-</details>
-<details>
-<summary>멘티 신청 조회</summary>
-  <img src="./images/influencer_mentee/멘티 신청 조회.png" width="800" />
-</details>
-<details>
-<summary>멘티 신청서 수정</summary>
-  <img src="./images/influencer_mentee/멘티 신청서 수정.png" width="800" />
-</details>
-<details>
-<summary>멘티 신청서 삭제</summary>
-  <img src="./images/influencer_mentee/멘티 신청서 삭제.png" width="800" />
-</details>
-</details>
-
-<br>
-
-<details>
-  <summary> 💬 댓글 관리 도메인 테스트 </summary>
-  <br>
-  
-  <details>
-    <summary>패션게시판_댓글추가</summary>
-    <img src="./images/comment/패션게시판_댓글추가.png" width="800" />
-  </details>
-  <details>
-    <summary>리뷰게시판_댓글추가</summary>
-    <img src="./images/comment/리뷰게시판_댓글추가.png" width="800" />
-  </details>
-  
-  <details>
-    <summary>패션게시판_댓글조회</summary>
-    <img src="./images/comment/패션게시판_댓글조회.png" width="800" />
-  </details>
-  <details>
-    <summary>리뷰게시판_댓글조회</summary>
-    <img src="./images/comment/리뷰게시판_댓글조회.png" width="800" />
-  </details>
-
-  <details>
-    <summary>댓글수정</summary>
-    <img src="./images/comment/댓글수정.png" width="800" />
-  </details>
-  <details>
-    <summary>댓글삭제</summary>
-    <img src="./images/comment/댓글삭제.png" width="800" />
-  </details>
-  
-</details>
-
-<br>
-
-## 💬 댓글 반응 관리 도메인 테스트
-
-<details>
-<summary> 👍 좋아요 관리 API </summary>
-<br>
-
-<details>
-<summary>패션 게시판 댓글 좋아요</summary>
-  <img src="./images/reaction/패션게시판_댓글_좋아요누르기.png" width="800" />
-</details>
-<details>
-<summary>리뷰 게시판 댓글 좋아요</summary>
-  <img src="./images/reaction/리뷰게시판_댓글_좋아요누르기.png" width="800" />
-</details>
-</details>
-
----
-
-<details>
-<summary> 💪 힘내요 관리 API </summary>
-<br>
-
-<details>
-<summary>패션 게시판 댓글 힘내요</summary>
-  <img src="./images/reaction/패션게시판_댓글_힘내요누르기.png" width="800" />
-</details>
-<details>
-<summary>리뷰 게시판 댓글 힘내요</summary>
-  <img src="./images/reaction/리뷰게시판_댓글_힘내요누르기.png" width="800" />
-</details>
-</details>
-
-<br>
-
-## ⚙️ 스케줄러 관리 API
-
-<details>
-<summary> 월별 좋아요 개수 초기화 </summary>
-<br>
-<img src="./images/scheduler/월별_좋아요_개수_초기화.png" width="800" />
-</details>
-
-<br>
-
-## 🧪 유닛 테스트 (Unit Test)
-
-<details>
-<summary> 회원 서비스 테스트 </summary>
-<br>
-<img src="./images/test/회원_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 블랙리스트 서비스 테스트 </summary>
-<br>
-<img src="./images/test/블랙리스트_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 해시태그 서비스 테스트 </summary>
-<br>
-<img src="./images/test/해시태그_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 패션 게시판 서비스 테스트 </summary>
-<br>
-<img src="./images/test/페션게시판_조회_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 댓글 서비스 테스트 </summary>
-<br>
-<img src="./images/test/댓글_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 인플루언서 신청 서비스 테스트 </summary>
-<br>
-<img src="./images/test/인플루언서_신청_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 인플루언서 페이지 서비스 테스트 </summary>
-<br>
-<img src="./images/test/인플루언서_페이지_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 멘토링 신청 서비스 테스트 </summary>
-<br>
-<img src="./images/test/멘토링_신청_테스트.png" width="800" />
-</details>
-
----
-
-<details>
-<summary> 스케줄러 서비스 테스트 (좋아요 초기화) </summary>
-<br>
-<img src="./images/test/좋아요_초기화_테스트.png" width="800" />
-</details>
-
-<br>
 
 ---
 
