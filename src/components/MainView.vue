@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const posts = ref([
   { username: "fashionista_elite", image: "/images/f1.jpg", likes: 1243, comments: 87, engagement: 92 },
