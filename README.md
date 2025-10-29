@@ -323,7 +323,7 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 
 <details>
 <summary>팔로우, 언팔로우</summary>
-  <img src="./image/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
+  <img src="./image/인플루언서 페이지 - 팔로우, 언팔로우.png" width="800" />
 </details>
 
 <br>
@@ -364,11 +364,11 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 </details>
 <details>
 <summary>멘토링 게시물</summary>
-  <img src="./image/멘토링게시물시연.jpg" width="800" />
+  <img src="./image/멘토링게시물시연.png" width="800" />
 </details>
 <details>
 <summary>후기 게시물 시연</summary>
-  <img src="./image/후기게시물시연.jpg" width="800" />
+  <img src="./image/후기게시물시연.png" width="800" />
 </details>
 
 ## 🚩 신고 관리
