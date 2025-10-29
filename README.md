@@ -270,23 +270,23 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
     <br>
     <details>
       <summary>회원 가입</summary>
-      <img src="./images/회원가입 시연.gif" width="800" />
+      <img src="./image/회원가입 시연.gif" width="800" />
     </details>
     <details>
       <summary>로그인</summary>
-      <img src="./images/로그인 시연.gif" width="800" />
+      <img src="./image/로그인 시연.gif" width="800" />
     </details>
     <details>
       <summary>아이디 찾기</summary>
-      <img src="./images/아이디 찾기 시연.gif" width="800" />
+      <img src="./image/아이디 찾기 시연.gif" width="800" />
     </details>
     <details>
       <summary>비밀번호 찾기</summary>
-      <img src="./images/비밀번호 찾기 시연.gif" width="800" />
+      <img src="./image/비밀번호 찾기 시연.gif" width="800" />
     </details>
     <details>
       <summary>마이페이지 수정</summary>
-      <img src="./images/마이페이지 수정.gif" width="800" />
+      <img src="./image/마이페이지 수정.gif" width="800" />
     </details>
   </details>
 
@@ -298,37 +298,32 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 
 <details>
 <summary>인플루언서 페이지 검색</summary>
-  <img src="./images/인플루언서 페이지 - 검색기능.png" width="800" />
+  <img src="./image/인플루언서 페이지 - 검색기능.png" width="800" />
 </details>
 
 <details>
 <summary>팔로우, 언팔로우</summary>
-  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우.png" width="800" />
+  <img src="./image/인플루언서 페이지 - 팔로우, 언팔로우.png" width="800" />
 </details>
 
 <details>
 <summary>개인 게시물 조회</summary>
-  <img src="./images/인플루언서 페이지 - 개인 게시물 조회.png" width="800" />
+  <img src="./image/인플루언서 페이지 - 개인 게시물 조회.png" width="800" />
 </details>
 
 <details>
 <summary>개별 조회</summary>
-  <img src="./images/인플루언서 페이지 - 개별 조회.png" width="800" />
+  <img src="./image/인플루언서 페이지 - 개별 조회.png" width="800" />
 </details>
 
 <details>
 <summary>페이지네이션</summary>
-  <img src="./images/인플루언서 페이지 조회 - 페이지네이션.png" width="800" />
+  <img src="./image/인플루언서 페이지 조회 - 페이지네이션.png" width="800" />
 </details>
 
 <details>
 <summary>팔로우, 언팔로우</summary>
-  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
-</details>
-
-<details>
-<summary>팔로우, 언팔로우</summary>
-  <img src="./images/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
+  <img src="./image/인플루언서 페이지 - 팔로우, 언팔로우" width="800" />
 </details>
 
 <br>
@@ -337,75 +332,75 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
 
 <details>
 <summary>패션 아이템 추가</summary>
-  <img src="./images/패션 아이템 추가.png" width="800" />
+  <img src="./image/패션 아이템 추가.png" width="800" />
 </details>
 <details>
 <summary>게시글 작성 성공</summary>
-  <img src="./images/게시글 작성 성공.png" width="800" />
+  <img src="./image/게시글 작성 성공.png" width="800" />
 </details>
 <details>
 <summary>게시글 삭제</summary>
-  <img src="./images/게시글 삭제.png" width="800" />
+  <img src="./image/게시글 삭제.png" width="800" />
 </details>
 <details>
 <summary>게시글 이미지 추가</summary>
-  <img src="./images/게시글 이미지 추가.png" width="800" />
+  <img src="./image/게시글 이미지 추가.png" width="800" />
 </details>
 <details>
 <summary>게시글 좋아요/힘내요 추가</summary>
-  <img src="./images/게시글 좋아요_힘내요 추가.png" width="800" />
+  <img src="./image/게시글 좋아요_힘내요 추가.png" width="800" />
 </details>
 <details>
 <summary>게시글 내용 추가</summary>
-  <img src="./images/게시글 내용 추가.png" width="800" />
+  <img src="./image/게시글 내용 추가.png" width="800" />
 </details>
 <details>
 <summary>게시글 온도 수정</summary>
-  <img src="./images/게시글 온도 수정.png" width="800" />
+  <img src="./image/게시글 온도 수정.png" width="800" />
 </details>
 <details>
 <summary>해시태그 추가</summary>
-  <img src="./images/해시태그 추가.png" width="800" />
+  <img src="./image/해시태그 추가.png" width="800" />
 </details>
 <details>
 <summary>멘토링 게시물</summary>
-  <img src="./images/멘토링게시물시연.jpg" width="800" />
+  <img src="./image/멘토링게시물시연.jpg" width="800" />
 </details>
 <details>
 <summary>후기 게시물 시연</summary>
-  <img src="./images/후기게시물시연.jpg" width="800" />
+  <img src="./image/후기게시물시연.jpg" width="800" />
 </details>
 
 ## 🚩 신고 관리
 <details>
 <summary>신고 추가</summary>
-  <img src="./images/신고 추가.jpg" width="800" />
+  <img src="./image/신고 추가.jpg" width="800" />
 </details>
 <details>
 <summary>신고 상태 변경</summary>
-  <img src="./images/신고 상태 변경.jpg" width="800" />
+  <img src="./image/신고 상태 변경.jpg" width="800" />
 </details>
 <details>
 <summary>신고 삭제</summary>
-  <img src="./images/신고 삭제.jpg" width="800" />
+  <img src="./image/신고 삭제.jpg" width="800" />
 </details>
 
 ## ✉️ 쪽지 관리
 <details>
 <summary>일반 쪽지 송신</summary>
-  <img src="./images/일반 쪽지 송신.jpg" width="800" />
+  <img src="./image/일반 쪽지 송신.jpg" width="800" />
 </details>
 <details>
 <summary>일반 쪽지 조회</summary>
-  <img src="./images/일반 쪽지 조회.jpg" width="800" />
+  <img src="./image/일반 쪽지 조회.jpg" width="800" />
 </details>
 <details>
 <summary>멘토링 쪽지 송신</summary>
-  <img src="./images/멘토링 쪽지 송신.jpg" width="800" />
+  <img src="./image/멘토링 쪽지 송신.jpg" width="800" />
 </details>
 <details>
 <summary>멘토링 쪽지 조회</summary>
-  <img src="./images/멘토링 쪽지 조회.jpg" width="800" />
+  <img src="./image/멘토링 쪽지 조회.jpg" width="800" />
 </details>
 
 ---
