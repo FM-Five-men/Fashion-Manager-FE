@@ -29,7 +29,7 @@ const login = async () => {
       const token = res.data;
       sessionStorage.setItem("token", token);
       if(token){
-        router.push('/main')
+        router.push('/fashionboardview')
       }
     }else{
       showModal.value = true;

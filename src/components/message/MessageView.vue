@@ -270,7 +270,7 @@ const filteredMessages = computed(() =>
 );
 
 const unreadCount = computed(() => {
-  return messages.value.filter(msg => !msg.messageConfirmed).length;
+  return messages.value.filter(msg => !msg.messageConfirmed && msg.type == "received").length;
 });
 
 const openReadModal = (msg) => {
