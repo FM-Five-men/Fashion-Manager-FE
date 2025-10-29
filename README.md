@@ -187,7 +187,7 @@ TPO(시간, 장소, 상황) 적합성, 컬러 매치, 아이템 활용도 등 �
   
   #### 마이페이지
 <img src = "./image/마이페이지.jpg" width = "1000"> </img>
-<details>
+</details>
 
 <details>
   <summary>관리자</summary>
